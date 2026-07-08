@@ -11,10 +11,14 @@ import qs from 'qs';
 import { authenticationSession } from '@/lib/authentication-session';
 export const isRunningCloudInDevMode = import.meta.env.MODE === 'cloud';
 
+export const isRunningInPassgrad = import.meta.env.VITE_AP_RUNNING_IN_PASSGRAD === 'true';
+
 export const API_BASE_URL = isRunningCloudInDevMode
   ? 'https://cloud.activepieces.com'
   : window.location.origin;
-export const API_URL = `${API_BASE_URL}/api`;
+export const API_URL = isRunningInPassgrad
+  ? `${API_BASE_URL}/api/flow-engine`
+  : `${API_BASE_URL}/api`;
 
 const disallowedRoutes = [
   '/v1/managed-authn/external-token',
@@ -44,9 +48,11 @@ function globalErrorHandler(error: AxiosError) {
       errorCode === ErrorCode.SESSION_EXPIRED ||
       errorCode === ErrorCode.INVALID_BEARER_TOKEN
     ) {
-      authenticationSession.logOut();
-      console.log(errorCode);
-      window.location.href = '/sign-in';
+      if (!isRunningInPassgrad) {
+        authenticationSession.logOut();
+        console.log(errorCode);
+        window.location.href = '/sign-in';
+      }
     }
   }
 }
@@ -94,6 +100,9 @@ function getToken(
   isApWebsite: boolean,
   token: string | null,
 ) {
+  if (isRunningInPassgrad) {
+    return undefined;
+  }
   if (unAuthenticated || !isApWebsite) {
     return undefined;
   }

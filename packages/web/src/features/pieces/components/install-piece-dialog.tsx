@@ -217,10 +217,7 @@ const InstallPieceDialog = ({
                         <SelectItem value={PackageType.REGISTRY}>
                           {t('NPM Registry')}
                         </SelectItem>
-                        <SelectItem
-                          value={PackageType.ARCHIVE}
-                          disabled={!isEnabled || !privatePiecesEnabled}
-                        >
+                        <SelectItem value={PackageType.ARCHIVE}>
                           {t('Packed Archive (.tgz)')}
                         </SelectItem>
                       </SelectGroup>

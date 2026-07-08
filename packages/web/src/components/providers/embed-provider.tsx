@@ -52,10 +52,13 @@ export const useEmbedding = () => useContext(EmbeddingContext);
 
 type EmbeddingProviderProps = {
   children: React.ReactNode;
+  initialState?: Partial<EmbeddingState>;
 };
 
-const EmbeddingProvider = ({ children }: EmbeddingProviderProps) => {
-  const [state, setState] = useState<EmbeddingState>(defaultState);
+const EmbeddingProvider = ({ children, initialState }: EmbeddingProviderProps) => {
+  const [state, setState] = useState<EmbeddingState>(
+    initialState ? { ...defaultState, ...initialState } : defaultState,
+  );
 
   return (
     <EmbeddingContext.Provider

@@ -88,17 +88,6 @@ RUN node -e "\
   process.stdout.write(JSON.stringify(names));\
 " > packages/server/api/dist/src/migration-manifest.json
 
-# Remove piece directories not needed at runtime (keeps only the 4 pieces api imports)
-# Then regenerate bun.lock so it matches the trimmed workspace
-RUN rm -rf packages/pieces/core packages/pieces/custom && \
-    find packages/pieces/community -mindepth 1 -maxdepth 1 -type d \
-      ! -name slack \
-      ! -name square \
-      ! -name facebook-leads \
-      ! -name intercom \
-      -exec rm -rf {} + && \
-    rm -f bun.lock && bun install
-
 ### STAGE 2: Run ###
 FROM base AS run
 
@@ -126,9 +115,9 @@ COPY --from=build /usr/src/app/packages ./packages
 # Copy built engine
 COPY --from=build /usr/src/app/dist/packages/engine/ ./dist/packages/engine/
 
-# Regenerate lockfile and install production dependencies (pieces were trimmed from workspace)
+# Install production dependencies (pieces pre-trimmed in source, lockfile already matches)
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --production
+    bun install --production --frozen-lockfile
 
 # Copy frontend files
 COPY --from=build /usr/src/app/dist/packages/web ./dist/packages/web/
