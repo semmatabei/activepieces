@@ -72,7 +72,8 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 COPY . .
 
 # Build frontend, engine, server API, and worker
-RUN npx turbo run build --filter=web --filter=@activepieces/engine --filter=api --filter=worker
+RUN npx turbo run build --filter=web --filter=@activepieces/engine --filter=api --filter=worker \
+    --filter=@activepieces/piece-passgrad-form --filter=@activepieces/piece-passgrad-table
 
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
 # symbolicate production stack traces in Sentry/BetterStack error tracking. Upload
@@ -92,6 +93,8 @@ RUN node -e "\
 FROM base AS run
 
 WORKDIR /usr/src/app
+
+ENV AP_DEV_PIECES=passgrad-form,passgrad-table
 
 # Copy static configuration files first (better layer caching)
 COPY --from=build /usr/src/app/packages/server/api/src/assets/default.cf /usr/local/etc/isolate

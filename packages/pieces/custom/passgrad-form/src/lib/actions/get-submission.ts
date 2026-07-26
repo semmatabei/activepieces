@@ -26,14 +26,16 @@ export const getSubmission = createAction({
     const { form_id, submission_id } = context.propsValue;
 
     const response = await passgradRequest<{
-      id: string;
-      form_id: string;
-      submitted_by: string;
-      submitted_at: string;
-      data: Record<string, unknown>;
-      ap_run_id?: string;
+      data: {
+        data: Record<string, unknown>;
+        formId: string;
+        formVersionId: string;
+        id: string;
+        submittedAt: string;
+        submittedByUserId: string | null;
+      };
     }>(context.auth, HttpMethod.GET, `/forms/${form_id}/submissions/${submission_id}`);
 
-    return response.body;
+    return response.body.data;
   },
 });

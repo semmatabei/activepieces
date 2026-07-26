@@ -2,6 +2,13 @@ import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
 import { passgradAuth, tableIdProperty, passgradRequest } from "../common";
 import { HttpMethod } from "@activepieces/pieces-common";
 
+const sampleData = {
+  record_id: "rec_abc123",
+  table_id: "tb_mahasiswa",
+  created_at: "2025-06-26T12:00:00Z",
+  data: { f_mhs_nama: "Ahmad Fauzi", f_mhs_status: "aktif" },
+};
+
 /**
  * Trigger: New Record — fires when a record is created in the selected table.
  * Uses APP_WEBHOOK: onEnable registers webhook with Passgrad, onDisable removes it.
@@ -13,21 +20,16 @@ export const newRecord = createTrigger({
   description: "Triggers when a new record is created in the selected Passgrad table.",
   type: TriggerStrategy.APP_WEBHOOK,
   props: { table_id: tableIdProperty },
-  sampleData: {
-    record_id: "rec_abc123",
-    table_id: "tb_mahasiswa",
-    created_at: "2025-06-26T12:00:00Z",
-    data: { f_mhs_nama: "Ahmad Fauzi", f_mhs_status: "aktif" },
-  },
+  sampleData,
 
   async onEnable(context) {
-    const response = await passgradRequest<{ trigger: { id: string } }>(
+    const response = await passgradRequest<{ data: { id: string } }>(
       context.auth,
       HttpMethod.POST,
       `/tables/${context.propsValue.table_id}/triggers`,
       { webhook_url: context.webhookUrl, event_type: "create" },
     );
-    await context.store.put("passgrad_trigger_id", response.body.trigger.id);
+    await context.store.put("passgrad_trigger_id", response.body.data.id);
   },
 
   async onDisable(context) {
@@ -56,6 +58,6 @@ export const newRecord = createTrigger({
     } catch {
       /* fall through */
     }
-    return [context.trigger.sampleData];
+    return [sampleData];
   },
 });

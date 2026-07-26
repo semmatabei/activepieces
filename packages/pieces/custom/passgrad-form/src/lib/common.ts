@@ -1,28 +1,25 @@
 import { createCustomApiCallAction, httpClient, HttpMethod } from "@activepieces/pieces-common";
 import { PieceAuth, Property } from "@activepieces/pieces-framework";
 
-/**
- * Passgrad API base URL — configured per environment.
- * In production, defaults to the Passgrad instance URL.
- */
-const PASSGRAD_BASE_URL = "https://api.passgrad.id/v1";
-
-/**
- * Auth for the Passgrad Form piece.
- * Uses a Bearer token (API key issued by Passgrad admin).
- * The piece must be connected to a Passgrad tenant before triggers/actions can be used.
- */
-export const passgradAuth = PieceAuth.SecretText({
-  displayName: "API Key",
-  description: "Your Passgrad API key (obtained from Passgrad admin panel)",
+export const passgradAuth = PieceAuth.CustomAuth({
   required: true,
+  props: {
+    baseUrl: Property.ShortText({
+      displayName: "Base URL",
+      description: "Passgrad API base URL. Example: https://api.passgrad.id/v1",
+      required: true,
+    }),
+    tenantId: Property.ShortText({
+      displayName: "Tenant ID",
+      description: "Your Passgrad tenant ID",
+      required: true,
+    }),
+  },
 });
 
-/**
- * Shared form ID property — used by both triggers and actions to select which form.
- * Populated by calling GET /forms (list of forms available to the authenticated tenant).
- */
-export const formIdProperty = Property.Dropdown({
+/** Shared form ID property — used by both triggers and actions to select which form. */
+export const formIdProperty = Property.Dropdown<string, true, typeof passgradAuth>({
+  auth: passgradAuth,
   displayName: "Form",
   description: "The Passgrad form to use",
   refreshers: ["auth"],
@@ -33,14 +30,19 @@ export const formIdProperty = Property.Dropdown({
     }
 
     try {
-      const response = await httpClient.sendRequest<{ forms: { id: string; name: string }[] }>({
+      const response = await httpClient.sendRequest<{
+        data: { id: string; name: string }[];
+      }>({
         method: HttpMethod.GET,
-        url: `${PASSGRAD_BASE_URL}/forms`,
-        headers: { Authorization: `Bearer ${auth}` },
+        url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/forms`,
+        headers: {
+          "Content-Type": "application/json",
+          ...getBindingHeaders(),
+        },
       });
 
       return {
-        options: response.body.forms.map((f) => ({
+        options: response.body.data.map((f) => ({
           label: f.name,
           value: f.id,
         })),
@@ -51,17 +53,64 @@ export const formIdProperty = Property.Dropdown({
   },
 });
 
-/**
- * Helper to build an authenticated request to Passgrad API.
- */
-export function passgradRequest<T>(auth: string, method: HttpMethod, path: string, body?: unknown) {
+function getBindingHeaders() {
+  const credentialId = process.env["PASSGRAD_BINDING_CREDENTIAL_ID"];
+  const projectId = process.env["PASSGRAD_BINDING_PROJECT_ID"];
+  const secret = process.env["PASSGRAD_BINDING_SECRET"];
+  if (!credentialId || !projectId || !secret) return {};
+  return {
+    "x-passgrad-binding-credential-id": credentialId,
+    "x-passgrad-binding-project-id": projectId,
+    "x-passgrad-binding-secret": secret,
+  };
+}
+
+function getCallbackHeaders() {
+  const credentialId = process.env["PASSGRAD_BINDING_CREDENTIAL_ID"];
+  const projectId = process.env["PASSGRAD_BINDING_PROJECT_ID"];
+  const secret = process.env["PASSGRAD_BINDING_SECRET"];
+  if (!credentialId || !projectId || !secret) {
+    throw new Error("Passgrad binding credentials are unavailable");
+  }
+  return {
+    "x-passgrad-callback-credential-id": credentialId,
+    "x-passgrad-callback-secret": secret,
+    "x-passgrad-project-id": projectId,
+  };
+}
+
+/** Helper to build an authenticated request to Passgrad API. */
+export function passgradRequest<T>(
+  auth: { props: { baseUrl: string; tenantId: string } },
+  method: HttpMethod,
+  path: string,
+  body?: unknown,
+) {
   return httpClient.sendRequest<T>({
     method,
-    url: `${PASSGRAD_BASE_URL}${path}`,
+    url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}${path}`,
     headers: {
-      Authorization: `Bearer ${auth}`,
       "Content-Type": "application/json",
+      ...getBindingHeaders(),
     },
     body: body ? JSON.stringify(body) : undefined,
+  });
+}
+
+/** Authenticated Activepieces callback; tenant scope always comes from its persisted binding. */
+export function passgradCallbackRequest<T>(
+  auth: { props: { baseUrl: string } },
+  method: HttpMethod,
+  path: string,
+  body: unknown,
+) {
+  return httpClient.sendRequest<T>({
+    method,
+    url: `${auth.props.baseUrl}${path}`,
+    headers: {
+      "Content-Type": "application/json",
+      ...getCallbackHeaders(),
+    },
+    body: JSON.stringify(body),
   });
 }

@@ -17,13 +17,13 @@ export const deletedRecord = createTrigger({
   },
 
   async onEnable(context) {
-    const response = await passgradRequest<{ trigger: { id: string } }>(
+    const response = await passgradRequest<{ data: { id: string } }>(
       context.auth,
       HttpMethod.POST,
       `/tables/${context.propsValue.table_id}/triggers`,
       { webhook_url: context.webhookUrl, event_type: "delete" },
     );
-    await context.store.put("passgrad_trigger_id", response.body.trigger.id);
+    await context.store.put("passgrad_trigger_id", response.body.data.id);
   },
 
   async onDisable(context) {
