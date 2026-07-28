@@ -28,6 +28,8 @@ export type UserPrincipal = {
         id: ApId
     }
     tokenVersion?: string
+    /** Present only on five-minute Passgrad embedded browser sessions. */
+    projectId?: ProjectId
 }
 
 export type EnginePrincipal = {

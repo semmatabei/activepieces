@@ -1,138 +1,68 @@
+"use strict";
 var __defProp = Object.defineProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __moduleCache = /* @__PURE__ */ new WeakMap;
-var __toCommonJS = (from) => {
-  var entry = __moduleCache.get(from), desc;
-  if (entry)
-    return entry;
-  entry = __defProp({}, "__esModule", { value: true });
-  if (from && typeof from === "object" || typeof from === "function")
-    __getOwnPropNames(from).map((key) => !__hasOwnProp.call(entry, key) && __defProp(entry, key, {
-      get: () => from[key],
-      enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
-    }));
-  __moduleCache.set(from, entry);
-  return entry;
-};
 var __export = (target, all) => {
   for (var name in all)
-    __defProp(target, name, {
-      get: all[name],
-      enumerable: true,
-      configurable: true,
-      set: (newValue) => all[name] = () => newValue
-    });
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
-var exports_src = {};
-__export(exports_src, {
+var index_exports = {};
+__export(index_exports, {
   passgradTable: () => passgradTable
 });
-module.exports = __toCommonJS(exports_src);
+module.exports = __toCommonJS(index_exports);
 var import_pieces_framework8 = require("@activepieces/pieces-framework");
 
 // src/lib/common.ts
-var import_pieces_common = require("@activepieces/pieces-common");
 var import_pieces_framework = require("@activepieces/pieces-framework");
-var PASSGRAD_BASE_URL = "https://api.passgrad.id/v1";
-var passgradAuth = import_pieces_framework.PieceAuth.SecretText({
-  displayName: "API Key",
-  description: "Your Passgrad API key",
+var passgradAuth = import_pieces_framework.PieceAuth.None();
+var tableIdProperty = import_pieces_framework.Property.ShortText({
+  displayName: "Table ID",
+  description: "Passgrad table ID",
   required: true
 });
-var tableIdProperty = import_pieces_framework.Property.Dropdown({
-  displayName: "Table",
-  description: "The Passgrad table to use",
-  refreshers: ["auth"],
-  required: true,
-  options: async ({ auth }) => {
-    if (!auth) {
-      return { disabled: true, options: [], placeholder: "Connect your Passgrad account first" };
-    }
-    try {
-      const response = await import_pieces_common.httpClient.sendRequest({
-        method: import_pieces_common.HttpMethod.GET,
-        url: `${PASSGRAD_BASE_URL}/tables`,
-        headers: { Authorization: `Bearer ${auth}` }
-      });
-      return {
-        options: response.body.tables.map((t) => ({
-          label: t.name,
-          value: t.id
-        }))
-      };
-    } catch {
-      return { disabled: true, options: [], placeholder: "Failed to load tables" };
-    }
-  }
-});
-var recordFieldsProperty = import_pieces_framework.Property.DynamicProperties({
+var recordFieldsProperty = import_pieces_framework.Property.Json({
   displayName: "Fields",
-  description: "Record field values",
-  refreshers: ["auth", "table_id"],
-  required: true,
-  props: async ({ auth, table_id }) => {
-    if (!auth || !table_id)
-      return {};
-    try {
-      const response = await import_pieces_common.httpClient.sendRequest({
-        method: import_pieces_common.HttpMethod.GET,
-        url: `${PASSGRAD_BASE_URL}/tables/${table_id}/fields`,
-        headers: { Authorization: `Bearer ${auth}` }
-      });
-      const props = {};
-      for (const f of response.body.fields) {
-        props[f.id] = import_pieces_framework.Property.ShortText({
-          displayName: f.name,
-          description: `Type: ${f.type}`,
-          required: false
-        });
-      }
-      return props;
-    } catch {
-      return {};
-    }
-  }
+  description: "Record field values keyed by field ID",
+  required: true
 });
-function passgradRequest(auth, method, path, body) {
-  return import_pieces_common.httpClient.sendRequest({
-    method,
-    url: `${PASSGRAD_BASE_URL}${path}`,
-    headers: {
-      Authorization: `Bearer ${auth}`,
-      "Content-Type": "application/json"
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-}
 
 // src/lib/triggers/new-record.ts
 var import_pieces_framework2 = require("@activepieces/pieces-framework");
-var import_pieces_common2 = require("@activepieces/pieces-common");
-var newRecord = import_pieces_framework2.createTrigger({
+var sampleData = {
+  record_id: "rec_abc123",
+  table_id: "tb_mahasiswa",
+  created_at: "2025-06-26T12:00:00Z",
+  data: { f_mhs_nama: "Ahmad Fauzi", f_mhs_status: "aktif" }
+};
+var newRecord = (0, import_pieces_framework2.createTrigger)({
   auth: passgradAuth,
   name: "new_record",
   displayName: "New Record",
   description: "Triggers when a new record is created in the selected Passgrad table.",
   type: import_pieces_framework2.TriggerStrategy.APP_WEBHOOK,
   props: { table_id: tableIdProperty },
-  sampleData: {
-    record_id: "rec_abc123",
-    table_id: "tb_mahasiswa",
-    created_at: "2025-06-26T12:00:00Z",
-    data: { f_mhs_nama: "Ahmad Fauzi", f_mhs_status: "aktif" }
-  },
+  sampleData,
   async onEnable(context) {
-    const response = await passgradRequest(context.auth, import_pieces_common2.HttpMethod.POST, `/tables/${context.propsValue.table_id}/triggers`, { webhook_url: context.webhookUrl, event_type: "create" });
-    await context.store.put("passgrad_trigger_id", response.body.trigger.id);
+    const response = await context.passgrad.request({ operation: "table.create-trigger", resourceId: context.propsValue.table_id, payload: { webhook_url: context.webhookUrl, event_type: "create" } });
+    await context.store.put("passgrad_trigger_id", response.data.id);
   },
   async onDisable(context) {
     const triggerId = await context.store.get("passgrad_trigger_id");
     if (triggerId) {
-      await passgradRequest(context.auth, import_pieces_common2.HttpMethod.DELETE, `/tables/${context.propsValue.table_id}/triggers/${triggerId}`);
+      await context.passgrad.request({ operation: "table.delete-trigger", resourceId: context.propsValue.table_id, payload: { triggerId } });
     }
   },
   async run(context) {
@@ -140,18 +70,17 @@ var newRecord = import_pieces_framework2.createTrigger({
   },
   async test(context) {
     try {
-      const response = await passgradRequest(context.auth, import_pieces_common2.HttpMethod.GET, `/tables/${context.propsValue.table_id}/records?limit=1&sort=-created_at`);
-      if (response.body.records.length > 0)
-        return [response.body.records[0]];
-    } catch {}
-    return [context.trigger.sampleData];
+      const response = await context.passgrad.request({ operation: "table.list-records", resourceId: context.propsValue.table_id });
+      if (response.records.length > 0) return [response.records[0]];
+    } catch {
+    }
+    return [sampleData];
   }
 });
 
 // src/lib/triggers/updated-record.ts
 var import_pieces_framework3 = require("@activepieces/pieces-framework");
-var import_pieces_common3 = require("@activepieces/pieces-common");
-var updatedRecord = import_pieces_framework3.createTrigger({
+var updatedRecord = (0, import_pieces_framework3.createTrigger)({
   auth: passgradAuth,
   name: "updated_record",
   displayName: "Updated Record",
@@ -165,13 +94,13 @@ var updatedRecord = import_pieces_framework3.createTrigger({
     changes: { f_mhs_status: { old: "aktif", new: "tidak_aktif" } }
   },
   async onEnable(context) {
-    const response = await passgradRequest(context.auth, import_pieces_common3.HttpMethod.POST, `/tables/${context.propsValue.table_id}/triggers`, { webhook_url: context.webhookUrl, event_type: "update" });
-    await context.store.put("passgrad_trigger_id", response.body.trigger.id);
+    const response = await context.passgrad.request({ operation: "table.create-trigger", resourceId: context.propsValue.table_id, payload: { webhook_url: context.webhookUrl, event_type: "update" } });
+    await context.store.put("passgrad_trigger_id", response.data.id);
   },
   async onDisable(context) {
     const triggerId = await context.store.get("passgrad_trigger_id");
     if (triggerId) {
-      await passgradRequest(context.auth, import_pieces_common3.HttpMethod.DELETE, `/tables/${context.propsValue.table_id}/triggers/${triggerId}`);
+      await context.passgrad.request({ operation: "table.delete-trigger", resourceId: context.propsValue.table_id, payload: { triggerId } });
     }
   },
   async run(context) {
@@ -181,8 +110,7 @@ var updatedRecord = import_pieces_framework3.createTrigger({
 
 // src/lib/triggers/deleted-record.ts
 var import_pieces_framework4 = require("@activepieces/pieces-framework");
-var import_pieces_common4 = require("@activepieces/pieces-common");
-var deletedRecord = import_pieces_framework4.createTrigger({
+var deletedRecord = (0, import_pieces_framework4.createTrigger)({
   auth: passgradAuth,
   name: "deleted_record",
   displayName: "Deleted Record",
@@ -196,13 +124,13 @@ var deletedRecord = import_pieces_framework4.createTrigger({
     data: { f_mhs_nama: "Ahmad Fauzi", f_mhs_status: "tidak_aktif" }
   },
   async onEnable(context) {
-    const response = await passgradRequest(context.auth, import_pieces_common4.HttpMethod.POST, `/tables/${context.propsValue.table_id}/triggers`, { webhook_url: context.webhookUrl, event_type: "delete" });
-    await context.store.put("passgrad_trigger_id", response.body.trigger.id);
+    const response = await context.passgrad.request({ operation: "table.create-trigger", resourceId: context.propsValue.table_id, payload: { webhook_url: context.webhookUrl, event_type: "delete" } });
+    await context.store.put("passgrad_trigger_id", response.data.id);
   },
   async onDisable(context) {
     const triggerId = await context.store.get("passgrad_trigger_id");
     if (triggerId) {
-      await passgradRequest(context.auth, import_pieces_common4.HttpMethod.DELETE, `/tables/${context.propsValue.table_id}/triggers/${triggerId}`);
+      await context.passgrad.request({ operation: "table.delete-trigger", resourceId: context.propsValue.table_id, payload: { triggerId } });
     }
   },
   async run(context) {
@@ -212,8 +140,7 @@ var deletedRecord = import_pieces_framework4.createTrigger({
 
 // src/lib/actions/create-record.ts
 var import_pieces_framework5 = require("@activepieces/pieces-framework");
-var import_pieces_common5 = require("@activepieces/pieces-common");
-var createRecord = import_pieces_framework5.createAction({
+var createRecord = (0, import_pieces_framework5.createAction)({
   auth: passgradAuth,
   name: "create_record",
   displayName: "Create Record",
@@ -224,15 +151,18 @@ var createRecord = import_pieces_framework5.createAction({
   },
   async run(context) {
     const { table_id, fields } = context.propsValue;
-    const response = await passgradRequest(context.auth, import_pieces_common5.HttpMethod.POST, `/tables/${table_id}/records`, { values: fields });
-    return response.body.record;
+    const response = await context.passgrad.request({
+      operation: "table.create-record",
+      resourceId: table_id,
+      payload: { values: fields }
+    });
+    return response.record;
   }
 });
 
 // src/lib/actions/update-record.ts
 var import_pieces_framework6 = require("@activepieces/pieces-framework");
-var import_pieces_common6 = require("@activepieces/pieces-common");
-var updateRecord = import_pieces_framework6.createAction({
+var updateRecord = (0, import_pieces_framework6.createAction)({
   auth: passgradAuth,
   name: "update_record",
   displayName: "Update Record",
@@ -248,15 +178,18 @@ var updateRecord = import_pieces_framework6.createAction({
   },
   async run(context) {
     const { table_id, record_id, fields } = context.propsValue;
-    const response = await passgradRequest(context.auth, import_pieces_common6.HttpMethod.PATCH, `/tables/${table_id}/records/${record_id}`, { values: fields });
-    return response.body.record;
+    const response = await context.passgrad.request({
+      operation: "table.update-record",
+      resourceId: table_id,
+      payload: { recordId: record_id, values: fields }
+    });
+    return response.record;
   }
 });
 
 // src/lib/actions/get-record.ts
 var import_pieces_framework7 = require("@activepieces/pieces-framework");
-var import_pieces_common7 = require("@activepieces/pieces-common");
-var getRecord = import_pieces_framework7.createAction({
+var getRecord = (0, import_pieces_framework7.createAction)({
   auth: passgradAuth,
   name: "get_record",
   displayName: "Get Record",
@@ -271,19 +204,27 @@ var getRecord = import_pieces_framework7.createAction({
   },
   async run(context) {
     const { table_id, record_id } = context.propsValue;
-    const response = await passgradRequest(context.auth, import_pieces_common7.HttpMethod.GET, `/tables/${table_id}/records/${record_id}`);
-    return response.body.record;
+    const response = await context.passgrad.request({
+      operation: "table.get-record",
+      resourceId: table_id,
+      payload: { recordId: record_id }
+    });
+    return response.record;
   }
 });
 
 // src/index.ts
-var passgradTable = import_pieces_framework8.createPiece({
+var passgradTable = (0, import_pieces_framework8.createPiece)({
   displayName: "Passgrad Table",
-  description: "Trigger flows on record changes in Passgrad tables, or manage table records from flows. " + "New records, updates, and deletions can all start or continue automations.",
+  description: "Trigger flows on record changes in Passgrad tables, or manage table records from flows. New records, updates, and deletions can all start or continue automations.",
   logoUrl: "https://cdn.passgrad.id/logos/passgrad-table.png",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
   auth: passgradAuth,
   triggers: [newRecord, updatedRecord, deletedRecord],
   actions: [createRecord, updateRecord, getRecord]
+});
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  passgradTable
 });

@@ -92,6 +92,7 @@ import { pieceSyncService } from './pieces/piece-sync-service'
 import { tagsModule } from './pieces/tags/tags-module'
 import { platformBackgroundJobs } from './platform/platform-jobs'
 import { platformModule } from './platform/platform.module'
+import { passgradInternalModule } from './passgrad/passgrad-internal.module'
 import { projectHooks } from './project/project-hooks'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { tablesModule } from './tables/tables.module'
@@ -223,6 +224,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(authenticationModule)
     await app.register(triggerModule)
     await app.register(platformModule)
+    await app.register(passgradInternalModule, { prefix: '/v1/internal/passgrad' })
     await app.register(humanInputModule)
     await app.register(tagsModule)
     await app.register(mcpServerModule)

@@ -5,6 +5,7 @@ import { EngineConstants, ResolvedExecuteTriggerOperation } from '../handler/con
 import { FlowExecutorContext } from '../handler/context/flow-execution-context'
 import { createFileUploader } from '../piece-context/file-uploader'
 import { createFlowsContext } from '../piece-context/flows'
+import { createPassgradCapability } from '../piece-context/passgrad'
 import { createContextStore } from '../piece-context/store'
 import { utils } from '../utils'
 import { propsProcessor } from '../variables/props-processor'
@@ -67,6 +68,11 @@ export const triggerHelper = {
                 engineToken: constants.engineToken,
                 target: 'triggers',
                 contextVersion: piece.getContextInfo?.().version,
+            }),
+            passgrad: createPassgradCapability({
+                apiUrl: constants.internalApiUrl,
+                engineToken: constants.engineToken,
+                pieceName,
             }),
         }
         await pieceTrigger.onStart(context)
@@ -145,6 +151,11 @@ export const triggerHelper = {
                 engineToken: constants.engineToken,
                 target: 'triggers',
                 contextVersion: piece.getContextInfo?.().version,
+            }),
+            passgrad: createPassgradCapability({
+                apiUrl: constants.internalApiUrl,
+                engineToken: params.engineToken,
+                pieceName,
             }),
         }
         switch (params.hookType) {

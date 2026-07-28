@@ -24,6 +24,7 @@ import {
 import { EngineConstants } from '../handler/context/engine-constants'
 import { testExecutionContext } from '../handler/context/test-execution-context'
 import { createFlowsContext } from '../piece-context/flows'
+import { createPassgradCapability } from '../piece-context/passgrad'
 import { utils } from '../utils'
 import { createPropsResolver } from '../variables/props-resolver'
 import { pieceLoader } from './piece-loader'
@@ -78,6 +79,11 @@ export const pieceHelper = {
                     apiUrl: constants.internalApiUrl,
                     target: 'properties',
                     contextVersion: piece.getContextInfo?.().version,
+                }),
+                passgrad: createPassgradCapability({
+                    apiUrl: constants.internalApiUrl,
+                    engineToken: constants.engineToken,
+                    pieceName: operation.pieceName,
                 }),
             }
           

@@ -13,10 +13,12 @@ export const authorizeOrThrow = async (principal: Principal, security: Authoriza
     }
     switch (security.authorization.type) {
         case AuthorizationType.PROJECT:
+            assertPassgradEmbedProject(principal, security.authorization.projectId)
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
             await assertAccessToProject(principal, security.authorization, log)
             break
         case AuthorizationType.PLATFORM:
+            assertNotPassgradEmbedPrincipal(principal)
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
             if (security.authorization.adminOnly) {
                 await assertPlatformIsOwnedByCurrentPrincipal(principal, log)
@@ -26,10 +28,26 @@ export const authorizeOrThrow = async (principal: Principal, security: Authoriza
             }
             break
         case AuthorizationType.UNSCOPED:
+            assertNotPassgradEmbedPrincipal(principal)
             await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
             break
         case AuthorizationType.NONE:
             break
+    }
+}
+
+function assertPassgradEmbedProject(principal: Principal, projectId: string | undefined): void {
+    if (principal.type !== PrincipalType.USER || isNil(principal.projectId)) {
+        return
+    }
+    if (principal.projectId !== projectId) {
+        throw new ActivepiecesError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Embedded session is not allowed to access this project' } })
+    }
+}
+
+function assertNotPassgradEmbedPrincipal(principal: Principal): void {
+    if (principal.type === PrincipalType.USER && !isNil(principal.projectId)) {
+        throw new ActivepiecesError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Embedded session requires project-scoped access' } })
     }
 }
 

@@ -110,7 +110,12 @@ function createMigrations(log: FastifyBaseLogger): JobMigration[] {
         },
     }
 
-    return [enrichFlowId, migratePayloadToUnion, renameProgressAndHandlerFields, dropLogsUploadUrl, backfillRequiredExecuteFlowFields, bridgeV8ToV9, addResumeReason]
+    const addWorkflowAdmission: JobMigration = {
+        runAtSchemaVersion: 10,
+        migrate: async (job: JobData) => ({ ...job, schemaVersion: 11 }),
+    }
+
+    return [enrichFlowId, migratePayloadToUnion, renameProgressAndHandlerFields, dropLogsUploadUrl, backfillRequiredExecuteFlowFields, bridgeV8ToV9, addResumeReason, addWorkflowAdmission]
 }
 
 function migrateProgressUpdateType(progressUpdateType: string | undefined): StreamStepProgress {

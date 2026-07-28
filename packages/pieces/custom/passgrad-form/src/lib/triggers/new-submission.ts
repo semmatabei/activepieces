@@ -1,6 +1,5 @@
 import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
-import { passgradAuth, formIdProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { passgradAuth, formIdProperty } from "../common";
 
 const sampleData = {
   event: "form.submitted.v1",
@@ -38,15 +37,12 @@ export const newSubmission = createTrigger({
     const webhookUrl = context.webhookUrl;
 
     // Register the webhook with Passgrad
-    const response = await passgradRequest<{ data: { id: string } }>(
-      context.auth,
-      HttpMethod.POST,
-      `/forms/${formId}/triggers`,
-      { webhook_url: webhookUrl },
-    );
+    const response = await context.passgrad.request<{ data: { id: string } }>({
+      operation: "form.create-trigger", resourceId: formId, payload: { webhook_url: webhookUrl },
+    });
 
     // Store the trigger ID so we can clean it up on disable
-    await context.store.put("passgrad_trigger_id", response.body.data.id);
+    await context.store.put("passgrad_trigger_id", response.data.id);
   },
 
   async onDisable(context) {
@@ -54,11 +50,7 @@ export const newSubmission = createTrigger({
     const triggerId = await context.store.get<string>("passgrad_trigger_id");
 
     if (triggerId) {
-      await passgradRequest(
-        context.auth,
-        HttpMethod.DELETE,
-        `/forms/${formId}/triggers/${triggerId}`,
-      );
+      await context.passgrad.request({ operation: "form.delete-trigger", resourceId: formId, payload: { triggerId } });
     }
   },
 
@@ -70,14 +62,10 @@ export const newSubmission = createTrigger({
     // Test: simulate by fetching the latest submission (if any),
     // or return sample data if no submissions exist.
     try {
-      const response = await passgradRequest<{ data: unknown[] }>(
-        context.auth,
-        HttpMethod.GET,
-        `/forms/${context.propsValue.form_id}/submissions?limit=1`,
-      );
+      const response = await context.passgrad.request<{ data: unknown[] }>({ operation: "form.list-submissions", resourceId: context.propsValue.form_id });
 
-      if (response.body.data.length > 0) {
-        return [response.body.data[0]];
+      if (response.data.length > 0) {
+        return [response.data[0]];
       }
     } catch {
       // Fall through to sample data

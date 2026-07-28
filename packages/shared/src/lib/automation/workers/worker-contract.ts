@@ -3,7 +3,7 @@ import { GetFlowVersionForWorkerRequest, SendFlowResponseRequest, UpdateRunProgr
 import { FlowRun, RunEnvironment } from '../flow-run/flow-run'
 import { FlowVersion } from '../flows/flow-version'
 import { PiecePackage } from '../pieces/piece'
-import { ChatPromptOverride } from './job-data'
+import { ChatPromptOverride, WorkflowAdmission } from './job-data'
 import { ConsumeJobRequest, ConsumeJobResponse, WorkerMachineHealthcheckRequest } from './index'
 
 export type SubmitPayloadsRequest = {
@@ -15,6 +15,7 @@ export type SubmitPayloadsRequest = {
     streamStepProgress: StreamStepProgress
     parentRunId?: string
     failParentOnFailure?: boolean
+    admission?: WorkflowAdmission
 }
 
 export type SavePayloadRequest = {

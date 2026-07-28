@@ -1,5 +1,5 @@
 import { wideEvent } from '@activepieces/server-utils'
-import { apId, assertNotNullOrUndefined, EngineHttpResponse, EventPayload, ExecutionType, Flow, FlowRun, FlowStatus, FlowVersionId, isNil, LATEST_JOB_DATA_SCHEMA_VERSION, PlatformId, ProjectId, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType } from '@activepieces/shared'
+import { apId, assertNotNullOrUndefined, EngineHttpResponse, EventPayload, ExecutionType, Flow, FlowRun, FlowStatus, FlowVersionId, isNil, LATEST_JOB_DATA_SCHEMA_VERSION, PlatformId, ProjectId, RunEnvironment, StreamStepProgress, TriggerPayload, WorkerJobType, WorkflowAdmission } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { flowExecutionCache } from '../flows/flow/flow-execution-cache'
@@ -13,6 +13,7 @@ import { triggerSourceService } from '../trigger/trigger-source/trigger-source-s
 import { engineResponseWatcher } from '../workers/engine-response-watcher'
 import { jobQueue, JobType } from '../workers/job-queue/job-queue'
 import { payloadOffloader } from '../workers/payload-offloader'
+import { passgradAdmissionService } from './passgrad-admission-service'
 import { webhookHandshake } from './webhook-handshake'
 
 const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS) * 1000
@@ -104,6 +105,7 @@ export const webhookService = {
         })
         const flowVersionIdToRun = await webhookService.getFlowVersionIdToRun(flowVersionToRun, flow)
         wideEvent.set({ flowVersion: { id: flowVersionIdToRun } })
+        const runEnvironment = flowVersionToRun === WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING
 
         const response = await webhookHandshake.handleHandshakeRequest({
             payload: (payload ?? await data(flow.projectId)) as TriggerPayload,
@@ -124,6 +126,32 @@ export const webhookService = {
                 status: response.status,
                 body: response.body,
                 headers: response.headers ?? {},
+            }
+        }
+
+        const admissionResult = await passgradAdmissionService.admit({
+            flowId: flow.id,
+            invocationId: webhookRequestId,
+            logger: pinoLogger,
+            projectId: flow.projectId,
+            runEnvironment,
+        })
+        if (admissionResult.status === 'denied') {
+            return {
+                status: StatusCodes.TOO_MANY_REQUESTS,
+                body: { message: 'Workflow execution limit reached' },
+                headers: {
+                    [webhookHeader]: webhookRequestId,
+                },
+            }
+        }
+        if (admissionResult.status === 'unavailable') {
+            return {
+                status: StatusCodes.SERVICE_UNAVAILABLE,
+                body: { message: 'Workflow admission unavailable' },
+                headers: {
+                    [webhookHeader]: webhookRequestId,
+                },
             }
         }
 
@@ -154,11 +182,12 @@ export const webhookService = {
                 payload: resolvedPayload,
                 logger: pinoLogger,
                 webhookRequestId,
-                runEnvironment: flowVersionToRun === WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING,
+                runEnvironment,
                 webhookHeader,
                 execute: flow.status === FlowStatus.ENABLED && execute,
                 parentRunId,
                 failParentOnFailure,
+                admission: admissionResult.status === 'admitted' ? admissionResult.admission : undefined,
             })
         }
 
@@ -168,7 +197,7 @@ export const webhookService = {
             projectId: flow.projectId,
             flow,
             platformId: flowExecutionResult.platformId,
-            runEnvironment: flowVersionToRun === WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING,
+            runEnvironment,
             logger: pinoLogger,
             webhookRequestId,
             workerHandlerId: engineResponseWatcher(pinoLogger).getServerId(),
@@ -179,6 +208,7 @@ export const webhookService = {
             parentRunId,
             failParentOnFailure,
             timeoutMs,
+            admission: admissionResult.status === 'admitted' ? admissionResult.admission : undefined,
         })
         return {
             status: flowHttpResponse.status,
@@ -192,7 +222,7 @@ export const webhookService = {
 }
 
 async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpResponse> {
-    const { flow, logger, webhookRequestId, payload, flowVersionIdToRun, webhookHeader, saveSampleData, execute, runEnvironment, parentRunId, failParentOnFailure, platformId } = params
+    const { flow, logger, webhookRequestId, payload, flowVersionIdToRun, webhookHeader, saveSampleData, execute, runEnvironment, parentRunId, failParentOnFailure, platformId, admission } = params
 
     const jobPayload = await payloadOffloader.offloadPayload(logger, payload, flow.projectId, platformId)
 
@@ -215,6 +245,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
                 execute,
                 parentRunId,
                 failParentOnFailure,
+                admission,
             },
         }),
     })
@@ -230,7 +261,7 @@ async function handleAsync(params: AsyncWebhookParams): Promise<EngineHttpRespon
 }
 
 async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse> {
-    const { payload, projectId, flow, logger, webhookRequestId, workerHandlerId, flowVersionIdToRun, runEnvironment, saveSampleData, flowVersionToRun, parentRunId, failParentOnFailure, platformId, timeoutMs } = params
+    const { payload, projectId, flow, logger, webhookRequestId, workerHandlerId, flowVersionIdToRun, runEnvironment, saveSampleData, flowVersionToRun, parentRunId, failParentOnFailure, platformId, timeoutMs, admission } = params
 
     if (saveSampleData) {
         rejectedPromiseHandler(savePayload({
@@ -271,6 +302,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
         streamStepProgress: StreamStepProgress.NONE,
         parentRunId,
         failParentOnFailure,
+        admission,
     })
 
     wideEvent.set({ flowRun: { id: createdRun.id } })
@@ -285,7 +317,7 @@ async function handleSync(params: SyncWebhookParams): Promise<EngineHttpResponse
 }
 
 async function savePayload(params: Omit<AsyncWebhookParams, 'saveSampleData' | 'webhookHeader' | 'execute'>): Promise<void> {
-    const { flow, logger, webhookRequestId, payload, flowVersionIdToRun, runEnvironment, parentRunId, failParentOnFailure, platformId } = params
+    const { flow, logger, webhookRequestId, payload, flowVersionIdToRun, runEnvironment, parentRunId, failParentOnFailure, platformId, admission } = params
     await handleAsync({
         flow,
         logger,
@@ -299,6 +331,7 @@ async function savePayload(params: Omit<AsyncWebhookParams, 'saveSampleData' | '
         platformId,
         parentRunId,
         failParentOnFailure,
+        admission,
     })
     await triggerSourceService(logger).disable({ flowId: flow.id, projectId: flow.projectId, simulate: true, ignoreError: true })
 }
@@ -331,6 +364,7 @@ type AsyncWebhookParams = {
     execute: boolean
     parentRunId?: string
     failParentOnFailure: boolean
+    admission?: WorkflowAdmission
 }
 
 type SyncWebhookParams = {
@@ -349,4 +383,5 @@ type SyncWebhookParams = {
     parentRunId?: string
     failParentOnFailure: boolean
     timeoutMs?: number
+    admission?: WorkflowAdmission
 }

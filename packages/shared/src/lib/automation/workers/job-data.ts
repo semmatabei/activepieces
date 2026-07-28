@@ -9,7 +9,7 @@ import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
 import { PiecePackage } from '../pieces/piece'
 
-export const LATEST_JOB_DATA_SCHEMA_VERSION = 10
+export const LATEST_JOB_DATA_SCHEMA_VERSION = 11
 
 export const InlineJobPayload = z.object({
     type: z.literal('inline'),
@@ -22,6 +22,12 @@ export const RefJobPayload = z.object({
 })
 
 export const JobPayload = z.discriminatedUnion('type', [InlineJobPayload, RefJobPayload])
+
+export const WorkflowAdmission = z.object({
+    invocationId: z.string(),
+    token: z.string(),
+})
+export type WorkflowAdmission = z.infer<typeof WorkflowAdmission>
 
 
 export const JOB_PRIORITY = {
@@ -161,6 +167,7 @@ export const WebhookJobData = z.object({
     jobType: z.literal(WorkerJobType.EXECUTE_WEBHOOK),
     parentRunId: z.string().optional(),
     failParentOnFailure: z.boolean().optional(),
+    admission: WorkflowAdmission.optional(),
 })
 export type WebhookJobData = z.infer<typeof WebhookJobData>
 

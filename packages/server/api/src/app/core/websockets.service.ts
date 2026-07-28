@@ -29,6 +29,9 @@ export const websocketService = {
         const projectId = socket.handshake.auth.projectId
         switch (type) {
             case PrincipalType.USER: {
+                if (!isNil(principal.projectId) && principal.projectId !== projectId) {
+                    throw new ActivepiecesError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Embedded session is not allowed to access this project' } })
+                }
                 await validateProjectId({ userId: principal.id, projectId, log })
                 log.info({
                     message: 'User connected',

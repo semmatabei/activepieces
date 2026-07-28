@@ -40,6 +40,8 @@ export type BaseContext<
     externalId: () => Promise<string | undefined>;
   };
   connections: ConnectionsManager;
+  /** Server-owned Passgrad capability. No Passgrad credential is exposed to pieces. */
+  passgrad: PassgradCapability;
 };
 
 
@@ -167,7 +169,31 @@ export type PropertyContext = {
   searchValue?: string;
   flows: FlowsContext;
   connections: ConnectionsManager;
+  passgrad: PassgradCapability;
 };
+
+export type PassgradCapability = {
+  request<T = unknown>(params: PassgradRequest): Promise<T>;
+};
+
+export type PassgradRequest = {
+  operation: PassgradOperation;
+  resourceId?: string;
+  payload?: unknown;
+};
+
+export type PassgradOperation =
+  | 'table.get-record'
+  | 'table.create-record'
+  | 'table.update-record'
+  | 'table.create-trigger'
+  | 'table.delete-trigger'
+  | 'table.list-records'
+  | 'form.get-submission'
+  | 'form.create-trigger'
+  | 'form.delete-trigger'
+  | 'form.list-submissions'
+  | 'form.open-workflow-session';
 
 export type ServerContext = {
   apiUrl: string;

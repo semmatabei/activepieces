@@ -7,6 +7,7 @@ import { flowRunProgressReporter } from '../helper/flow-run-progress-reporter'
 import { pieceLoader } from '../helper/piece-loader'
 import { createFileUploader } from '../piece-context/file-uploader'
 import { createFlowsContext } from '../piece-context/flows'
+import { createPassgradCapability } from '../piece-context/passgrad'
 import { createContextStore } from '../piece-context/store'
 import { waitpointClient } from '../piece-context/waitpoint-client'
 import { agentTools } from '../tools'
@@ -145,6 +146,11 @@ const executeAction: ActionHandler<PieceAction> = async ({ action, executionStat
                 id: constants.projectId,
                 externalId: constants.externalProjectId,
             },
+            passgrad: createPassgradCapability({
+                apiUrl: constants.internalApiUrl,
+                engineToken: constants.engineToken,
+                pieceName: action.settings.pieceName,
+            }),
         }
         const backwardCompatibleContext = backwardCompatabilityContextUtils.makeActionContextBackwardCompatible({
             contextVersion: piece.getContextInfo?.().version,

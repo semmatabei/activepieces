@@ -51,7 +51,7 @@ export const setupServer = async (): Promise<FastifyInstance> => {
 
     if (system.isApp()) {
         await app.register(fastifySocketIO, {
-            cors: { origin: '*' },
+            cors: { origin: allowedBrowserOrigin },
             maxHttpBufferSize: maxSocketHttpBufferSizeBytes(system.getNumberOrThrow(AppSystemProp.MAX_FILE_SIZE_MB)),
             path: '/api/socket.io',
             ...spreadIfDefined('adapter', await getAdapter()),
@@ -198,7 +198,7 @@ async function setupBaseApp(): Promise<FastifyInstance> {
     await app.register(formBody, { parser: (str) => qs.parse(str) })
     app.setErrorHandler(errorHandler)
     await app.register(cors, {
-        origin: '*',
+        origin: allowedBrowserOrigin,
         exposedHeaders: ['*'],
         methods: ['*'],
     })
@@ -250,6 +250,34 @@ async function setupBaseApp(): Promise<FastifyInstance> {
     return app
 }
 
+function allowedBrowserOrigin(origin: string | undefined, callback: (error: Error | null, allow: boolean) => void): void {
+    if (origin === undefined) {
+        callback(null, true)
+        return
+    }
+    callback(null, allowedBrowserOrigins().has(origin))
+}
+
+function allowedBrowserOrigins(): Set<string> {
+    const origins = [
+        system.get(AppSystemProp.FRONTEND_URL),
+        ...system.getList(AppSystemProp.PASSGRAD_ALLOWED_ORIGINS),
+    ]
+    return new Set(origins.filter(isValidBrowserOrigin))
+}
+
+function isValidBrowserOrigin(value: string | undefined): value is string {
+    if (value === undefined) {
+        return false
+    }
+    try {
+        return new URL(value).origin === value
+    }
+    catch {
+        return false
+    }
+}
+
 const STATIC_FILE_EXTENSIONS = new Set(['.js', '.css', '.map', '.json', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot'])
 
 function hasStaticFileExtension(url: string): boolean {
@@ -292,5 +320,4 @@ function convertDatesToStrings(data: unknown): unknown {
     }
     return data
 }
-
 

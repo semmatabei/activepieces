@@ -33,6 +33,7 @@ import {
     StepOutputType,
     StreamStepProgress,
     WorkerJobType,
+    WorkflowAdmission,
 } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
@@ -45,6 +46,7 @@ import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { projectService } from '../../project/project-service'
+import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
 import { flowService } from '../flow/flow.service'
@@ -304,6 +306,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
         platformId,
         stepNameToTest,
         environment,
+        admission,
     }: StartParams): Promise<FlowRun> {
         const newFlowRun = await queueOrCreateInstantly({
             projectId,
@@ -314,6 +317,21 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             stepNameToTest,
             environment,
         }, log)
+
+        if (admission) {
+            const bound = await passgradAdmissionService.bind({
+                admission,
+                flowRunId: newFlowRun.id,
+                logger: log,
+                projectId,
+            })
+            if (!bound) {
+                throw new ActivepiecesError({
+                    code: ErrorCode.VALIDATION,
+                    params: { message: 'Workflow admission binding failed' },
+                })
+            }
+        }
 
         wideEvent.set({
             flowRun: {
@@ -788,6 +806,7 @@ type StartParams = {
     httpRequestId: string | undefined
     streamStepProgress: StreamStepProgress
     sampleData?: Record<string, unknown>
+    admission?: WorkflowAdmission
 }
 
 

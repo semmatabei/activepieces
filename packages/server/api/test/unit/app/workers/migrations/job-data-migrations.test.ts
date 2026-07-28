@@ -1,4 +1,4 @@
-import { ExecuteFlowJobData, ExecutionType, FlowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WorkerJobType } from '@activepieces/shared'
+import { ExecuteFlowJobData, ExecutionType, FlowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WebhookJobData, WorkerJobType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -23,7 +23,7 @@ const mockLog: FastifyBaseLogger = {
     level: 'info',
 } as unknown as FastifyBaseLogger
 
-const LATEST = 10
+const LATEST = 11
 
 function baseFlowJob(overrides: Partial<ExecuteFlowJobData> = {}): ExecuteFlowJobData {
     return {
@@ -235,5 +235,28 @@ describe('jobMigrations v9 → v10 (addResumeReason)', () => {
         expect(migrated.schemaVersion).toBe(LATEST)
         expect(migrated.jobType).toBe(WorkerJobType.EXECUTE_POLLING)
         expect('resumeReason' in migrated).toBe(false)
+    })
+})
+
+describe('jobMigrations v10 → v11 (addWorkflowAdmission)', () => {
+    it('bumps legacy webhook jobs without adding admission metadata', async () => {
+        const job: WebhookJobData = {
+            jobType: WorkerJobType.EXECUTE_WEBHOOK,
+            schemaVersion: 10,
+            projectId: 'proj-1',
+            platformId: 'plat-1',
+            requestId: 'request-1',
+            payload: { type: 'inline', value: {} },
+            runEnvironment: RunEnvironment.PRODUCTION,
+            flowId: 'flow-1',
+            saveSampleData: false,
+            flowVersionIdToRun: 'flow-version-1',
+            execute: true,
+        }
+
+        const migrated = await jobMigrations(mockLog).apply(job)
+
+        expect(migrated.schemaVersion).toBe(LATEST)
+        expect('admission' in migrated).toBe(false)
     })
 })

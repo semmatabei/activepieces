@@ -1,6 +1,5 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { passgradAuth, formIdProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { passgradAuth, formIdProperty } from "../common";
 
 /**
  * Action: Get Submission
@@ -25,7 +24,7 @@ export const getSubmission = createAction({
   async run(context) {
     const { form_id, submission_id } = context.propsValue;
 
-    const response = await passgradRequest<{
+    const response = await context.passgrad.request<{
       data: {
         data: Record<string, unknown>;
         formId: string;
@@ -34,8 +33,8 @@ export const getSubmission = createAction({
         submittedAt: string;
         submittedByUserId: string | null;
       };
-    }>(context.auth, HttpMethod.GET, `/forms/${form_id}/submissions/${submission_id}`);
+    }>({ operation: "form.get-submission", resourceId: form_id, payload: { submissionId: submission_id } });
 
-    return response.body.data;
+    return response.data;
   },
 });
