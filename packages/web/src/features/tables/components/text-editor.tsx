@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
 
 import { useCellContext } from './cell-context';
+
+import { cn } from '@/lib/utils';
 
 const TextEditor = () => {
   const { value, handleCellChange, setIsEditing, isEditing } = useCellContext();

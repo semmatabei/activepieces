@@ -14,6 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+import LockedFeatureGuard from '../../../../components/locked-feature-guard';
+
+import { AIProviderCard } from './universal-pieces/ai-provider-card';
+
 import { SUPPORTED_AI_PROVIDERS, AiProviderInfo } from '@/features/agents';
 import {
   aiProviderQueries,
@@ -21,10 +26,6 @@ import {
 } from '@/features/platform-admin';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { userHooks } from '@/hooks/user-hooks';
-
-import LockedFeatureGuard from '../../../../components/locked-feature-guard';
-
-import { AIProviderCard } from './universal-pieces/ai-provider-card';
 
 const ACTIVEPIECES_LOGO_URL =
   'https://cdn.activepieces.com/pieces/activepieces.png';

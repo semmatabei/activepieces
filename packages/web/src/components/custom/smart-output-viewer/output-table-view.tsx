@@ -1,11 +1,11 @@
 import { isNil, isObject } from '@activepieces/shared';
 import { t } from 'i18next';
 
-import { stringUtils } from '@/lib/string-utils';
-import { cn } from '@/lib/utils';
-
 import { schemaUtils } from './resolve-schema';
 import { OutputSchema } from './types';
+
+import { stringUtils } from '@/lib/string-utils';
+import { cn } from '@/lib/utils';
 
 const MAX_TABLE_ROWS = 100;
 

@@ -4,17 +4,18 @@ import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { authenticationApi } from '@/api/authentication-api';
 import { LoadingScreen } from '@/components/custom/loading-screen';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { api } from '@/lib/api';
-import { authenticationSession } from '@/lib/authentication-session';
 import {
   FROM_QUERY_PARAM,
   LOGIN_QUERY_PARAM,
   PROVIDER_NAME_QUERY_PARAM,
   STATE_QUERY_PARAM,
 } from '@/lib/navigation-utils';
+
+import { authenticationApi } from '@/api/authentication-api';
+import { api } from '@/lib/api';
+import { authenticationSession } from '@/lib/authentication-session';
 
 const RedirectPage: React.FC = React.memo(() => {
   const location = useLocation();

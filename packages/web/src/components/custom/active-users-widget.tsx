@@ -1,10 +1,10 @@
 import { t } from 'i18next';
 
-import { usePresence } from '@/hooks/use-presence';
-
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 import { ApAvatar } from './ap-avatar';
+
+import { usePresence } from '@/hooks/use-presence';
 
 const MAX_VISIBLE_AVATARS = 5;
 const AVATAR_SIZE = 28;

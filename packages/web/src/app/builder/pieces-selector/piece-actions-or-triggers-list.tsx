@@ -11,6 +11,11 @@ import React from 'react';
 import { CardList } from '@/components/custom/card-list';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+import { useBuilderStateContext } from '../builder-hooks';
+
+import GenericActionOrTriggerItem from './generic-piece-selector-item';
+
 import {
   PieceSelectorItem,
   PieceSelectorOperation,
@@ -19,10 +24,6 @@ import {
   CORE_ACTIONS_METADATA,
   usePieceSearchContext,
 } from '@/features/pieces';
-
-import { useBuilderStateContext } from '../builder-hooks';
-
-import GenericActionOrTriggerItem from './generic-piece-selector-item';
 type PieceActionsOrTriggersListProps = {
   hidePieceIconAndDescription: boolean;
   stepMetadataWithSuggestions: StepMetadataWithSuggestions | null;

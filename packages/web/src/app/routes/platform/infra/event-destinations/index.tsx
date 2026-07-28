@@ -10,15 +10,16 @@ import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { ItemGroup } from '@/components/custom/item';
 import { PlusIcon } from '@/components/icons/plus';
 import { SkeletonList } from '@/components/ui/skeleton';
-import { flowsApi } from '@/features/flows';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { EventDestinationDialog } from './components/event-destination-dialog';
 import { EventDestinationRow } from './components/event-destination-row';
 import { eventDestinationsCollectionUtils } from './lib/event-destinations-collection';
 import { parseFlowIdFromUrl } from './lib/parse-flow-id-from-url';
 import { useEventLabels } from './lib/use-event-labels';
+
+import { flowsApi } from '@/features/flows';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 const EventDestinationsPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();

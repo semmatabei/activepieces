@@ -8,10 +8,11 @@ import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';
 
-import { BuilderState } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
 
 import { flowCanvasUtils } from '../utils/flow-canvas-utils';
+
+import { BuilderState } from '@/app/builder/builder-hooks';
 
 type IncompleteSettingsButtonProps = {
   flowVersion: FlowVersion;

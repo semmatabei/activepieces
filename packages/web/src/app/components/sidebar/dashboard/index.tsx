@@ -37,16 +37,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar-shadcn';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-import {
-  CreateProjectButton,
-  projectCollectionUtils,
-  getProjectName,
-} from '@/features/projects';
-import { templatesTelemetryApi } from '@/features/templates';
-import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { userHooks } from '@/hooks/user-hooks';
-import { cn } from '@/lib/utils';
 
 import { recordAccess } from '../../global-search/access-history';
 import { GlobalSearchCommand } from '../../global-search/global-search-command';
@@ -57,6 +47,17 @@ import ProjectSideBarItem from '../project';
 import { AppSidebarHeader } from '../sidebar-header';
 import SidebarUsageLimits from '../sidebar-usage-limits';
 import { SidebarUser } from '../sidebar-user';
+
+import {
+  CreateProjectButton,
+  projectCollectionUtils,
+  getProjectName,
+} from '@/features/projects';
+import { templatesTelemetryApi } from '@/features/templates';
+import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
+import { platformHooks } from '@/hooks/platform-hooks';
+import { userHooks } from '@/hooks/user-hooks';
+import { cn } from '@/lib/utils';
 
 export function ProjectDashboardSidebar({
   className,

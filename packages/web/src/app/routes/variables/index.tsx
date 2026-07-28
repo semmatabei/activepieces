@@ -32,12 +32,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
+
 import {
   variablesMutations,
   variablesQueries,
 } from '@/features/variables/hooks/variables-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 const copyReferenceToClipboard = async (name: string) => {

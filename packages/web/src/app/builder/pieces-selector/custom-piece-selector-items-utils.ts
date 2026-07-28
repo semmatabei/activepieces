@@ -1,12 +1,12 @@
 import { FlowOperationType } from '@activepieces/shared';
 
+import { BuilderState } from '../builder-hooks';
+
 import {
   PieceSelectorOperation,
   PieceSelectorPieceItem,
   pieceSelectorUtils,
 } from '@/features/pieces';
-
-import { BuilderState } from '../builder-hooks';
 
 export const handleAddingOrUpdatingCustomAgentPieceSelectorItem = (
   agentPieceSelectorItem: PieceSelectorPieceItem,

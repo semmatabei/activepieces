@@ -4,10 +4,11 @@ import ReactMarkdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
-import { cn } from '@/lib/utils';
 
 import { CodeBlock, CodeBlockCode, CodeBlockGroup } from './code-block';
 import { Source } from './source';
+
+import { cn } from '@/lib/utils';
 
 export type MarkdownProps = {
   children: string;

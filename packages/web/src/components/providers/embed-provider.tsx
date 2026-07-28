@@ -55,7 +55,10 @@ type EmbeddingProviderProps = {
   initialState?: Partial<EmbeddingState>;
 };
 
-const EmbeddingProvider = ({ children, initialState }: EmbeddingProviderProps) => {
+const EmbeddingProvider = ({
+  children,
+  initialState,
+}: EmbeddingProviderProps) => {
   const [state, setState] = useState<EmbeddingState>(
     initialState ? { ...defaultState, ...initialState } : defaultState,
   );

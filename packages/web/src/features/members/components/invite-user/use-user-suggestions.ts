@@ -5,13 +5,13 @@ import {
 } from '@activepieces/shared';
 import { useMemo } from 'react';
 
+import { EmailStatusType } from './types';
+
 import { projectMembersHooks } from '@/features/members/hooks/project-members-hooks';
 import { userInvitationsHooks } from '@/features/members/hooks/user-invitations-hooks';
 import { platformUserHooks } from '@/features/platform-admin/hooks/platform-user-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { userHooks } from '@/hooks/user-hooks';
-
-import { EmailStatusType } from './types';
 
 export type SuggestedUser = UserWithMetaInformation & {
   memberStatus: 'available' | 'has-access' | 'already-invited';

@@ -46,6 +46,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
+
 import {
   EditGlobalConnectionDialog,
   RenameConnectionDialog,
@@ -55,7 +57,6 @@ import {
 } from '@/features/connections';
 import { PieceIconWithPieceName, piecesHooks } from '@/features/pieces';
 import { useAuthorization } from '@/hooks/authorization-hooks';
-import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';

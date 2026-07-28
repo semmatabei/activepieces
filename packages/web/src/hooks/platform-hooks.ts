@@ -8,10 +8,10 @@ import { t } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { flagsHooks } from './flags-hooks';
+
 import { platformApi } from '@/api/platforms-api';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { flagsHooks } from './flags-hooks';
 
 export const platformHooks = {
   useDeleteAccount: () => {

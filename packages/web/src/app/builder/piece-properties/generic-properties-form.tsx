@@ -12,12 +12,13 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { FormField } from '@/components/ui/form';
-import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import {
   selectGenericFormComponentForProperty,
   SelectGenericFormComponentForPropertyParams,
 } from './properties-utils';
+
+import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 export const GenericPropertiesForm = React.memo(
   ({

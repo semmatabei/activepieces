@@ -1,10 +1,10 @@
 import { FlowTriggerType } from '@activepieces/shared';
 import { StoreApi } from 'zustand';
 
+import { BuilderState } from '../builder-hooks';
+
 import { RightSideBarType } from '@/app/builder/types';
 import { StepMetadataWithSuggestions } from '@/features/pieces';
-
-import { BuilderState } from '../builder-hooks';
 
 export type PieceSelectorState = {
   openedPieceSelectorStepNameOrAddButtonId: string | null;

@@ -20,11 +20,12 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+
+import { StatusProgressBar, type DayStatus } from './status-progress-bar';
+
 import { triggerRunHooks } from '@/features/flows';
 import { PieceDisplayName, PieceIconWithPieceName } from '@/features/pieces';
 import { cn } from '@/lib/utils';
-
-import { StatusProgressBar, type DayStatus } from './status-progress-bar';
 
 type TriggerHealthRow = {
   id: string;

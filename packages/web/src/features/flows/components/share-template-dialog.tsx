@@ -19,9 +19,10 @@ import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { flowsApi } from '@/features/flows/api/flows-api';
+import { useNewWindow } from '@/lib/navigation-utils';
+
 import { templatesApi } from '@/features/templates/api/templates-api';
 import { userHooks } from '@/hooks/user-hooks';
-import { useNewWindow } from '@/lib/navigation-utils';
 
 const ShareTemplateSchema = z.object({
   description: z.string(),

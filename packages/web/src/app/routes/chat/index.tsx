@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
-import { ChatDrawerSource } from '@/app/builder/types';
 import { LoadingScreen } from '@/components/custom/loading-screen';
-import { Messages } from '@/features/chat';
-import { flowHooks } from '@/features/flows';
 
 import { ChatNotFound, FlowChat } from './flow-chat';
+
+import { ChatDrawerSource } from '@/app/builder/types';
+import { Messages } from '@/features/chat';
+import { flowHooks } from '@/features/flows';
 
 export function ChatPage() {
   const { flowId } = useParams();

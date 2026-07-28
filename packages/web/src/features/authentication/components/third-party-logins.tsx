@@ -8,12 +8,13 @@ import {
 import { t } from 'i18next';
 import React from 'react';
 
-import { authenticationApi } from '@/api/authentication-api';
 import GoogleIcon from '@/assets/img/custom/auth/google-icon.svg';
 import SamlIcon from '@/assets/img/custom/auth/saml.svg';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { Button } from '@/components/ui/button';
 import { internalErrorToast } from '@/components/ui/sonner';
+
+import { authenticationApi } from '@/api/authentication-api';
 import { oauth2Utils } from '@/features/connections/utils/oauth2-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 

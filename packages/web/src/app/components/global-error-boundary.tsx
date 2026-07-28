@@ -6,6 +6,7 @@ import { useRouteError } from 'react-router-dom';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { Button } from '@/components/ui/button';
+
 import { errorReporting } from '@/lib/error-reporting';
 
 function buildDiagnosticsText(

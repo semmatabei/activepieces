@@ -3,6 +3,7 @@ import { t } from 'i18next';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { CollapsibleJson } from '@/components/custom/collapsible-json';
+
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 export function McpCredentials() {

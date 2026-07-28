@@ -10,6 +10,7 @@ import { t } from 'i18next';
 
 import { DataDisplayTabs } from '@/app/builder/data-display/data-display-tabs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { AgentTimeline } from '@/features/agents';
 
 export const isRunAgent = (step?: Step | null) => {

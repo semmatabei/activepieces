@@ -2,6 +2,7 @@ import { CustomProperty as CustomPropertyType } from '@activepieces/pieces-frame
 import { useEffect, useId } from 'react';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+
 import { projectCollectionUtils } from '@/features/projects';
 const CUSTOM_PROPERTY_CONTAINER_ID = 'custom-property-container';
 

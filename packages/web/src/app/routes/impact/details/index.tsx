@@ -38,9 +38,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { userHooks } from '@/hooks/user-hooks';
-import { formatUtils } from '@/lib/format-utils';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 import { TimeSavedFilterContent } from '../components/time-saved-filter-content';
 import { exportFlowDetailsCsv } from '../lib/impact-utils';
@@ -51,6 +48,10 @@ import {
 } from '../lib/use-flow-details-data';
 
 import { EditTimeSavedPopover } from './edit-time-saved-popover';
+
+import { userHooks } from '@/hooks/user-hooks';
+import { formatUtils } from '@/lib/format-utils';
+import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 type FlowsDetailsProps = {
   report?: PlatformAnalyticsReport;

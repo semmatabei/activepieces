@@ -52,15 +52,16 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+import { ApMarkdown } from '../../../../../../components/custom/markdown';
+
+import { UpsertProviderConfigForm } from './upsert-provider-config-form';
+
 import { SUPPORTED_AI_PROVIDERS } from '@/features/agents';
 import {
   aiProviderApi,
   hasAnyAuthFieldFilled,
 } from '@/features/platform-admin';
-
-import { ApMarkdown } from '../../../../../../components/custom/markdown';
-
-import { UpsertProviderConfigForm } from './upsert-provider-config-form';
 
 type UpsertAIProviderDialogProps = {
   provider: AIProviderName;

@@ -10,17 +10,18 @@ import { toast } from 'sonner';
 
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+import { useBuilderStateContext } from '../../builder-hooks';
+import { convertStepMetadataToPieceSelectorItems } from '../piece-actions-or-triggers-list';
+
+import AIActionItem from './ai-action';
+
 import {
   PieceSelectorOperation,
   StepMetadataWithSuggestions,
   usePieceSearchContext,
 } from '@/features/pieces';
 import { flagsHooks } from '@/hooks/flags-hooks';
-
-import { useBuilderStateContext } from '../../builder-hooks';
-import { convertStepMetadataToPieceSelectorItems } from '../piece-actions-or-triggers-list';
-
-import AIActionItem from './ai-action';
 
 type AIPieceActionsListProps = {
   hidePieceIconAndDescription: boolean;

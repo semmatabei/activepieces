@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
 import { formatUtils } from '@/lib/format-utils';
 
 type StuckJobsTableProps = {

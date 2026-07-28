@@ -1,10 +1,10 @@
 import { apId } from '@activepieces/shared';
 import { StoreApi } from 'zustand';
 
+import { BuilderState } from '../builder-hooks';
+
 import { ChatDrawerSource } from '@/app/builder/types';
 import { Messages } from '@/features/chat';
-
-import { BuilderState } from '../builder-hooks';
 
 export type ChatState = {
   chatDrawerOpenSource: ChatDrawerSource | null;

@@ -8,8 +8,6 @@ import { t } from 'i18next';
 import { Zap } from 'lucide-react';
 import React from 'react';
 
-import { triggerEventHooks } from '@/features/flows';
-
 import { useBuilderStateContext } from '../../builder-hooks';
 import { stepPropertiesSnapshotUtils } from '../../data-display/build-step-properties-snapshot';
 import { ErrorExplanationContext } from '../../data-display/explanation-prompt';
@@ -22,6 +20,8 @@ import { FirstTimeTestingSection } from './first-time-testing-section';
 import { ManualWebhookTestButton } from './manual-webhook-test-button';
 import { SimulationNote } from './simulation-section';
 import { TriggerEventSelect } from './trigger-event-select';
+
+import { triggerEventHooks } from '@/features/flows';
 
 type TestTriggerSectionProps = {
   isSaving: boolean;

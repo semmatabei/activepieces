@@ -22,9 +22,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { PasswordRequirementsList } from '@/features/authentication/components/password-validator';
-import { passwordValidation } from '@/features/authentication/utils/password-validation-utils';
 
 import { authMutations } from '../hooks/auth-hooks';
+
+import { passwordValidation } from '@/features/authentication/utils/password-validation-utils';
 
 const ChangePasswordForm = () => {
   const navigate = useNavigate();

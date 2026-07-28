@@ -6,9 +6,10 @@ import {
 import { useEffect, useState } from 'react';
 
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { parentWindow } from '@/lib/dom-utils';
 
 import { McpServerSettings } from '../../components/project-settings/mcp-server';
+
+import { parentWindow } from '@/lib/dom-utils';
 
 const postMessageToParent = (
   event:

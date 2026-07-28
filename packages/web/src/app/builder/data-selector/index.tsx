@@ -14,12 +14,8 @@ import { Database, SearchXIcon, Variable } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { textMentionUtils } from '@/app/builder/piece-properties/text-input-with-mentions/text-input-utils';
 import { SearchInput } from '@/components/custom/search-input';
-import { OutputSchema } from '@/components/custom/smart-output-viewer/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { piecesApi } from '@/features/pieces';
-import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
 import { BuilderState, useBuilderStateContext } from '../builder-hooks';
@@ -34,6 +30,11 @@ import { DataSelectorTreeNode } from './type';
 import { dataSelectorUtils } from './utils';
 import { schemaTreeUtils } from './utils-schema';
 import { VariablesTab } from './variables-tab';
+
+import { textMentionUtils } from '@/app/builder/piece-properties/text-input-with-mentions/text-input-utils';
+import { OutputSchema } from '@/components/custom/smart-output-viewer/types';
+import { piecesApi } from '@/features/pieces';
+import { cn } from '@/lib/utils';
 
 type StepInfo = (FlowAction | FlowTrigger) & { dfsIndex: number };
 

@@ -13,10 +13,6 @@ import React, {
   useState,
 } from 'react';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { ChatDrawerSource } from '@/app/builder/types';
-import { pieceSelectorUtils, piecesHooks } from '@/features/pieces';
-
 import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
 
 import { McpToolTestingDialog } from './custom-test-step/mcp-tool-testing-dialog';
@@ -26,6 +22,10 @@ import {
   triggerEventUtils,
 } from './test-trigger-section/trigger-event-utils';
 import { testStepHooks } from './utils/test-step-hooks';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { ChatDrawerSource } from '@/app/builder/types';
+import { pieceSelectorUtils, piecesHooks } from '@/features/pieces';
 
 const ActionTestRunnerContext =
   createContext<ActionTestRunnerContextValue | null>(null);

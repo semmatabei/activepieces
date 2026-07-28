@@ -15,14 +15,15 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { useSocket } from '@/components/providers/socket-provider';
-import { flowRunsApi, flowRunUtils } from '@/features/flow-runs';
-import { flowsApi } from '@/features/flows';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { useBuilderStateContext } from '../builder-hooks';
 import { textMentionUtils } from '../piece-properties/text-input-with-mentions/text-input-utils';
 
 import { flowCanvasUtils } from './utils/flow-canvas-utils';
+
+import { flowRunsApi, flowRunUtils } from '@/features/flow-runs';
+import { flowsApi } from '@/features/flows';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 
 const useSetSocketListener = (refetchPiece: () => void) => {
   const socket = useSocket();

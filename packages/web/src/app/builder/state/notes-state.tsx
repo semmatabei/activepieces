@@ -7,9 +7,9 @@ import {
 } from '@activepieces/shared';
 import { StoreApi } from 'zustand';
 
-import { authenticationSession } from '@/lib/authentication-session';
-
 import { BuilderState } from '../builder-hooks';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 export enum NoteDragOverlayMode {
   CREATE = 'create',

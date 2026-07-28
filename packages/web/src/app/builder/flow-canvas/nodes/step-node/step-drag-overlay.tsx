@@ -3,13 +3,14 @@ import { t } from 'i18next';
 import { useState } from 'react';
 
 import { SIDEBAR_ID } from '@/app/components/sidebar/dashboard';
-import { stepsHooks } from '@/features/pieces';
 
 import {
   useCursorPosition,
   useCursorPositionEffect,
 } from '../../../state/cursor-position-context';
 import { flowCanvasConsts } from '../../utils/consts';
+
+import { stepsHooks } from '@/features/pieces';
 
 const StepDragOverlay = ({ step }: { step: FlowAction | FlowTrigger }) => {
   const { cursorPosition } = useCursorPosition();

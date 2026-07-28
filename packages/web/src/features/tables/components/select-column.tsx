@@ -1,9 +1,10 @@
 import { useHeaderRowSelection, useRowSelection } from 'react-data-grid';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
 
 import { Row } from '../types/types';
+
+import { cn } from '@/lib/utils';
 
 export function SelectHeaderCell() {
   const { isRowSelected, onRowSelectionChange } = useHeaderRowSelection();

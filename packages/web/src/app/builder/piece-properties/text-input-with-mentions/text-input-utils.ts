@@ -12,13 +12,13 @@ import { Variable as VariableIcon } from 'lucide-react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { StepMetadata } from '@/features/pieces';
-
 import {
   FUNCTION_END_NODE_TYPE,
   FUNCTION_SEP_NODE_TYPE,
   FUNCTION_START_NODE_TYPE,
 } from './extensions/bracket-nodes';
+
+import { StepMetadata } from '@/features/pieces';
 
 const removeQuotes = (text: string) => {
   if (

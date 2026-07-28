@@ -2,11 +2,11 @@ import { PlatformMetricsLive } from '@activepieces/shared';
 import { t } from 'i18next';
 import { Activity, Loader2 } from 'lucide-react';
 
-import { formatUtils } from '@/lib/format-utils';
-
 import { MetricCard } from '../../../../impact/summary/metric-card';
 
 import { StuckJobsTable } from './stuck-jobs-table';
+
+import { formatUtils } from '@/lib/format-utils';
 
 type QueueTabProps = {
   live: PlatformMetricsLive | undefined;

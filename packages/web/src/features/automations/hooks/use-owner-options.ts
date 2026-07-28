@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 
 import { UserAvatar } from '@/components/custom/user-avatar';
+
 import { projectMembersHooks } from '@/features/members/hooks/project-members-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 

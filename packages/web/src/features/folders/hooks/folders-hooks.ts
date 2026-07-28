@@ -1,9 +1,9 @@
 import { FolderDto, UncategorizedFolderId } from '@activepieces/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { authenticationSession } from '@/lib/authentication-session';
-
 import { foldersApi } from '../api/folders-api';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 export const foldersHooks = {
   useFolders: () => {

@@ -1,8 +1,9 @@
 import { t } from 'i18next';
 import { Columns2, Rows2 } from 'lucide-react';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { cn } from '@/lib/utils';
 
 type StepDataPanelViewToggleProps = {

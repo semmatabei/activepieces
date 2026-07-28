@@ -18,7 +18,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Separator } from '@/components/ui/separator';
-import { isMac } from '@/lib/dom-utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { NoteDragOverlayMode } from '../../state/notes-state';
@@ -27,6 +26,8 @@ import { flowScreenshotUtils } from '../utils/flow-screenshot-utils';
 
 import { CanvasControlButton } from './canvas-control-button';
 import { useFitToView } from './use-fit-to-view';
+
+import { isMac } from '@/lib/dom-utils';
 
 const CanvasControls = ({
   canvasWidth,

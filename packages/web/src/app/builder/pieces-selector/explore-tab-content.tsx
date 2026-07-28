@@ -5,6 +5,9 @@ import {
   CardListItemSkeleton,
 } from '@/components/custom/card-list';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
+
 import {
   PieceIcon,
   piecesHooks,
@@ -12,8 +15,6 @@ import {
   usePieceSelectorTabs,
   PieceSelectorOperation,
 } from '@/features/pieces';
-
-import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
 
 const ExploreTabContent = ({
   operation,

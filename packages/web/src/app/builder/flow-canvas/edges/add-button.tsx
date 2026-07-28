@@ -4,12 +4,13 @@ import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { PieceSelector } from '@/app/builder/pieces-selector';
-import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { flowCanvasConsts } from '../utils/consts';
 import { flowCanvasUtils } from '../utils/flow-canvas-utils';
 import { ApButtonData } from '../utils/types';
+
+import { cn } from '@/lib/utils';
 
 const ApAddButton = React.memo((props: ApButtonData) => {
   const [isStepInsideDropZone, setIsStepInsideDropzone] = useState(false);

@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
-import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 import { ProjectDashboardLayout } from '../components/project-layout';
 import { TemplateDetailsWrapper } from '../guards/template-details-wrapper';
@@ -15,6 +14,8 @@ import { EmbeddedMcpAuthorizeDialog } from './embed/embedded-mcp-authorize-dialo
 import { EmbeddedMcpSettingsDialog } from './embed/embedded-mcp-settings-dialog';
 import { McpAuthorizePage } from './mcp-authorize';
 import { RedirectPage } from './redirect';
+
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 const ChatPage = lazyWithRetry(
   () => import('./chat').then((m) => ({ default: m.ChatPage })),

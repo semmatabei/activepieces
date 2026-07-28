@@ -25,18 +25,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { PlatformAdminProjectAlertSubscriptionBulkActions } from '@/features/projects/components/platform-admin-project-alert-subscription-bulk-actions';
+
+import { projectsTableColumns } from './columns';
+
 import { globalConnectionsQueries } from '@/features/connections';
 import {
   CreateProjectButton,
   EditProjectDialog,
   projectCollectionUtils,
 } from '@/features/projects';
-import { PlatformAdminProjectAlertSubscriptionBulkActions } from '@/features/projects/components/platform-admin-project-alert-subscription-bulk-actions';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { validationUtils } from '@/lib/validation-utils';
-
-import { projectsTableColumns } from './columns';
 
 export default function ProjectsPage() {
   const { platform } = platformHooks.useCurrentPlatform();

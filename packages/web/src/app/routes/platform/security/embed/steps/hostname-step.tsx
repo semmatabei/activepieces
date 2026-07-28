@@ -20,10 +20,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { embedSubdomainMutations } from '@/features/platform-admin';
-import { api } from '@/lib/api';
 
 import { StepShell } from '../stepper';
+
+import { embedSubdomainMutations } from '@/features/platform-admin';
+import { api } from '@/lib/api';
 
 export const HostnameStep = ({
   subdomain,

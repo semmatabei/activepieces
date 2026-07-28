@@ -18,6 +18,7 @@ import { memoryRouter } from '@/app/guards';
 import { LoadingScreen } from '@/components/custom/loading-screen';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { useTheme } from '@/components/providers/theme-provider';
+
 import { managedAuthApi } from '@/features/authentication';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';

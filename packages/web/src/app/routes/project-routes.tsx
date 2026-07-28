@@ -5,9 +5,6 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
 import { useEmbedding } from '@/components/providers/embed-provider';
-import { ApTableStateProvider } from '@/features/tables';
-import { lazyWithRetry } from '@/lib/lazy-with-retry';
-import { routesThatRequireProjectId } from '@/lib/route-utils';
 
 import { BuilderLayout } from '../components/builder-layout';
 import { ProjectDashboardLayout } from '../components/project-layout';
@@ -16,6 +13,10 @@ import { RoutePermissionGuard } from '../guards/permission-guard';
 import { ProjectRouterWrapper } from '../guards/project-route-wrapper';
 
 import { AutomationsPage } from './automations';
+
+import { ApTableStateProvider } from '@/features/tables';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
+import { routesThatRequireProjectId } from '@/lib/route-utils';
 const FlowBuilderPage = lazyWithRetry(
   () => import('./flows/id').then((m) => ({ default: m.FlowBuilderPage })),
   'flow-builder',

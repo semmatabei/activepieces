@@ -15,11 +15,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { chatApi } from '@/features/chat/lib/chat-api';
 
 import { AIChatBox } from './ai-chat-box';
 import { TypewriterText } from './components/typewriter-text';
 import { ConversationList } from './conversation-list';
+
+import { chatApi } from '@/features/chat/lib/chat-api';
 
 export function ChatWithAIPage() {
   const queryClient = useQueryClient();

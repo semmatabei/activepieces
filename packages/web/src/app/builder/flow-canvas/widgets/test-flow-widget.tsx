@@ -8,13 +8,14 @@ import { t } from 'i18next';
 import { useRef } from 'react';
 
 import { EditFlowOrViewDraftButton } from '@/app/builder/builder-header/flow-status/view-draft-or-edit-flow-button';
+
+import { AboveTriggerButton } from './above-trigger-button';
+
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { ChatDrawerSource } from '@/app/builder/types';
 import { flowRunUtils } from '@/features/flow-runs';
 import { flowHooks } from '@/features/flows';
 import { pieceSelectorUtils } from '@/features/pieces';
-
-import { AboveTriggerButton } from './above-trigger-button';
 
 const TestFlowWidget = () => {
   const [

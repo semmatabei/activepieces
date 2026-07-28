@@ -10,7 +10,6 @@ import { FlaskConical, Play } from 'lucide-react';
 import React, { useContext } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { piecesHooks } from '@/features/pieces';
 
 import { useBuilderStateContext } from '../builder-hooks';
 import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properties-snapshot';
@@ -22,6 +21,8 @@ import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggl
 import { useActionTestRunner } from './test-runner-context';
 import { TestSampleDataViewer } from './test-sample-data-viewer';
 import { TestButtonTooltip } from './test-step-tooltip';
+
+import { piecesHooks } from '@/features/pieces';
 
 const TestStepSectionImplementation = React.memo(
   ({

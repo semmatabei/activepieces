@@ -2,10 +2,11 @@ import { flowStructureUtil, isNil, Step } from '@activepieces/shared';
 import { MiniMap, MiniMapNodeProps } from '@xyflow/react';
 
 import { useTheme } from '@/components/providers/theme-provider';
-import { stepsHooks, StepMetadata } from '@/features/pieces';
-import { colorsUtils } from '@/lib/color-utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
+
+import { stepsHooks, StepMetadata } from '@/features/pieces';
+import { colorsUtils } from '@/lib/color-utils';
 
 const Minimap = () => {
   const [showMinimap] = useBuilderStateContext((state) => [state.showMinimap]);

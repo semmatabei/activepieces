@@ -1,14 +1,15 @@
 import { t } from 'i18next';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { flowHooks } from '@/features/flows';
 
 import { SidebarHeader } from '../sidebar-header';
 
 import { FlowVersionDetailsCard } from './flow-versions-card';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { RightSideBarType } from '@/app/builder/types';
+import { flowHooks } from '@/features/flows';
 
 const FlowVersionsList = () => {
   const [flow, setRightSidebar, selectedFlowVersion] = useBuilderStateContext(

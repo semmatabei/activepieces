@@ -7,12 +7,12 @@ import {
 import { t } from 'i18next';
 import { RouteOff } from 'lucide-react';
 
-import { flowRunUtils } from '@/features/flow-runs';
-
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
+
+import { flowRunUtils } from '@/features/flow-runs';
 
 const ApStepNodeSkippedStatus = ({ stepName }: { stepName: string }) => {
   const [run, stepType, isInDraft, isSkipped] = useBuilderStateContext(

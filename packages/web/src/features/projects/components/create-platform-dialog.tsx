@@ -3,7 +3,6 @@ import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-import { platformApi } from '@/api/platforms-api';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,6 +13,8 @@ import {
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
+import { platformApi } from '@/api/platforms-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
 type CreatePlatformSchema = {

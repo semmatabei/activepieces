@@ -2,6 +2,7 @@ import { isNil } from '@activepieces/shared';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+
 import { api } from '@/lib/api';
 const defaultFont = 'Roboto';
 const useDownloadEmbeddingFont = () => {

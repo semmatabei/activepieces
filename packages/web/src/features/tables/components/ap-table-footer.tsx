@@ -1,9 +1,9 @@
 import { ApFlagId } from '@activepieces/shared';
 import { t } from 'i18next';
 
-import { flagsHooks } from '@/hooks/flags-hooks';
-
 import { useTableState } from './ap-table-state-provider';
+
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 const ApTableFooter = ({
   fieldsCount,

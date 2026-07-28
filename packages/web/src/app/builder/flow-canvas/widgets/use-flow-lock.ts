@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import { useResourceLock } from '@/hooks/use-resource-lock';
-
 import { useBuilderStateContext } from '../../builder-hooks';
+
+import { useResourceLock } from '@/hooks/use-resource-lock';
 
 function useFlowLock() {
   const [readonly, flowId, setReadOnly] = useBuilderStateContext((state) => [

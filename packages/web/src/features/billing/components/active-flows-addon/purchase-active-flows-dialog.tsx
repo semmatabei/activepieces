@@ -18,11 +18,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { cn } from '@/lib/utils';
 
 import { billingMutations, billingQueries } from '../../hooks/billing-hooks';
 import { useManagePlanDialogStore } from '../../stores/active-flows-addon-dialog-state';
+
+import { platformHooks } from '@/hooks/platform-hooks';
+import { cn } from '@/lib/utils';
 
 export function PurchaseExtraFlowsDialog() {
   const { closeDialog, isOpen } = useManagePlanDialogStore();

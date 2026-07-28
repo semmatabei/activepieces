@@ -4,9 +4,9 @@ import { t } from 'i18next';
 import JSZip from 'jszip';
 import { TimerReset, TriangleAlert, Zap } from 'lucide-react';
 
-import { downloadFile } from '@/lib/dom-utils';
-
 import { flowsApi } from '../api/flows-api';
+
+import { downloadFile } from '@/lib/dom-utils';
 
 const downloadFlow = async (flowId: string) => {
   const template = await flowsApi.getTemplate(flowId, {});

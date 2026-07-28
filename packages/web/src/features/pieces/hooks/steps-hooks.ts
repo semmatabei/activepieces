@@ -10,8 +10,6 @@ import {
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import { authenticationSession } from '@/lib/authentication-session';
-
 import { piecesApi } from '../api/pieces-api';
 import {
   StepMetadataWithActionOrTriggerOrAgentDisplayName,
@@ -22,6 +20,8 @@ import {
   CORE_STEP_METADATA,
   stepUtils,
 } from '../utils/step-utils';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 export const stepsHooks = {
   useStepMetadata: ({ step }: UseStepMetadata) => {

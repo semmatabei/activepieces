@@ -28,6 +28,8 @@ import {
 } from '@activepieces/shared';
 import { useRef } from 'react';
 
+import { formUtils } from './form-utils';
+
 import {
   PieceSelectorItem,
   PieceSelectorOperation,
@@ -35,7 +37,6 @@ import {
   PieceStepMetadataWithSuggestions,
 } from '@/features/pieces/types';
 
-import { formUtils } from './form-utils';
 const defaultCode = `export const code = async (inputs) => {
   return true;
 };`;

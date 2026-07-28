@@ -32,9 +32,14 @@ import {
 import { FormField, FormItem, Form, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { userInvitationApi } from '@/features/members/api/user-invitation';
 import { PlatformRoleSelect } from '@/features/members/components/platform-role-select';
 import { ProjectRoleSelect } from '@/features/members/components/project-role-select';
+
+import { userInvitationsHooks } from '../../hooks/user-invitations-hooks';
+
+import { UserSuggestionsPopover } from './user-suggestions-popover';
+
+import { userInvitationApi } from '@/features/members/api/user-invitation';
 import { projectMembersHooks } from '@/features/members/hooks/project-members-hooks';
 import { platformUserHooks } from '@/features/platform-admin/hooks/platform-user-hooks';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
@@ -43,10 +48,6 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { HttpError } from '@/lib/api';
 import { formatUtils } from '@/lib/format-utils';
-
-import { userInvitationsHooks } from '../../hooks/user-invitations-hooks';
-
-import { UserSuggestionsPopover } from './user-suggestions-popover';
 
 const buildInvalidEmailsMessage = (emails: string[]): string => {
   const maxShown = 3;

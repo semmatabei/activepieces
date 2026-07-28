@@ -30,13 +30,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
+import { SandboxesPopover } from './sandboxes-popover';
+import { WorkerConfigsPopover } from './worker-configs-popover';
+
 import { workersQueries } from '@/features/platform-admin';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { useTimeAgo } from '@/hooks/use-time-ago';
 import { cn } from '@/lib/utils';
-
-import { SandboxesPopover } from './sandboxes-popover';
-import { WorkerConfigsPopover } from './worker-configs-popover';
 
 export default function WorkersPage() {
   const { data: edition } = flagsHooks.useFlag<ApEdition>(ApFlagId.EDITION);

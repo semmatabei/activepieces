@@ -3,13 +3,13 @@ import { isNil } from '@activepieces/shared';
 import React, { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
-
 import { useBuilderStateContext } from '../builder-hooks';
 import { flowCanvasHooks } from '../flow-canvas/hooks';
 
 import { GenericPropertiesForm } from './generic-properties-form';
 import { TextInputWithMentions } from './text-input-with-mentions';
+
+import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 type BaseArrayPropertyProps = {
   inputName: string;

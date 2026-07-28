@@ -5,9 +5,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 
 import { Markdown } from './markdown';
+
+import { cn } from '@/lib/utils';
 
 export type MessageProps = {
   children: React.ReactNode;

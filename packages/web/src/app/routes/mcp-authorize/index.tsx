@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { MultiSelectFilter } from '@/features/automations/components/multi-select-filter';
-import { api } from '@/lib/api';
-import { authenticationSession } from '@/lib/authentication-session';
 
 import { PermissionItem } from './permission-item';
+
+import { api } from '@/lib/api';
+import { authenticationSession } from '@/lib/authentication-session';
 
 function McpAuthorizePage() {
   const [searchParams] = useSearchParams();

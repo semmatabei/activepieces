@@ -3,9 +3,10 @@ import { Navigate } from 'react-router-dom';
 
 import { PageTitle } from '@/app/components/page-title';
 import { RouteLoadingBar } from '@/components/custom/route-loading-bar';
-import { Error, Success } from '@/features/billing';
 
 import { PlatformLayout } from '../components/platform-layout';
+
+import { Error, Success } from '@/features/billing';
 
 const SettingsBilling = React.lazy(() => import('./platform/billing'));
 const EventDestinationsPage = React.lazy(

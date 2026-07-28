@@ -10,7 +10,6 @@ import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Info } from 'lucide-react';
 
-import { RightSideBarType } from '@/app/builder/types';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,12 +17,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { flowHooks } from '@/features/flows';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 
 import LargeWidgetWrapper from './large-widget-wrapper';
+
+import { RightSideBarType } from '@/app/builder/types';
+import { flowHooks } from '@/features/flows';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 
 const PublishFlowReminderWidget = () => {
   const [

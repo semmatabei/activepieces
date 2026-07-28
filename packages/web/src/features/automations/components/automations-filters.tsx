@@ -32,13 +32,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+
+import { CreateNewMenu } from './create-new-menu';
+import { MultiSelectFilter } from './multi-select-filter';
+
 import { useOwnerOptions } from '@/features/automations/hooks/use-owner-options';
 import { TemplatesBrowseDialog } from '@/features/templates';
 import { formatUtils } from '@/lib/format-utils';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
-
-import { CreateNewMenu } from './create-new-menu';
-import { MultiSelectFilter } from './multi-select-filter';
 
 type AutomationsFiltersProps = {
   searchTerm: string;

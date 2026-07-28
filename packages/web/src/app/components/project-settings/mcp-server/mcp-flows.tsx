@@ -3,6 +3,7 @@ import { t } from 'i18next';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+
 import { cn } from '@/lib/utils';
 
 export function McpFlows({ mcpServer }: McpFlowsProps) {

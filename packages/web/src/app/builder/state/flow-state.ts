@@ -14,6 +14,9 @@ import {
 import { QueryClient } from '@tanstack/react-query';
 import { StoreApi } from 'zustand';
 
+import { BuilderState } from '../builder-hooks';
+import { flowCanvasUtils } from '../flow-canvas/utils/flow-canvas-utils';
+
 import { RightSideBarType } from '@/app/builder/types';
 import { flowsApi, sampleDataHooks } from '@/features/flows';
 import {
@@ -22,9 +25,6 @@ import {
   pieceSelectorUtils,
 } from '@/features/pieces';
 import { PromiseQueue } from '@/lib/promise-queue';
-
-import { BuilderState } from '../builder-hooks';
-import { flowCanvasUtils } from '../flow-canvas/utils/flow-canvas-utils';
 
 export type FlowState = {
   flow: PopulatedFlow;

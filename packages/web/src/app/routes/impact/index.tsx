@@ -23,6 +23,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
+import { ProjectSelect } from './components/project-select';
+import { FlowsDetails } from './details';
+import { Summary } from './summary';
+import { Trends } from './trends';
+
 import {
   platformAnalyticsHooks,
   RefreshAnalyticsContext,
@@ -30,11 +36,6 @@ import {
 import { projectCollectionUtils } from '@/features/projects';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
-
-import { ProjectSelect } from './components/project-select';
-import { FlowsDetails } from './details';
-import { Summary } from './summary';
-import { Trends } from './trends';
 
 const REPORT_TTL_MS = 1000 * 60 * 60 * 24;
 

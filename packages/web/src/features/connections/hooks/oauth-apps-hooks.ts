@@ -8,11 +8,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
+import { oauthAppsApi } from '../api/oauth-apps';
+
 import { PiecesOAuth2AppsMap } from '@/features/connections/utils/oauth2-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
-
-import { oauthAppsApi } from '../api/oauth-apps';
 
 export const oauthAppsMutations = {
   useDeleteOAuthApp: (refetch: () => void, setOpen: (open: boolean) => void) =>

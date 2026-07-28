@@ -10,12 +10,13 @@ import { FieldTypeIcon } from '@/components/custom/smart-output-viewer/field-typ
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { useApRipple } from '@/components/providers/theme-provider';
 import { Button } from '@/components/ui/button';
-import { PieceIcon, stepsHooks } from '@/features/pieces';
-import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
 
 import { DataSelectorTreeNode } from './type';
+
+import { PieceIcon, stepsHooks } from '@/features/pieces';
+import { cn } from '@/lib/utils';
 
 const INDENT_PER_DEPTH = 14;
 const VALUE_PREVIEW_MAX_LENGTH = 60;

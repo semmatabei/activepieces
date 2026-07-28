@@ -4,6 +4,7 @@ import React from 'react';
 
 import { TagWithBright } from '@/components/custom/tag-with-bright';
 import { Card, CardContent } from '@/components/ui/card';
+
 import { PieceIconList } from '@/features/pieces';
 import { useGradientFromPieces } from '@/features/templates';
 

@@ -9,11 +9,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { projectRoleQueries } from '@/features/platform-admin';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { ProjectRoleDialog } from './project-role-dialog';
 import { ProjectRolesTable } from './project-roles-table';
+
+import { projectRoleQueries } from '@/features/platform-admin';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 const ProjectRolePage = () => {
   const { platform } = platformHooks.useCurrentPlatform();

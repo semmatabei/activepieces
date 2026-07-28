@@ -16,10 +16,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { SUPPORTED_AI_PROVIDERS } from '@/features/agents/ai-providers';
-import { cn } from '@/lib/utils';
 
 import { aiModelHooks } from './hooks';
+
+import { SUPPORTED_AI_PROVIDERS } from '@/features/agents/ai-providers';
+import { cn } from '@/lib/utils';
 
 export const PROVIDER_EMBEDDING_MODELS: Partial<
   Record<AIProviderName, string>

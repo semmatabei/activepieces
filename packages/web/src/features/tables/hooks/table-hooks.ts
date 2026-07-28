@@ -8,12 +8,12 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { authenticationSession } from '@/lib/authentication-session';
-import { NEW_TABLE_QUERY_PARAM } from '@/lib/route-utils';
-
 import { fieldsApi } from '../api/fields-api';
 import { recordsApi } from '../api/records-api';
 import { tablesApi } from '../api/tables-api';
+
+import { authenticationSession } from '@/lib/authentication-session';
+import { NEW_TABLE_QUERY_PARAM } from '@/lib/route-utils';
 
 const queryKeys = (searchParams: URLSearchParams, projectId: string) => {
   return ['tables', searchParams.toString(), projectId];

@@ -1,12 +1,12 @@
 import { t } from 'i18next';
 import { useMemo } from 'react';
 
-import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
-
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
+
+import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
 
 const ApStepNodeStatusInRun = ({ stepName }: { stepName: string }) => {
   const [run, loopIndexes] = useBuilderStateContext((state) => [

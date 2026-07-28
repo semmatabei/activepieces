@@ -3,6 +3,7 @@ import { t } from 'i18next';
 import { CenteredPage } from '@/app/components/centered-page';
 import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { AppearanceSection } from '@/app/routes/platform/setup/branding/appearance-section';
+
 import { platformHooks } from '@/hooks/platform-hooks';
 
 export const BrandingPage = () => {

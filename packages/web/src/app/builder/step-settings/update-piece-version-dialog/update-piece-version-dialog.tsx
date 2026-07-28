@@ -22,7 +22,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { piecesHooks } from '@/features/pieces';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 
@@ -34,6 +33,8 @@ import {
   VersionChangeType,
 } from './update-piece-version-utils';
 import { UpgradePieceVersionContent } from './upgrade-piece-version-dialog';
+
+import { piecesHooks } from '@/features/pieces';
 
 type DialogView = 'upgrade' | 'advanced';
 

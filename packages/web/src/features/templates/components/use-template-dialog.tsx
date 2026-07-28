@@ -29,10 +29,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ApProjectDisplay } from '@/features/projects/components/ap-project-display';
+
 import { flowHooks } from '@/features/flows';
 import { foldersApi, foldersHooks } from '@/features/folders';
 import { projectCollectionUtils } from '@/features/projects';
-import { ApProjectDisplay } from '@/features/projects/components/ap-project-display';
 import { templatesTelemetryApi } from '@/features/templates';
 import { authenticationSession } from '@/lib/authentication-session';
 

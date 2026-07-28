@@ -20,11 +20,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+
+import { PermissionItem } from '../mcp-authorize/permission-item';
+
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { parentWindow } from '@/lib/dom-utils';
-
-import { PermissionItem } from '../mcp-authorize/permission-item';
 
 const postMessageToParent = (
   event:

@@ -36,14 +36,15 @@ import {
   PasswordRequirementsList,
   PasswordStrengthBolt,
 } from '@/features/authentication/components/password-validator';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { api } from '@/lib/api';
-import { authenticationSession } from '@/lib/authentication-session';
-import { formatUtils } from '@/lib/format-utils';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
 import { authMutations } from '../hooks/auth-hooks';
 import { passwordValidation } from '../utils/password-validation-utils';
+
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { api } from '@/lib/api';
+import { authenticationSession } from '@/lib/authentication-session';
+import { formatUtils } from '@/lib/format-utils';
 
 const SignUpForm = ({
   showCheckYourEmailNote,

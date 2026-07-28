@@ -3,12 +3,12 @@ import JSZip from 'jszip';
 import { Type, Calendar, Hash, ChevronDownCircle } from 'lucide-react';
 import { createContext, ReactNode } from 'react';
 
-import { downloadFile } from '@/lib/dom-utils';
-
 import {
   ClientField,
   ClientRecordData,
 } from '../stores/store/ap-tables-client-state';
+
+import { downloadFile } from '@/lib/dom-utils';
 
 function getColumnIcon(type: FieldType): ReactNode {
   switch (type) {

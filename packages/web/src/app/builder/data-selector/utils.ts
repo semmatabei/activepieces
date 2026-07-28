@@ -9,8 +9,6 @@ import {
 } from '@activepieces/shared';
 import { t } from 'i18next';
 
-import { pieceSelectorUtils } from '@/features/pieces';
-
 import { pathHelpers } from './path-helpers';
 import {
   DataSelectorTreeNode,
@@ -18,6 +16,8 @@ import {
   DataSelectorTreeNodeDataUnion,
   DataSelectorTreeNodeData,
 } from './type';
+
+import { pieceSelectorUtils } from '@/features/pieces';
 
 type PathSegment = string | number;
 

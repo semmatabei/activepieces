@@ -2,6 +2,9 @@ import { FlowOperationType, isNil } from '@activepieces/shared';
 import { useTranslation } from 'react-i18next';
 
 import { CardListItemSkeleton } from '@/components/custom/card-list';
+
+import { AIPieceActionsList } from './ai-actions-list';
+
 import {
   piecesHooks,
   PieceSelectorTabType,
@@ -9,8 +12,6 @@ import {
   PieceSelectorOperation,
   stepUtils,
 } from '@/features/pieces';
-
-import { AIPieceActionsList } from './ai-actions-list';
 
 const AITabContent = ({ operation }: { operation: PieceSelectorOperation }) => {
   const { t } = useTranslation();

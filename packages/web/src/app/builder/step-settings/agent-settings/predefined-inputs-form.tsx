@@ -20,13 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+import { selectGenericFormComponentForProperty } from '../../piece-properties/properties-utils';
+
 import {
   ConnectionDropdown,
   usePieceToolsDialogStore,
 } from '@/features/agents';
 import { piecesHooks } from '@/features/pieces';
-
-import { selectGenericFormComponentForProperty } from '../../piece-properties/properties-utils';
 
 const createPredefinedInputsFormSchema = (requireAuth: boolean) =>
   requireAuth

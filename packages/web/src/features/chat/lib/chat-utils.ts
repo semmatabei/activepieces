@@ -8,9 +8,9 @@ import {
   PersistedToolCallStatus,
 } from '@activepieces/shared';
 
-import { formatUtils } from '@/lib/format-utils';
-
 import { AnyToolPart, ChatUIMessage, chatPartUtils } from './chat-types';
+
+import { formatUtils } from '@/lib/format-utils';
 
 function stripPiecePrefix(name: string): string {
   return name.replace(/^@activepieces\/piece-/, '');

@@ -22,14 +22,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RenameDialog } from '@/features/automations/components/rename-dialog';
 import { PushToGitDialog } from '@/features/project-releases/components/push-to-git-dialog';
-import { gitSyncHooks } from '@/features/project-releases/hooks/git-sync-hooks';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { tablesApi } from '../api/tables-api';
 import { tableMutations } from '../hooks/table-hooks';
 import { tablesUtils } from '../utils/utils';
 
 import { ImportTableDialog } from './import-table-dialog';
+
+import { gitSyncHooks } from '@/features/project-releases/hooks/git-sync-hooks';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 
 const ApTableActionsMenu = ({
   table,

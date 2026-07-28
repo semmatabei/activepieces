@@ -14,13 +14,20 @@ import {
 import React, { useEffect, useRef } from 'react';
 import { useDebounce } from 'use-debounce';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+import { AITabContent } from './ai-tab-content';
+import { ApprovalsTabContent } from './approvals-tab-content';
+import { ExploreTabContent } from './explore-tab-content';
+import { PiecesCardList } from './pieces-card-list';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import {
   PiecesSearchInput,
   PieceSelectorTabs,
@@ -33,12 +40,6 @@ import {
 } from '@/features/pieces';
 import { aiProviderQueries } from '@/features/platform-admin';
 import { platformHooks } from '@/hooks/platform-hooks';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-import { AITabContent } from './ai-tab-content';
-import { ApprovalsTabContent } from './approvals-tab-content';
-import { ExploreTabContent } from './explore-tab-content';
-import { PiecesCardList } from './pieces-card-list';
 
 const getTabsList = (
   operationType: FlowOperationType,

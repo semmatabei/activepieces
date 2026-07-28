@@ -18,12 +18,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { formatUtils } from '@/lib/format-utils';
 
 import { ParsedDestination } from '../lib/parse-flow-id-from-url';
 import { EventLabelsMap } from '../lib/use-event-labels';
 
 import EventDestinationActions from './event-destination-actions';
+
+import { formatUtils } from '@/lib/format-utils';
 
 type EventDestinationRowProps = {
   destination: EventDestination;

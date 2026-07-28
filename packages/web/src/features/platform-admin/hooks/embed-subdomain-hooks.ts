@@ -7,10 +7,10 @@ import {
 } from '@activepieces/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { embedSubdomainApi } from '../api/embed-subdomain-api';
+
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
-
-import { embedSubdomainApi } from '../api/embed-subdomain-api';
 
 export const embedSubdomainKeys = {
   current: ['embed-subdomain'] as const,

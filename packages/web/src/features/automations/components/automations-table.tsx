@@ -11,13 +11,14 @@ import { Activity, Clock, Info, Type, User } from 'lucide-react';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 
 import { SelectedItemsMap, TreeItem } from '../lib/types';
 import { groupTreeItemsByFolder } from '../lib/utils';
 
 import { AutomationsTableRow } from './automations-table-row';
 import { CreateInFolderKind } from './create-new-menu';
+
+import { cn } from '@/lib/utils';
 
 type AutomationsTableProps = {
   items: TreeItem[];

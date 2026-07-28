@@ -5,9 +5,10 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { flowsApi } from '@/features/flows/api/flows-api';
-import { authenticationSession } from '@/lib/authentication-session';
 
 import { mcpToolApi } from '../agent-tools/mcp-tool-dialog/api';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 export const agentQueries = {
   useFlowsForAgent: () => {

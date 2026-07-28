@@ -8,6 +8,15 @@ import React, { useState } from 'react';
 import { CardListItemSkeleton } from '@/components/custom/card-list';
 import { Separator } from '@/components/ui/separator';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+import { cn } from '../../../lib/utils';
+import { useBuilderStateContext } from '../builder-hooks';
+
+import { NoResultsFound } from './no-results-found';
+import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
+import { PieceCardListItem } from './piece-card-item';
+
 import {
   piecesHooks,
   PieceSelectorTabType,
@@ -18,14 +27,6 @@ import {
   PIECE_SELECTOR_ELEMENTS_HEIGHTS,
   pieceSelectorUtils,
 } from '@/features/pieces';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-import { cn } from '../../../lib/utils';
-import { useBuilderStateContext } from '../builder-hooks';
-
-import { NoResultsFound } from './no-results-found';
-import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
-import { PieceCardListItem } from './piece-card-item';
 
 type PiecesCardListProps = {
   searchQuery: string;

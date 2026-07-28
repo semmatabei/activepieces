@@ -3,11 +3,11 @@
 import { isNil } from '@activepieces/shared';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
 import { TimePeriodSelect } from './time-period-select';
 import { Period } from './time-picker-utils';
 import { TimeUnitPickerInput } from './time-unit-input';
+
+import { cn } from '@/lib/utils';
 
 interface TimePickerProps {
   date: Date | undefined;

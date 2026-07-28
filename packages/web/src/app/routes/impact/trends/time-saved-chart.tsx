@@ -2,9 +2,9 @@ import { PlatformAnalyticsReport } from '@activepieces/shared';
 import { t } from 'i18next';
 import { Clock } from 'lucide-react';
 
-import { formatUtils } from '@/lib/format-utils';
-
 import { AnalyticsAreaChart } from './analytics-area-chart';
+
+import { formatUtils } from '@/lib/format-utils';
 
 type TimeSavedChartProps = {
   report?: PlatformAnalyticsReport;

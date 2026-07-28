@@ -5,9 +5,10 @@ import { PageTitle } from '@/app/components/page-title';
 import { ProjectDashboardLayout } from '@/app/components/project-layout';
 import { TemplateDetailsPage } from '@/app/routes/templates/id';
 import { LoadingScreen } from '@/components/custom/loading-screen';
+import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
+
 import { ShareTemplate, templatesHooks } from '@/features/templates';
 import { authenticationSession } from '@/lib/authentication-session';
-import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 
 const TemplateDetailsWrapper = () => {
   const { templateId } = useParams<{ templateId: string }>();

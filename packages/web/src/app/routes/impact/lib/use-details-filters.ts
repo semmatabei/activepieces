@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 
-import { authenticationSession } from '@/lib/authentication-session';
-
 import { convertToSeconds, TIME_UNITS, TimeUnit } from './impact-utils';
 import { FlowDetailRow, Owner } from './use-flow-details-data';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 type TimeSavedRangeState = {
   min: string;

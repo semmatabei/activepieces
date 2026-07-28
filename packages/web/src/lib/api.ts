@@ -11,7 +11,8 @@ import qs from 'qs';
 import { authenticationSession } from '@/lib/authentication-session';
 export const isRunningCloudInDevMode = import.meta.env.MODE === 'cloud';
 
-export const isRunningInPassgrad = import.meta.env.VITE_AP_RUNNING_IN_PASSGRAD === 'true';
+export const isRunningInPassgrad =
+  import.meta.env.VITE_AP_RUNNING_IN_PASSGRAD === 'true';
 
 export const API_BASE_URL = isRunningCloudInDevMode
   ? 'https://cloud.activepieces.com'

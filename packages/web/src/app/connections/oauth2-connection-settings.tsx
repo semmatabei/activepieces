@@ -36,14 +36,15 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { OAuth2App, oauth2Utils } from '@/features/connections';
-import { appConnectionsApi } from '@/features/connections/api/app-connections';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { cn } from '@/lib/utils';
 
 import { GenericPropertiesForm } from '../builder/piece-properties/generic-properties-form';
 
 import { SecretInput } from './secret-input';
+
+import { OAuth2App, oauth2Utils } from '@/features/connections';
+import { appConnectionsApi } from '@/features/connections/api/app-connections';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { cn } from '@/lib/utils';
 
 function OAuth2ConnectionSettings({
   authProperty,

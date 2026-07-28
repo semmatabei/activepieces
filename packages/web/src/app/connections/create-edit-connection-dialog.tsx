@@ -44,6 +44,14 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { SkeletonList } from '@/components/ui/skeleton';
+
+import { BasicAuthConnectionSettings } from './basic-secret-connection-settings';
+import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
+import { MutliAuthList, AuthListItem } from './multi-auth-list';
+import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
+import { OIDCConnectionSettings } from './oidc-connection-settings';
+import { SecretTextConnectionSettings } from './secret-text-connection-settings';
+
 import {
   ProjectSelector,
   appConnectionsMutations,
@@ -55,13 +63,6 @@ import {
 import { formUtils } from '@/features/pieces';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { BasicAuthConnectionSettings } from './basic-secret-connection-settings';
-import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
-import { MutliAuthList, AuthListItem } from './multi-auth-list';
-import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
-import { OIDCConnectionSettings } from './oidc-connection-settings';
-import { SecretTextConnectionSettings } from './secret-text-connection-settings';
 
 function CreateOrEditConnectionSection({
   piece,

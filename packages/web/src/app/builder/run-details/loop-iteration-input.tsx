@@ -10,9 +10,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { flowRunUtils } from '@/features/flow-runs';
 
 import { useBuilderStateContext } from '../builder-hooks';
+
+import { flowRunUtils } from '@/features/flow-runs';
 
 const LoopIterationInput = ({ stepName }: { stepName: string }) => {
   const [setLoopIndex, currentIndex, run, flowVersion, loopsIndexes, stepType] =

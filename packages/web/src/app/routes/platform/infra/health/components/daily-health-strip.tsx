@@ -17,9 +17,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 
 import { healthMetricsQueries } from '../lib/health-metrics-hooks';
+
+import { cn } from '@/lib/utils';
 
 function isHealthy(day: PlatformMetricsHealthDay): boolean {
   return day.internalErrors === 0 && day.stuckJobs === 0;

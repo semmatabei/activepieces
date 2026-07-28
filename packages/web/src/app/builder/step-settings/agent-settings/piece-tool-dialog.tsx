@@ -19,6 +19,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
+import { PredefinedInputsForm } from './predefined-inputs-form';
+
 import {
   PieceActionsList,
   PiecesList,
@@ -28,8 +31,6 @@ import {
   stepsHooks,
   PieceStepMetadataWithSuggestions,
 } from '@/features/pieces';
-
-import { PredefinedInputsForm } from './predefined-inputs-form';
 
 type AgentToolsDialogProps = {
   tools: AgentTool[];

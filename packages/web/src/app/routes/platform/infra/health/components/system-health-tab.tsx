@@ -4,11 +4,11 @@ import { Cpu, HardDrive, MemoryStick, Package } from 'lucide-react';
 import React from 'react';
 import semver from 'semver';
 
-import { healthQueries } from '@/features/platform-admin';
-import { flagsHooks } from '@/hooks/flags-hooks';
-
 import { CheckItem } from './check-item';
 import { DailyHealthStrip } from './daily-health-strip';
+
+import { healthQueries } from '@/features/platform-admin';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 type SystemHealthTabProps = {
   onSeeRuns: () => void;

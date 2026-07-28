@@ -12,10 +12,11 @@ import { DataTableInputPopover } from '@/components/custom/data-table/data-table
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { LockedAlert } from '@/components/custom/locked-alert';
 import { Button } from '@/components/ui/button';
-import { piecesApi, PieceIcon, piecesHooks } from '@/features/pieces';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { ManagePiecesDialog } from './manage-pieces-dialog';
+
+import { piecesApi, PieceIcon, piecesHooks } from '@/features/pieces';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 const columns: ColumnDef<RowDataWithActions<PieceMetadataModelSummary>>[] = [
   {

@@ -28,13 +28,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { cn } from '@/lib/utils';
 
 import { templatesApi } from '../api/templates-api';
 
 import { ExploreTemplateCard } from './explore-template-card';
 import { UseTemplateDialog } from './use-template-dialog';
+
+import { platformHooks } from '@/hooks/platform-hooks';
+import { cn } from '@/lib/utils';
 
 type TemplatesBrowseDialogProps = {
   open: boolean;

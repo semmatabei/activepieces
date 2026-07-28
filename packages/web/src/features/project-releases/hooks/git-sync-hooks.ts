@@ -8,11 +8,11 @@ import {
 } from '@activepieces/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { gitSyncApi } from '../api/git-sync-api';
+
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { gitSyncApi } from '../api/git-sync-api';
 
 export const gitSyncHooks = {
   useGitSync: (projectId: string, enabled: boolean) => {

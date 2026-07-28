@@ -2,10 +2,10 @@ import { AIProviderName } from '@activepieces/shared';
 import dayjs from 'dayjs';
 import { useCallback, useState } from 'react';
 
+import { CreditsWarning } from './chat-types';
+
 import { aiProviderQueries } from '@/features/platform-admin';
 import { platformHooks } from '@/hooks/platform-hooks';
-
-import { CreditsWarning } from './chat-types';
 
 const CREDITS_WARNING_THRESHOLD = 70;
 

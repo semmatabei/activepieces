@@ -30,11 +30,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+
+import AddEditSecretManagerConnectionDialog from './connect-secret-manager-dialog';
+
 import { PieceIcon } from '@/features/pieces';
 import { secretManagersHooks } from '@/features/secret-managers';
 import { platformHooks } from '@/hooks/platform-hooks';
-
-import AddEditSecretManagerConnectionDialog from './connect-secret-manager-dialog';
 
 const SecretManagersPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();

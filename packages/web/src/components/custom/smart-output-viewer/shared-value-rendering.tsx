@@ -3,9 +3,9 @@ import { t } from 'i18next';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
-import { stringUtils } from '@/lib/string-utils';
-
 import { FieldTypeIcon } from './field-type-icon';
+
+import { stringUtils } from '@/lib/string-utils';
 
 const formatKey = stringUtils.titleCase;
 const MAX_NESTED_DEPTH = 10;

@@ -1,6 +1,6 @@
-import { colorsUtils } from '@/lib/color-utils';
-
 import { ItemMedia } from './item';
+
+import { colorsUtils } from '@/lib/color-utils';
 
 function ItemMediaImage({ src, alt }: ItemMediaImageProps) {
   const backgroundColor = colorsUtils.useAverageColorInImage({

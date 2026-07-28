@@ -5,9 +5,10 @@ import {
   CURSOR_QUERY_PARAM,
   LIMIT_QUERY_PARAM,
 } from '@/components/custom/data-table';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { auditEventsApi } from '../api/audit-events-api';
+
+import { platformHooks } from '@/hooks/platform-hooks';
 
 export const auditLogKeys = {
   all: (searchParams: string) => ['audit-logs', searchParams] as const,

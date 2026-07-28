@@ -46,11 +46,12 @@ import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-
 import { FlowStatusToggle } from '@/features/flows/components/flow-status-toggle';
 import { ShareTemplateDialog } from '@/features/flows/components/share-template-dialog';
 import { PieceIconList } from '@/features/pieces/components/piece-icon-list';
-import { cn } from '@/lib/utils';
 
 import { TreeItem } from '../lib/types';
 
 import { CreateNewMenu, CreateInFolderKind } from './create-new-menu';
+
+import { cn } from '@/lib/utils';
 
 type AutomationsTableRowProps = {
   item: TreeItem;

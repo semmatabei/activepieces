@@ -1,14 +1,7 @@
 import { t } from 'i18next';
 import { motion } from 'motion/react';
 
-import { chatStoreSelectors } from '@/features/chat/lib/chat-store';
 import { useChatStoreContext } from '@/features/chat/lib/chat-store-context';
-import { MultiQuestion } from '@/features/chat/lib/chat-store-types';
-import {
-  AnyToolPart,
-  ChatUIMessage,
-  chatPartUtils,
-} from '@/features/chat/lib/chat-types';
 
 import {
   ConnectionPickerData,
@@ -25,6 +18,14 @@ import {
 } from './connections-required-card';
 import { MultiQuestionForm } from './multi-question-form';
 import { ProjectPickerCard } from './project-picker-card';
+
+import { chatStoreSelectors } from '@/features/chat/lib/chat-store';
+import { MultiQuestion } from '@/features/chat/lib/chat-store-types';
+import {
+  AnyToolPart,
+  ChatUIMessage,
+  chatPartUtils,
+} from '@/features/chat/lib/chat-types';
 
 export function ChatBottomBar({
   isStreaming,

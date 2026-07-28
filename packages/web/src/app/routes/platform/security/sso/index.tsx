@@ -17,10 +17,11 @@ import {
 } from '@/components/custom/item';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ssoMutations } from '@/features/platform-admin';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import GoogleIcon from '../../../../../assets/img/custom/auth/google-icon.svg';
+
+import { ssoMutations } from '@/features/platform-admin';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 const SSOPage = () => {
   const { platform, refetch } = platformHooks.useCurrentPlatform();

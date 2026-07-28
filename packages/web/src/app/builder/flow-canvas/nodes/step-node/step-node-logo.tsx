@@ -1,5 +1,6 @@
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { ImageWithColorBackground } from '@/components/custom/image-with-color-background';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { cn } from '@/lib/utils';
 
 const StepNodeLogo = ({

@@ -14,10 +14,11 @@ import {
 
 import { CollapsibleJson } from '@/components/custom/collapsible-json';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 import { CopyAiPromptButton } from './copy-ai-prompt';
 import { ErrorExplanationContext } from './explanation-prompt';
+
+import { cn } from '@/lib/utils';
 
 type FriendlyErrorViewProps = {
   error: FriendlyPieceError;

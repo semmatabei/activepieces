@@ -11,9 +11,7 @@ import { Play } from 'lucide-react';
 import { useContext, useEffect } from 'react';
 import { toast } from 'sonner';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
-import { pieceSelectorUtils } from '@/features/pieces';
 
 import { DynamicPropertiesContext } from '../piece-properties/dynamic-properties-context';
 
@@ -22,6 +20,9 @@ import {
   useTriggerTestRunner,
 } from './test-runner-context';
 import { TestButtonTooltip } from './test-step-tooltip';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { pieceSelectorUtils } from '@/features/pieces';
 
 const SOFT_PRIMARY_CTA_CLASSES =
   'w-full justify-center bg-primary/5 enabled:hover:bg-primary/15 enabled:hover:text-primary text-primary border-primary/20';

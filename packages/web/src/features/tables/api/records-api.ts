@@ -7,9 +7,9 @@ import {
   UpdateRecordRequest,
 } from '@activepieces/shared';
 
-import { api } from '@/lib/api';
-
 import { FieldsMapping } from '../utils/utils';
+
+import { api } from '@/lib/api';
 
 export const recordsApi = {
   list(request: ListRecordsRequest): Promise<SeekPage<PopulatedRecord>> {

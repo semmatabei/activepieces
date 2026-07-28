@@ -6,9 +6,10 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { PieceIconWithPieceName } from '@/features/pieces/components/piece-icon-from-name';
-import { cn } from '@/lib/utils';
 
 import { normalizePieceName } from '../lib/message-parsers';
+
+import { cn } from '@/lib/utils';
 
 export function ActionPreviewCard({
   preview,

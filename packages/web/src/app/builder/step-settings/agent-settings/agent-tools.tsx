@@ -10,6 +10,9 @@ import { ControllerRenderProps } from 'react-hook-form';
 
 import { Accordion } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+
+import { AgentPieceDialog } from './piece-tool-dialog';
+
 import {
   AddToolDropdown,
   AgentFlowToolComponent,
@@ -19,8 +22,6 @@ import {
   AgentMcpDialog,
   KnowledgeBaseSection,
 } from '@/features/agents';
-
-import { AgentPieceDialog } from './piece-tool-dialog';
 
 const icons = [
   'https://cdn.activepieces.com/pieces/youtube.png',

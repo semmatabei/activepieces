@@ -1,9 +1,9 @@
 import { isNil } from '@activepieces/shared';
 
+import type { OutputSchema, OutputSchemaField } from './types';
+
 import { pathUtils } from '@/lib/path-utils';
 import { stringUtils } from '@/lib/string-utils';
-
-import type { OutputSchema, OutputSchemaField } from './types';
 
 function resolveFieldLabel(field: OutputSchemaField): string {
   return field.label ?? stringUtils.titleCase(field.key);

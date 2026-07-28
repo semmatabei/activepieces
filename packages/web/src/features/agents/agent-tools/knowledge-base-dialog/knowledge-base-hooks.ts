@@ -1,9 +1,9 @@
 import { KnowledgeBaseFile } from '@activepieces/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { authenticationSession } from '@/lib/authentication-session';
-
 import { knowledgeBaseApi } from './knowledge-base-api';
+
+import { authenticationSession } from '@/lib/authentication-session';
 
 export const useKnowledgeBaseFiles = () => {
   const projectId = authenticationSession.getProjectId();

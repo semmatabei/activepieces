@@ -8,10 +8,10 @@ import breaks from 'remark-breaks';
 import gfm from 'remark-gfm';
 import { toast } from 'sonner';
 
-import { cn } from '@/lib/utils';
-
 import { Alert, AlertDescription } from '../ui/alert';
 import { Button } from '../ui/button';
+
+import { cn } from '@/lib/utils';
 
 function applyVariables(markdown: string, variables: Record<string, string>) {
   if (typeof markdown !== 'string') {

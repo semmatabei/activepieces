@@ -9,6 +9,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { TextShimmer } from '@/components/ui/text-shimmer';
+
 import { AnyToolPart, chatPartUtils } from '@/features/chat/lib/chat-types';
 import { chatUtils } from '@/features/chat/lib/chat-utils';
 import { cn } from '@/lib/utils';

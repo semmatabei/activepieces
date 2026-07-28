@@ -11,14 +11,6 @@ import {
   MessageActions,
 } from '@/components/prompt-kit/message';
 import { useChatStoreContext } from '@/features/chat/lib/chat-store-context';
-import {
-  AnyToolPart,
-  ChatUIMessage,
-  ThinkingStep,
-  chatPartUtils,
-} from '@/features/chat/lib/chat-types';
-import { useTts } from '@/features/chat/lib/use-tts';
-import { cn } from '@/lib/utils';
 
 import {
   ConnectionPickerData,
@@ -38,6 +30,15 @@ import { CopyIconButton } from './copy-icon-button';
 import { ProjectPickerCard } from './project-picker-card';
 import { StreamingText } from './streaming-text';
 import { ToolShimmerPills } from './tool-shimmer-pills';
+
+import {
+  AnyToolPart,
+  ChatUIMessage,
+  ThinkingStep,
+  chatPartUtils,
+} from '@/features/chat/lib/chat-types';
+import { useTts } from '@/features/chat/lib/use-tts';
+import { cn } from '@/lib/utils';
 
 const PROSE_CLASSES =
   'max-w-none break-words text-sm [&_p]:mb-4 [&_p:last-child]:mb-0 [&_table]:mb-4 [&_h1]:text-[18px] [&_h2]:text-[18px] [&_h3]:text-[18px]';

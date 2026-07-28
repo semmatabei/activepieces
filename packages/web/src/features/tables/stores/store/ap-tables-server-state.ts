@@ -6,13 +6,13 @@ import {
   UpdateTableRequest,
 } from '@activepieces/shared';
 
-import { PromiseQueue } from '@/lib/promise-queue';
-
 import { fieldsApi } from '../../api/fields-api';
 import { recordsApi } from '../../api/records-api';
 import { tablesApi } from '../../api/tables-api';
 
 import { ClientRecordData } from './ap-tables-client-state';
+
+import { PromiseQueue } from '@/lib/promise-queue';
 
 export const createServerState = (
   _table: Table,

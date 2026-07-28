@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { CalculatedColumn } from 'react-data-grid';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { cn } from '@/lib/utils';
-
 import { ClientField } from '../stores/store/ap-tables-client-state';
 import { Row } from '../types/types';
 
@@ -14,6 +12,8 @@ import { DateEditor } from './date-editor';
 import { DropdownEditor } from './dropdown-editor';
 import { NumberEditor } from './number-editor';
 import { TextEditor } from './text-editor';
+
+import { cn } from '@/lib/utils';
 
 type EditableCellProps = {
   field: ClientField;

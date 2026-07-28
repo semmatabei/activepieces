@@ -15,9 +15,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 import { NewProjectDialog } from './new-project-dialog';
+
+import { platformHooks } from '@/hooks/platform-hooks';
 
 function useIsCreateProjectDisabled({
   projects,

@@ -5,11 +5,11 @@ import {
 } from '@activepieces/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { projectMembersApi } from '../api/project-members-api';
+
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { projectMembersApi } from '../api/project-members-api';
 
 export const projectMembersHooks = {
   useProjectMembers: () => {

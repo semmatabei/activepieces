@@ -7,10 +7,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useContext } from 'react';
 
+import { RefreshAnalyticsContext } from '../stores/refresh-analytics-context';
+
 import { analyticsApi } from '@/features/platform-admin/api/analytics-api';
 import { platformHooks } from '@/hooks/platform-hooks';
-
-import { RefreshAnalyticsContext } from '../stores/refresh-analytics-context';
 
 const analyticsQueryKey = ['analytics'];
 const projectLeaderboardQueryKey = (timePeriod: AnalyticsTimePeriod) => [

@@ -7,7 +7,6 @@ import { t } from 'i18next';
 import { EllipsisVertical, Eye, EyeIcon, Pencil } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { CardListItem } from '@/components/custom/card-list';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { UserAvatar } from '@/components/custom/user-avatar';
@@ -24,10 +23,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { FlowVersionStateDot, flowHooks } from '@/features/flows';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { OverwriteDraftDialog } from './overwrite-draft-dialog';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { FlowVersionStateDot, flowHooks } from '@/features/flows';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 
 const FlowVersionDetailsCard = React.memo(
   ({

@@ -8,9 +8,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { useTheme } from '@/components/providers/theme-provider';
-import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
-import { cn } from '@/lib/utils';
 
 import { FullLogo } from '../../../components/custom/full-logo';
 import { HorizontalSeparatorWithText } from '../../../components/ui/separator';
@@ -21,6 +19,9 @@ import { SamlLoginForm } from './saml-login-form';
 import { SignInForm } from './sign-in-form';
 import { SignUpForm } from './sign-up-form';
 import { ThirdPartyLogin } from './third-party-logins';
+
+import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
 const BottomNote = ({ isSignup }: { isSignup: boolean }) => {
   const [searchParams] = useSearchParams();

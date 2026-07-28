@@ -3,15 +3,16 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+
+import { getAccessHistory } from './access-history';
+import { STATIC_PAGES, type StaticPage } from './static-pages';
+
 import { flowsApi } from '@/features/flows';
 import { foldersApi } from '@/features/folders';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
 import { tablesApi } from '@/features/tables';
 import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-
-import { getAccessHistory } from './access-history';
-import { STATIC_PAGES, type StaticPage } from './static-pages';
 
 const SEARCH_LIMIT = 6;
 const SUPPLEMENT_THRESHOLD = 5;

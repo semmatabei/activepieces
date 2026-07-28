@@ -2,9 +2,9 @@ import { PlatformAnalyticsReport } from '@activepieces/shared';
 import { t } from 'i18next';
 import { Clock } from 'lucide-react';
 
-import { formatUtils } from '@/lib/format-utils';
-
 import { MetricCard, MetricCardSkeleton } from './metric-card';
+
+import { formatUtils } from '@/lib/format-utils';
 
 type TimeSavedMetricProps = {
   report?: PlatformAnalyticsReport;

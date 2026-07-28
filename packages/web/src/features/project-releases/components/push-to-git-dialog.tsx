@@ -31,11 +31,12 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
 
 import { gitSyncApi } from '../api/git-sync-api';
 import { gitSyncHooks } from '../hooks/git-sync-hooks';
+
+import { platformHooks } from '@/hooks/platform-hooks';
+import { authenticationSession } from '@/lib/authentication-session';
 
 type PushToGitDialogProps =
   | {

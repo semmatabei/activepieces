@@ -22,6 +22,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 

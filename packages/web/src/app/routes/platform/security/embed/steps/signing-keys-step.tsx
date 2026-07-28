@@ -21,10 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { internalErrorToast } from '@/components/ui/sonner';
-import { NewSigningKeyDialog, signingKeyApi } from '@/features/platform-admin';
-import { formatUtils } from '@/lib/format-utils';
 
 import { StepShell } from '../stepper';
+
+import { NewSigningKeyDialog, signingKeyApi } from '@/features/platform-admin';
+import { formatUtils } from '@/lib/format-utils';
 
 export const SigningKeysStep = ({
   signingKeys,

@@ -11,13 +11,14 @@ import { useFormContext } from 'react-hook-form';
 import { AgentTools } from '@/app/builder/step-settings/agent-settings/agent-tools';
 import { FormField } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AIModelSelector, AgentStructuredOutput } from '@/features/agents';
 
 import {
   selectGenericFormComponentForProperty,
   SelectGenericFormComponentForPropertyParams,
 } from '../../piece-properties/properties-utils';
 import { useStepSettingsContext } from '../step-settings-context';
+
+import { AIModelSelector, AgentStructuredOutput } from '@/features/agents';
 
 type AgentSettingsProps = {
   step: PieceAction;

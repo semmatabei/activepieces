@@ -1,12 +1,12 @@
 import { FlowActionType, FlowTriggerType, isNil } from '@activepieces/shared';
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { cn } from '@/lib/utils';
-
 import { flowCanvasConsts } from '../flow-canvas/utils/consts';
 import { FlowStepInputOutput } from '../run-details/flow-step-input-output';
 import { TestStepContainer } from '../test-step';
+
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { cn } from '@/lib/utils';
 
 const DISMISS_IGNORE_SELECTOR = [
   '[data-test-panel-trigger]',
