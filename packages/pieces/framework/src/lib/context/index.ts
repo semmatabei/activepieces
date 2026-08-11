@@ -12,7 +12,7 @@ import {
   TriggerPayload,
   TriggerStrategy,
 } from '@activepieces/shared';
-import { LanguageModel, Tool } from 'ai'
+import { LanguageModel, Tool } from 'ai';
 
 import {
   BasicAuthProperty,
@@ -24,7 +24,11 @@ import {
   StaticPropsValue,
 } from '../property';
 import { PieceAuthProperty } from '../property/authentication';
-import { DelayPauseMetadata, PauseMetadata, WebhookPauseMetadata } from '@activepieces/shared';
+import {
+  DelayPauseMetadata,
+  PauseMetadata,
+  WebhookPauseMetadata,
+} from '@activepieces/shared';
 
 export type BaseContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,
@@ -32,7 +36,7 @@ export type BaseContext<
 > = {
   flows: FlowsContext;
   step: StepContext;
-    auth: AppConnectionValueForAuthProperty<PieceAuth>;
+  auth: AppConnectionValueForAuthProperty<PieceAuth>;
   propsValue: StaticPropsValue<Props>;
   store: Store;
   project: {
@@ -44,26 +48,50 @@ export type BaseContext<
   passgrad: PassgradCapability;
 };
 
-
-type ExtractCustomAuthProps<T> = T extends CustomAuthProperty<infer Props> ? Props : never;
+type ExtractCustomAuthProps<T> = T extends CustomAuthProperty<infer Props>
+  ? Props
+  : never;
 
 type ExtractOIDCProps<T> = T extends OIDCProperty<infer Props> ? Props : never;
 
-type ExtractOAuth2Props<T> = T extends OAuth2Property<infer Props> ? Props : never;
+type ExtractOAuth2Props<T> = T extends OAuth2Property<infer Props>
+  ? Props
+  : never;
 
+export type AppConnectionValueForAuthProperty<
+  T extends PieceAuthProperty | PieceAuthProperty[] | undefined
+> = T extends PieceAuthProperty[]
+  ? AppConnectionValueForSingleAuthProperty<T[number]>
+  : T extends PieceAuthProperty
+  ? AppConnectionValueForSingleAuthProperty<T>
+  : T extends undefined
+  ? undefined
+  : never;
 
-export type AppConnectionValueForAuthProperty<T extends PieceAuthProperty | PieceAuthProperty[] | undefined> = 
-  T extends PieceAuthProperty[] ? AppConnectionValueForSingleAuthProperty<T[number]> :
-  T extends PieceAuthProperty ? AppConnectionValueForSingleAuthProperty<T> :
-  T extends undefined ? undefined : never;
-
-type AppConnectionValueForSingleAuthProperty<T extends PieceAuthProperty | undefined> =
-  T extends SecretTextProperty<boolean> ? AppConnectionValue<AppConnectionType.SECRET_TEXT> :
-  T extends BasicAuthProperty ? AppConnectionValue<AppConnectionType.BASIC_AUTH> :
-  T extends CustomAuthProperty<any> ? AppConnectionValue<AppConnectionType.CUSTOM_AUTH, StaticPropsValue<ExtractCustomAuthProps<T>>> :
-  T extends OIDCProperty<any> ? AppConnectionValue<AppConnectionType.OIDC, StaticPropsValue<ExtractOIDCProps<T>>> :
-  T extends OAuth2Property<any> ? AppConnectionValue<AppConnectionType.OAUTH2, StaticPropsValue<ExtractOAuth2Props<T>>> :
-  T extends undefined ? undefined : never;
+type AppConnectionValueForSingleAuthProperty<
+  T extends PieceAuthProperty | undefined
+> = T extends SecretTextProperty<boolean>
+  ? AppConnectionValue<AppConnectionType.SECRET_TEXT>
+  : T extends BasicAuthProperty
+  ? AppConnectionValue<AppConnectionType.BASIC_AUTH>
+  : T extends CustomAuthProperty<any>
+  ? AppConnectionValue<
+      AppConnectionType.CUSTOM_AUTH,
+      StaticPropsValue<ExtractCustomAuthProps<T>>
+    >
+  : T extends OIDCProperty<any>
+  ? AppConnectionValue<
+      AppConnectionType.OIDC,
+      StaticPropsValue<ExtractOIDCProps<T>>
+    >
+  : T extends OAuth2Property<any>
+  ? AppConnectionValue<
+      AppConnectionType.OAUTH2,
+      StaticPropsValue<ExtractOAuth2Props<T>>
+    >
+  : T extends undefined
+  ? undefined
+  : never;
 type AppWebhookTriggerHookContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,
   TriggerProps extends InputPropertyMap
@@ -91,7 +119,7 @@ type PollingTriggerHookContext<
 
 type WebhookTriggerHookContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,
-  TriggerProps extends InputPropertyMap,
+  TriggerProps extends InputPropertyMap
 > = BaseContext<PieceAuth, TriggerProps> & {
   webhookUrl: string;
   payload: TriggerPayload;
@@ -100,15 +128,15 @@ type WebhookTriggerHookContext<
 export type TriggerHookContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,
   TriggerProps extends InputPropertyMap,
-  S extends TriggerStrategy,
+  S extends TriggerStrategy
 > = S extends TriggerStrategy.APP_WEBHOOK
   ? AppWebhookTriggerHookContext<PieceAuth, TriggerProps>
   : S extends TriggerStrategy.POLLING
   ? PollingTriggerHookContext<PieceAuth, TriggerProps>
   : S extends TriggerStrategy.WEBHOOK
   ? WebhookTriggerHookContext<PieceAuth, TriggerProps> & {
-    server: ServerContext;
-  }
+      server: ServerContext;
+    }
   : never;
 
 export type TestOrRunHookContext<
@@ -138,27 +166,28 @@ export type PauseHookParams = {
 
 /** @deprecated Since 2026-04-12. Use {@link CreateWaitpointHook} and {@link WaitForWaitpointHook} instead. */
 export type PauseHook = (params: {
-  pauseMetadata: Omit<DelayPauseMetadata, 'requestIdToReply'> | Omit<WebhookPauseMetadata, 'requestId' | 'requestIdToReply'>
+  pauseMetadata:
+    | Omit<DelayPauseMetadata, 'requestIdToReply'>
+    | Omit<WebhookPauseMetadata, 'requestId' | 'requestIdToReply'>;
 }) => void;
 
 export type FlowsContext = {
-  list(params?: ListFlowsContextParams): Promise<SeekPage<PopulatedFlow>>
+  list(params?: ListFlowsContextParams): Promise<SeekPage<PopulatedFlow>>;
   current: {
     id: string;
     version: {
       id: string;
     };
   };
-}
+};
 
 export type StepContext = {
   name: string;
-}
+};
 
 export type ListFlowsContextParams = {
-  externalIds?: string[]
-}
-
+  externalIds?: string[];
+};
 
 export type PropertyContext = {
   server: ServerContext;
@@ -193,7 +222,9 @@ export type PassgradOperation =
   | 'form.create-trigger'
   | 'form.delete-trigger'
   | 'form.list-submissions'
-  | 'form.open-workflow-session';
+  | 'form.open-workflow-session'
+  | 'form.project-workflow-run'
+  | 'task.open-workflow-approval';
 
 export type ServerContext = {
   apiUrl: string;
@@ -211,10 +242,15 @@ export type CreateWaitpointParams = {
 export type CreateWaitpointResult = {
   id: string;
   resumeUrl: string;
-  buildResumeUrl: (params: { queryParams: Record<string, string>, sync?: boolean }) => string;
+  buildResumeUrl: (params: {
+    queryParams: Record<string, string>;
+    sync?: boolean;
+  }) => string;
 };
 
-export type CreateWaitpointHook = (params: CreateWaitpointParams) => Promise<CreateWaitpointResult>;
+export type CreateWaitpointHook = (
+  params: CreateWaitpointParams
+) => Promise<CreateWaitpointResult>;
 export type WaitForWaitpointHook = (waitpointId: string) => void;
 
 export type RunContext = {
@@ -225,7 +261,7 @@ export type RunContext = {
   respond: RespondHook;
   createWaitpoint: CreateWaitpointHook;
   waitForWaitpoint: WaitForWaitpointHook;
-}
+};
 
 export type OnStartContext<
   PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined,
@@ -233,8 +269,7 @@ export type OnStartContext<
 > = Omit<BaseContext<PieceAuth, TriggerProps>, 'flows'> & {
   run: Pick<RunContext, 'id'>;
   payload: unknown;
-}
-
+};
 
 export type OutputContext = {
   update: (params: {
@@ -242,7 +277,7 @@ export type OutputContext = {
       [key: string]: unknown;
     };
   }) => Promise<void>;
-}
+};
 
 type BaseActionContext<
   ET extends ExecutionType,
@@ -258,37 +293,43 @@ type BaseActionContext<
   run: RunContext;
   /** @deprecated Use waitpoint.buildResumeUrl() from createWaitpoint result instead */
   generateResumeUrl?: (params: {
-    queryParams: Record<string, string>,
-    sync?: boolean
+    queryParams: Record<string, string>;
+    sync?: boolean;
   }) => string;
 };
 
 type BeginExecutionActionContext<
-  PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined = undefined,
+  PieceAuth extends
+    | PieceAuthProperty
+    | PieceAuthProperty[]
+    | undefined = undefined,
   ActionProps extends InputPropertyMap = InputPropertyMap
 > = BaseActionContext<ExecutionType.BEGIN, PieceAuth, ActionProps>;
 
 type ResumeExecutionActionContext<
-  PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined = undefined,
+  PieceAuth extends
+    | PieceAuthProperty
+    | PieceAuthProperty[]
+    | undefined = undefined,
   ActionProps extends InputPropertyMap = InputPropertyMap
 > = BaseActionContext<ExecutionType.RESUME, PieceAuth, ActionProps> & {
   resumePayload: ResumePayload;
 };
 
 export type ActionContext<
-  PieceAuth extends PieceAuthProperty | PieceAuthProperty[] | undefined = undefined,
+  PieceAuth extends
+    | PieceAuthProperty
+    | PieceAuthProperty[]
+    | undefined = undefined,
   ActionProps extends InputPropertyMap = InputPropertyMap
 > =
   | BeginExecutionActionContext<PieceAuth, ActionProps>
   | ResumeExecutionActionContext<PieceAuth, ActionProps>;
 
-
-
-
 export type ConstructToolParams = {
-  tools: AgentPieceTool[]
-  model: LanguageModel,
-}
+  tools: AgentPieceTool[];
+  model: LanguageModel;
+};
 
 export interface AgentContext {
   tools: (params: ConstructToolParams) => Promise<Record<string, Tool>>;

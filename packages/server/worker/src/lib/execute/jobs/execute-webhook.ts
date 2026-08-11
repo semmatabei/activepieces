@@ -152,6 +152,12 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                 })
             }
         }
+        else {
+            ctx.log.warn(
+                { flowVersion: { id: data.flowVersionIdToRun }, error: execResult.error },
+                'Webhook trigger execution failed',
+            )
+        }
 
         return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: execResult.logs }
     },

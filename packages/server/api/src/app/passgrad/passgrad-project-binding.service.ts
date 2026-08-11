@@ -7,7 +7,7 @@ export const passgradProjectBindingRepo = repoFactory(PassgradProjectBindingEnti
 
 export const passgradProjectBindingService = {
     async get(projectId: string): Promise<PassgradProjectBindingSchema | null> {
-        return passgradProjectBindingRepo().findOneBy({ projectId })
+        return passgradProjectBindingRepo().findOne({ where: { projectId }, relations: { project: true } })
     },
     async createOrGet(params: CreatePassgradProjectBindingParams): Promise<CreatePassgradProjectBindingResult> {
         const existing = await findByProjectOrTenant(params.projectId, params.tenantId)

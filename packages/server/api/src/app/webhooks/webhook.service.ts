@@ -14,6 +14,7 @@ import { engineResponseWatcher } from '../workers/engine-response-watcher'
 import { jobQueue, JobType } from '../workers/job-queue/job-queue'
 import { payloadOffloader } from '../workers/payload-offloader'
 import { passgradAdmissionService } from './passgrad-admission-service'
+import { resolvePassgradTriggerKind } from './passgrad-trigger-kind'
 import { webhookHandshake } from './webhook-handshake'
 
 const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS) * 1000
@@ -105,7 +106,9 @@ export const webhookService = {
         })
         const flowVersionIdToRun = await webhookService.getFlowVersionIdToRun(flowVersionToRun, flow)
         wideEvent.set({ flowVersion: { id: flowVersionIdToRun } })
-        const runEnvironment = flowVersionToRun === WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING
+        const runEnvironment = flow.status === FlowStatus.ENABLED
+            ? RunEnvironment.PRODUCTION
+            : RunEnvironment.TESTING
 
         const response = await webhookHandshake.handleHandshakeRequest({
             payload: (payload ?? await data(flow.projectId)) as TriggerPayload,
@@ -129,12 +132,14 @@ export const webhookService = {
             }
         }
 
+        const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })
         const admissionResult = await passgradAdmissionService.admit({
             flowId: flow.id,
             invocationId: webhookRequestId,
             logger: pinoLogger,
             projectId: flow.projectId,
             runEnvironment,
+            triggerKind: flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook',
         })
         if (admissionResult.status === 'denied') {
             return {

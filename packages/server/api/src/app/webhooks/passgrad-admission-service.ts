@@ -4,6 +4,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { PassgradTriggerKind } from './passgrad-trigger-kind'
 
 const admissionResponseSchema = z.object({
     admissionToken: z.string().min(1),
@@ -16,7 +17,7 @@ const bindingResponseSchema = z.object({
 })
 
 export const passgradAdmissionService = {
-    async admit({ flowId, invocationId, logger, projectId, runEnvironment }: AdmitParams): Promise<AdmissionResult> {
+    async admit({ flowId, invocationId, logger, projectId, runEnvironment, triggerKind }: AdmitParams): Promise<AdmissionResult> {
         if (runEnvironment !== RunEnvironment.PRODUCTION) {
             return { status: 'not_required' }
         }
@@ -36,7 +37,7 @@ export const passgradAdmissionService = {
             apProjectId: projectId,
             apFlowId: flowId,
             invocationId,
-            triggerKind: 'webhook',
+            triggerKind,
         }, {
             headers: {
                 'x-passgrad-admission-secret': secret,
@@ -105,6 +106,7 @@ type AdmitParams = {
     logger: FastifyBaseLogger
     projectId: string
     runEnvironment: RunEnvironment
+    triggerKind: PassgradTriggerKind
 }
 
 type AdmissionResult =

@@ -131,7 +131,7 @@ var requestSubmission = (0, import_pieces_framework4.createAction)({
       payload: {
         actorUserId: context.propsValue.actor_user_id,
         formId: context.propsValue.form_id,
-        resumeUrl: waitpoint.resumeUrl,
+        resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
         workflowNodeReference: context.step.name,
         workflowReference: context.flows.current.id,
         workflowRunReference: context.run.id

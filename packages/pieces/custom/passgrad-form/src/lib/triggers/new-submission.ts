@@ -11,7 +11,7 @@ const sampleData = {
  * Trigger: New Submission
  *
  * Fires when a user submits the selected Passgrad form.
- * Uses APP_WEBHOOK strategy — onEnable registers the webhook URL
+ * Uses WEBHOOK strategy — onEnable registers the webhook URL
  * with Passgrad's API, onDisable removes it.
  *
  * Lifecycle:
@@ -26,7 +26,7 @@ export const newSubmission = createTrigger({
   displayName: "New Submission",
   description:
     "Triggers when a new submission is received. Use Get Submission to retrieve its payload.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: {
     form_id: formIdProperty,
   },
@@ -55,7 +55,7 @@ export const newSubmission = createTrigger({
   },
 
   async run(context) {
-    return [context.payload.body];
+    return [context.payload.body ?? context.payload];
   },
 
   async test(context) {

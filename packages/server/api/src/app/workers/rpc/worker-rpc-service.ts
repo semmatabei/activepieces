@@ -1,6 +1,7 @@
 import { apVersionUtil, onCallService, UNKNOWN_VERSION } from '@activepieces/server-utils'
 import {
     ApEdition,
+    apId,
     ExecutionType,
     ExecutioOutputFile,
     FileCompression,
@@ -41,6 +42,8 @@ import { triggerSourceService } from '../../trigger/trigger-source/trigger-sourc
 import { getWorkerGroupQueueName, QueueName, RunsMetadataUpsertData } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
+import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
+import { resolvePassgradTriggerKind } from '../../webhooks/passgrad-trigger-kind'
 
 const getPollQueueName = (workerGroupId?: string): string => {
     return workerGroupId ? getWorkerGroupQueueName(workerGroupId) : QueueName.WORKER_JOBS
@@ -153,7 +156,7 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
         },
 
         async submitPayloads(input) {
-            const { flowVersionId, projectId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure, admission } = input
+            const { flowVersionId, projectId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
 
             const flowVersion = await flowVersionService(log).getOne(flowVersionId)
             if (!flowVersion) {
@@ -164,8 +167,22 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
             const filterPayloads = await dedupeService.filterUniquePayloads(flowVersionId, payloads)
 
             const flowRuns = await Promise.all(
-                filterPayloads.map((payload) =>
-                    flowRunService(log).start({
+                filterPayloads.map(async (payload) => {
+                    const admission = input.admission
+                        ? { status: 'admitted' as const, admission: input.admission }
+                        : await passgradAdmissionService.admit({
+                            flowId: flowVersion.flowId,
+                            invocationId: apId(),
+                            logger: log,
+                            projectId,
+                            runEnvironment: environment,
+                            triggerKind: resolvePassgradTriggerKind(flowVersion),
+                        })
+                    if (admission.status === 'denied' || admission.status === 'unavailable') {
+                        log.warn({ flow: { id: flowVersion.flowId }, project: { id: projectId } }, 'Passgrad admission rejected trigger payload')
+                        return null
+                    }
+                    return flowRunService(log).start({
                         flowId: flowVersion.flowId,
                         environment,
                         flowVersionId,
@@ -179,11 +196,11 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
                         executeTrigger: false,
                         parentRunId,
                         failParentOnFailure,
-                        admission,
-                    }),
-                ),
+                        admission: admission.status === 'admitted' ? admission.admission : undefined,
+                    })
+                }),
             )
-            return flowRuns
+            return flowRuns.filter((flowRun): flowRun is NonNullable<typeof flowRun> => flowRun !== null)
         },
 
         async savePayloads(input) {

@@ -10,14 +10,14 @@ const sampleData = {
 
 /**
  * Trigger: New Record — fires when a record is created in the selected table.
- * Uses APP_WEBHOOK: onEnable registers webhook with Passgrad, onDisable removes it.
+ * Uses WEBHOOK: onEnable registers webhook with Passgrad, onDisable removes it.
  */
 export const newRecord = createTrigger({
   auth: passgradAuth,
   name: "new_record",
   displayName: "New Record",
   description: "Triggers when a new record is created in the selected Passgrad table.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: { table_id: tableIdProperty },
   sampleData,
 
@@ -34,7 +34,7 @@ export const newRecord = createTrigger({
   },
 
   async run(context) {
-    return [context.payload.body];
+    return [context.payload.body ?? context.payload];
   },
 
   async test(context) {

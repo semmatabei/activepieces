@@ -19,9 +19,12 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { flowService } from '../../flows/flow/flow.service'
+import { flowVersionRepo } from '../../flows/flow-version/flow-version.service'
 import { domainHelper } from '../../helper/domain-helper'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { projectService } from '../../project/project-service'
+import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
+import { resolvePassgradTriggerKind } from '../../webhooks/passgrad-trigger-kind'
 import { WebhookFlowVersionToRun, webhookService } from '../../webhooks/webhook.service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { payloadOffloader } from '../../workers/payload-offloader'
@@ -134,6 +137,20 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                     isSimulating ? WebhookFlowVersionToRun.LATEST : WebhookFlowVersionToRun.LOCKED_FALL_BACK_TO_LATEST,
                     flow,
                 )
+                const runEnvironment = isSimulating ? RunEnvironment.TESTING : RunEnvironment.PRODUCTION
+                const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })
+                const admissionResult = await passgradAdmissionService.admit({
+                    flowId: flow.id,
+                    invocationId: requestId,
+                    logger: request.log,
+                    projectId: listener.projectId,
+                    runEnvironment,
+                    triggerKind: flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook',
+                })
+                if (admissionResult.status === 'denied' || admissionResult.status === 'unavailable') {
+                    request.log.warn({ flow: { id: flow.id }, project: { id: listener.projectId } }, 'Passgrad admission rejected app webhook')
+                    return
+                }
                 const platformId = await projectService(request.log).getPlatformId(listener.projectId)
                 const jobPayload = await payloadOffloader.offloadPayload(request.log, payload, listener.projectId, platformId)
                 return jobQueue(request.log).add({
@@ -147,10 +164,11 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                         payload: jobPayload,
                         flowId: listener.flowId,
                         jobType: WorkerJobType.EXECUTE_WEBHOOK,
-                        runEnvironment: isSimulating ? RunEnvironment.TESTING : RunEnvironment.PRODUCTION,
+                        runEnvironment,
                         saveSampleData: isSimulating,
                         flowVersionIdToRun,
                         execute: flow.status === FlowStatus.ENABLED,
+                        admission: admissionResult.status === 'admitted' ? admissionResult.admission : undefined,
                     },
                 })
             })

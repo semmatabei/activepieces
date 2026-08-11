@@ -38,6 +38,25 @@ describe('passgradCapabilityService', () => {
         }))
     })
 
+    it('uses the binding-derived callback route without a tenant path', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { data: { id: 'session-1' } } })
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.open-workflow-session',
+            payload: { formId: 'form-1' },
+        })
+
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/form-workflow-sessions',
+            headers: expect.objectContaining({
+                'x-passgrad-callback-credential-id': 'credential-from-binding',
+                'x-passgrad-project-id': 'engine-project',
+            }),
+        }))
+    })
+
     it('rejects engine project without a persisted binding', async () => {
         vi.mocked(passgradProjectBindingService.getCredentials).mockResolvedValue(null)
 
