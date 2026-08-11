@@ -1,8 +1,8 @@
 {
   "name": "@activepieces/piece-passgrad-form",
-  "version": "0.1.9",
-"main": "./src/index.js",
-"types": "./src/index.d.ts",
+  "version": "0.1.10",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "description": "Passgrad Form piece — submit form data as flow trigger or collect input mid-flow.",
   "dependencies": {
     "@activepieces/pieces-framework": "*",
