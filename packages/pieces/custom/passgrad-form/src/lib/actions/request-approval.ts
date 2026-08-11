@@ -59,42 +59,50 @@ export const requestApproval = createAction({
     const existing = await context.store.get<{ apTaskId: string; eventId: string }>(occurrenceKey);
     const occurrence = existing ?? { apTaskId: randomUUID(), eventId: randomUUID() };
     if (!existing) await context.store.put(occurrenceKey, occurrence);
-    await context.passgrad.request({
-      operation: "form.project-workflow-run",
-      payload: {
-        apEventSequence: 0,
-        apRunId: context.run.id,
-        eventId: `${context.run.id}:waiting`,
-        finishedAt: null,
-        safeFailureSummary: null,
-        sourceSubmissionId: null,
-        startedAt: new Date().toISOString(),
-        status: "waiting",
-        triggerKind: context.propsValue.trigger_kind,
-        type: "workflow.run.projection.v1",
-        workflowId: context.propsValue.workflow_id,
-      },
-    });
-    await context.passgrad.request({
-      operation: "task.open-workflow-approval",
-      payload: {
-        apRunId: context.run.id,
-        apStepId: context.step.name,
-        apTaskId: occurrence.apTaskId,
-        eventId: occurrence.eventId,
-        type: "workflow.task.created.v1",
-        workflowId: context.propsValue.workflow_id,
-        task: {
-          type: "approval",
-          title: context.propsValue.title,
-          description: context.propsValue.description ?? "",
-          priority: "normal",
-          dueAt: null,
-          targets: [{ type: "user", userId: context.propsValue.assignee_user_id }],
-          resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
+    try {
+      await context.passgrad.request({
+        operation: "form.project-workflow-run",
+        payload: {
+          apEventSequence: 0,
+          apRunId: context.run.id,
+          eventId: `${context.run.id}:waiting`,
+          finishedAt: null,
+          safeFailureSummary: null,
+          sourceSubmissionId: null,
+          startedAt: new Date().toISOString(),
+          status: "waiting",
+          triggerKind: context.propsValue.trigger_kind,
+          type: "workflow.run.projection.v1",
+          workflowId: context.propsValue.workflow_id,
         },
-      },
-    });
+      });
+    } catch {
+      throw new Error("Passgrad waiting-run projection failed");
+    }
+    try {
+      await context.passgrad.request({
+        operation: "task.open-workflow-approval",
+        payload: {
+          apRunId: context.run.id,
+          apStepId: context.step.name,
+          apTaskId: occurrence.apTaskId,
+          eventId: occurrence.eventId,
+          type: "workflow.task.created.v1",
+          workflowId: context.propsValue.workflow_id,
+          task: {
+            type: "approval",
+            title: context.propsValue.title,
+            description: context.propsValue.description ?? "",
+            priority: "normal",
+            dueAt: null,
+            targets: [{ type: "user", userId: context.propsValue.assignee_user_id }],
+            resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
+          },
+        },
+      });
+    } catch {
+      throw new Error("Passgrad approval Task creation failed");
+    }
     context.run.waitForWaitpoint(waitpoint.id);
     return { status: "waiting" };
   },
