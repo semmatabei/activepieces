@@ -14,7 +14,9 @@ export const flagController: FastifyPluginAsyncZod = async (app) => {
         '/',
         {
             config: {
-                security: securityAccess.unscoped(ALL_PRINCIPAL_TYPES),
+                security: securityAccess.unscoped(ALL_PRINCIPAL_TYPES, {
+                    allowProjectScopedEmbed: true,
+                }),
             },
             logLevel: 'silent',
         },

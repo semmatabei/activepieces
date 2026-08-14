@@ -1,5 +1,6 @@
 import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
-import { passgradAuth, formIdProperty } from "../common";
+import { passgradAuth, formIdProperty, passgradRequest } from "../common";
+import { HttpMethod } from "@activepieces/pieces-common";
 
 const sampleData = {
   event: "form.submitted.v1",
@@ -11,7 +12,7 @@ const sampleData = {
  * Trigger: New Submission
  *
  * Fires when a user submits the selected Passgrad form.
- * Uses WEBHOOK strategy — onEnable registers the webhook URL
+ * Uses APP_WEBHOOK strategy — onEnable registers the webhook URL
  * with Passgrad's API, onDisable removes it.
  *
  * Lifecycle:
@@ -26,7 +27,7 @@ export const newSubmission = createTrigger({
   displayName: "New Submission",
   description:
     "Triggers when a new submission is received. Use Get Submission to retrieve its payload.",
-  type: TriggerStrategy.WEBHOOK,
+  type: TriggerStrategy.APP_WEBHOOK,
   props: {
     form_id: formIdProperty,
   },
@@ -37,12 +38,15 @@ export const newSubmission = createTrigger({
     const webhookUrl = context.webhookUrl;
 
     // Register the webhook with Passgrad
-    const response = await context.passgrad.request<{ data: { id: string } }>({
-      operation: "form.create-trigger", resourceId: formId, payload: { webhook_url: webhookUrl },
-    });
+    const response = await passgradRequest<{ data: { id: string } }>(
+      context.auth,
+      HttpMethod.POST,
+      `/forms/${formId}/triggers`,
+      { webhook_url: webhookUrl },
+    );
 
     // Store the trigger ID so we can clean it up on disable
-    await context.store.put("passgrad_trigger_id", response.data.id);
+    await context.store.put("passgrad_trigger_id", response.body.data.id);
   },
 
   async onDisable(context) {
@@ -50,22 +54,30 @@ export const newSubmission = createTrigger({
     const triggerId = await context.store.get<string>("passgrad_trigger_id");
 
     if (triggerId) {
-      await context.passgrad.request({ operation: "form.delete-trigger", resourceId: formId, payload: { triggerId } });
+      await passgradRequest(
+        context.auth,
+        HttpMethod.DELETE,
+        `/forms/${formId}/triggers/${triggerId}`,
+      );
     }
   },
 
   async run(context) {
-    return [context.payload.body ?? context.payload];
+    return [context.payload.body];
   },
 
   async test(context) {
     // Test: simulate by fetching the latest submission (if any),
     // or return sample data if no submissions exist.
     try {
-      const response = await context.passgrad.request<{ data: unknown[] }>({ operation: "form.list-submissions", resourceId: context.propsValue.form_id });
+      const response = await passgradRequest<{ data: unknown[] }>(
+        context.auth,
+        HttpMethod.GET,
+        `/forms/${context.propsValue.form_id}/submissions?limit=1`,
+      );
 
-      if (response.data.length > 0) {
-        return [response.data[0]];
+      if (response.body.data.length > 0) {
+        return [response.body.data[0]];
       }
     } catch {
       // Fall through to sample data

@@ -91,7 +91,7 @@ const executeAction: ActionHandler<PieceAction> = async ({ action, executionStat
         }
         const context: ActionContext<PieceAuthProperty, InputPropertyMap> = {
             executionType: isPaused ? ExecutionType.RESUME : ExecutionType.BEGIN,
-            resumePayload: constants.resumePayload!,
+            resumePayload: isPaused ? constants.resumePayload! : undefined,
             store: createContextStore({
                 apiUrl: constants.internalApiUrl,
                 prefix: '',

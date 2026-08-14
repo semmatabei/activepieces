@@ -12,7 +12,7 @@ export const passgradTable = createPiece({
   description:
     "Trigger flows on record changes in Passgrad tables, or manage table records from flows. " +
     "New records, updates, and deletions can all start or continue automations.",
-  logoUrl: "https://cdn.passgrad.id/logos/passgrad-table.png",
+  logoUrl: "https://asset-stg.pub-passgrad.com/pieces/passgrad-table.svg",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
   auth: passgradAuth,

@@ -1,5 +1,6 @@
 import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
-import { passgradAuth, tableIdProperty } from "../common";
+import { passgradAuth, tableIdProperty, passgradRequest } from "../common";
+import { HttpMethod } from "@activepieces/pieces-common";
 
 export const updatedRecord = createTrigger({
   auth: passgradAuth,
@@ -16,14 +17,23 @@ export const updatedRecord = createTrigger({
   },
 
   async onEnable(context) {
-    const response = await context.passgrad.request<{ data: { id: string } }>({ operation: "table.create-trigger", resourceId: context.propsValue.table_id, payload: { webhook_url: context.webhookUrl, event_type: "update" } });
-    await context.store.put("passgrad_trigger_id", response.data.id);
+    const response = await passgradRequest<{ data: { id: string } }>(
+      context.auth,
+      HttpMethod.POST,
+      `/tables/${context.propsValue.table_id}/triggers`,
+      { webhook_url: context.webhookUrl, event_type: "update" },
+    );
+    await context.store.put("passgrad_trigger_id", response.body.data.id);
   },
 
   async onDisable(context) {
     const triggerId = await context.store.get<string>("passgrad_trigger_id");
     if (triggerId) {
-      await context.passgrad.request({ operation: "table.delete-trigger", resourceId: context.propsValue.table_id, payload: { triggerId } });
+      await passgradRequest(
+        context.auth,
+        HttpMethod.DELETE,
+        `/tables/${context.propsValue.table_id}/triggers/${triggerId}`,
+      );
     }
   },
 

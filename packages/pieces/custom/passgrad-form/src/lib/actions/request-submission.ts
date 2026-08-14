@@ -1,5 +1,7 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { formIdProperty, passgradAuth } from "../common";
+import { HttpMethod } from "@activepieces/pieces-common";
+
+import { formIdProperty, passgradAuth, passgradCallbackRequest } from "../common";
 
 const actorUserIdProperty = Property.ShortText({
   displayName: "Assigned user ID",
@@ -33,9 +35,11 @@ export const requestSubmission = createAction({
     }
 
     const waitpoint = await context.run.createWaitpoint({ type: "WEBHOOK", version: "V1" });
-    const response = await context.passgrad.request<OpenedSession>({
-      operation: "form.open-workflow-session",
-      payload: {
+    const response = await passgradCallbackRequest<OpenedSession>(
+      context.auth,
+      HttpMethod.POST,
+      "/callbacks/activepieces/v1/form-workflow-sessions",
+      {
         actorUserId: context.propsValue.actor_user_id,
         formId: context.propsValue.form_id,
         resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
@@ -43,9 +47,9 @@ export const requestSubmission = createAction({
         workflowReference: context.flows.current.id,
         workflowRunReference: context.run.id,
       },
-    });
+    );
 
     context.run.waitForWaitpoint(waitpoint.id);
-    return { sessionId: response.data.id, status: "waiting" };
+    return { sessionId: response.body.data.id, status: "waiting" };
   },
 });

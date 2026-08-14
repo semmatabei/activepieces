@@ -1,28 +1,40 @@
 import { isNil, PrincipalType } from '@activepieces/shared'
 import { FastifyRequest } from 'fastify'
 import { AuthorizationRouteSecurity } from '../../authorization/authorization'
-import { AuthorizationType, ProjectResourceType, RouteKind } from '../../authorization/common'
+import {
+    AuthorizationType,
+    ProjectResourceType,
+    RouteKind,
+} from '../../authorization/common'
 import { authorizeOrThrow } from './authorize'
 import { projectIdExtractor } from './projectIdExtractor'
 
-
-export const authorizationMiddleware = async (request: FastifyRequest): Promise<void> => {
+export const authorizationMiddleware = async (
+    request: FastifyRequest,
+): Promise<void> => {
     const security = request.routeOptions.config?.security
     const securityAccessRequest = await convertToSecurityAccessRequest(request)
     await authorizeOrThrow(request.principal, securityAccessRequest, request.log)
 
     const requestPath = request.routeOptions.config.url
-    const bullmqRoute = requestPath.startsWith('/ui') || requestPath.startsWith('/api/ui')
+    const bullmqRoute =
+    requestPath.startsWith('/ui') || requestPath.startsWith('/api/ui')
     if (bullmqRoute) {
         return
     }
-    if (!isNil(security) && security.kind === RouteKind.AUTHENTICATED && security.authorization.type === AuthorizationType.PROJECT) {
-        // @ts-expect-error: explicit override for Fastify typing assignment
+    if (
+        !isNil(security) &&
+    security.kind === RouteKind.AUTHENTICATED &&
+    security.authorization.type === AuthorizationType.PROJECT
+    ) {
+    // @ts-expect-error: explicit override for Fastify typing assignment
         request.projectId = securityAccessRequest.authorization.projectId
     }
 }
 
-export async function convertToSecurityAccessRequest(request: FastifyRequest): Promise<AuthorizationRouteSecurity> {
+export async function convertToSecurityAccessRequest(
+    request: FastifyRequest,
+): Promise<AuthorizationRouteSecurity> {
     const security = request.routeOptions.config?.security
     if (isNil(security) || security.kind === RouteKind.PUBLIC) {
         return {
@@ -56,6 +68,8 @@ export async function convertToSecurityAccessRequest(request: FastifyRequest): P
                 authorization: {
                     type: AuthorizationType.UNSCOPED,
                     allowedPrincipals: security.authorization.allowedPrincipals,
+                    allowProjectScopedEmbed:
+                        security.authorization.allowProjectScopedEmbed,
                 },
             }
         case AuthorizationType.NONE:
@@ -69,7 +83,9 @@ export async function convertToSecurityAccessRequest(request: FastifyRequest): P
     }
 }
 
-export async function getProjectIdFromRequest(request: FastifyRequest): Promise<string | undefined> {
+export async function getProjectIdFromRequest(
+    request: FastifyRequest,
+): Promise<string | undefined> {
     if (request.principal.type === PrincipalType.ENGINE) {
         return request.principal.projectId
     }
@@ -80,7 +96,10 @@ export async function getProjectIdFromRequest(request: FastifyRequest): Promise<
     if (security.kind === RouteKind.PUBLIC) {
         return undefined
     }
-    if (security.authorization.type !== AuthorizationType.PROJECT && security.authorization.type !== AuthorizationType.PLATFORM) {
+    if (
+        security.authorization.type !== AuthorizationType.PROJECT &&
+    security.authorization.type !== AuthorizationType.PLATFORM
+    ) {
         return undefined
     }
     const projectResource = security.authorization.projectResource

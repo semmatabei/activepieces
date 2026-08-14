@@ -1,25 +1,47 @@
-import { ActivepiecesError, ErrorCode, isNil, Permission, PlatformRole, Principal, PrincipalType, UserIdentityProvider } from '@activepieces/shared'
+import {
+    ActivepiecesError,
+    ErrorCode,
+    isNil,
+    Permission,
+    PlatformRole,
+    Principal,
+    PrincipalType,
+    UserIdentityProvider,
+} from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { userIdentityService } from '../../../../authentication/user-identity/user-identity-service'
 import { rbacService } from '../../../../ee/authentication/project-role/rbac-service'
 import { projectMemberService } from '../../../../ee/projects/project-members/project-member.service'
 import { userService } from '../../../../user/user-service'
-import { AuthorizationRouteSecurity, ProjectAuthorizationConfig } from '../../authorization/authorization'
+import {
+    AuthorizationRouteSecurity,
+    ProjectAuthorizationConfig,
+} from '../../authorization/authorization'
 import { AuthorizationType, RouteKind } from '../../authorization/common'
 
-export const authorizeOrThrow = async (principal: Principal, security: AuthorizationRouteSecurity, log: FastifyBaseLogger): Promise<void> => {
+export const authorizeOrThrow = async (
+    principal: Principal,
+    security: AuthorizationRouteSecurity,
+    log: FastifyBaseLogger,
+): Promise<void> => {
     if (security.kind === RouteKind.PUBLIC) {
         return
     }
     switch (security.authorization.type) {
         case AuthorizationType.PROJECT:
             assertPassgradEmbedProject(principal, security.authorization.projectId)
-            await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
+            await assertPrinicpalIsOneOf(
+                security.authorization.allowedPrincipals,
+                principal.type,
+            )
             await assertAccessToProject(principal, security.authorization, log)
             break
         case AuthorizationType.PLATFORM:
             assertNotPassgradEmbedPrincipal(principal)
-            await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
+            await assertPrinicpalIsOneOf(
+                security.authorization.allowedPrincipals,
+                principal.type,
+            )
             if (security.authorization.adminOnly) {
                 await assertPlatformIsOwnedByCurrentPrincipal(principal, log)
             }
@@ -28,31 +50,49 @@ export const authorizeOrThrow = async (principal: Principal, security: Authoriza
             }
             break
         case AuthorizationType.UNSCOPED:
-            assertNotPassgradEmbedPrincipal(principal)
-            await assertPrinicpalIsOneOf(security.authorization.allowedPrincipals, principal.type)
+            if (!security.authorization.allowProjectScopedEmbed) {
+                assertNotPassgradEmbedPrincipal(principal)
+            }
+            await assertPrinicpalIsOneOf(
+                security.authorization.allowedPrincipals,
+                principal.type,
+            )
             break
         case AuthorizationType.NONE:
             break
     }
 }
 
-function assertPassgradEmbedProject(principal: Principal, projectId: string | undefined): void {
+function assertPassgradEmbedProject(
+    principal: Principal,
+    projectId: string | undefined,
+): void {
     if (principal.type !== PrincipalType.USER || isNil(principal.projectId)) {
         return
     }
     if (principal.projectId !== projectId) {
-        throw new ActivepiecesError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Embedded session is not allowed to access this project' } })
+        throw new ActivepiecesError({
+            code: ErrorCode.AUTHORIZATION,
+            params: {
+                message: 'Embedded session is not allowed to access this project',
+            },
+        })
     }
 }
 
 function assertNotPassgradEmbedPrincipal(principal: Principal): void {
     if (principal.type === PrincipalType.USER && !isNil(principal.projectId)) {
-        throw new ActivepiecesError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Embedded session requires project-scoped access' } })
+        throw new ActivepiecesError({
+            code: ErrorCode.AUTHORIZATION,
+            params: { message: 'Embedded session requires project-scoped access' },
+        })
     }
 }
 
-
-async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogger): Promise<void> {
+async function assertNonEmbedOrAdmin(
+    principal: Principal,
+    log: FastifyBaseLogger,
+): Promise<void> {
     if (principal.type === PrincipalType.SERVICE) {
         return
     }
@@ -60,7 +100,9 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
     if (user.platformRole === PlatformRole.ADMIN) {
         return
     }
-    const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
+    const identity = await userIdentityService(log).getOneOrFail({
+        id: user.identityId,
+    })
     if (identity.provider === UserIdentityProvider.JWT) {
         throw new ActivepiecesError({
             code: ErrorCode.AUTHORIZATION,
@@ -77,7 +119,9 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
             },
         })
     }
-    const hasInvitePermission = await projectMemberService(log).hasPermissionOnAnyProject({
+    const hasInvitePermission = await projectMemberService(
+        log,
+    ).hasPermissionOnAnyProject({
         userId: user.id,
         platformId: user.platformId,
         permission: Permission.WRITE_INVITATION,
@@ -92,7 +136,10 @@ async function assertNonEmbedOrAdmin(principal: Principal, log: FastifyBaseLogge
     }
 }
 
-async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log: FastifyBaseLogger): Promise<void> {
+async function assertPlatformIsOwnedByCurrentPrincipal(
+    principal: Principal,
+    log: FastifyBaseLogger,
+): Promise<void> {
     if (principal.type === PrincipalType.SERVICE) {
         return
     }
@@ -107,8 +154,11 @@ async function assertPlatformIsOwnedByCurrentPrincipal(principal: Principal, log
     }
 }
 
-
-async function assertAccessToProject(principal: Principal, projectSecurity: ProjectAuthorizationConfig, log: FastifyBaseLogger): Promise<void> {
+async function assertAccessToProject(
+    principal: Principal,
+    projectSecurity: ProjectAuthorizationConfig,
+    log: FastifyBaseLogger,
+): Promise<void> {
     if (isNil(projectSecurity.projectId)) {
         throw new ActivepiecesError({
             code: ErrorCode.AUTHORIZATION,
@@ -117,11 +167,17 @@ async function assertAccessToProject(principal: Principal, projectSecurity: Proj
             },
         })
     }
-    await rbacService(log).assertPrinicpalAccessToProject({ principal, permission: projectSecurity.permission, projectId: projectSecurity.projectId })
+    await rbacService(log).assertPrinicpalAccessToProject({
+        principal,
+        permission: projectSecurity.permission,
+        projectId: projectSecurity.projectId,
+    })
 }
 
-
-async function assertPrinicpalIsOneOf< T extends readonly PrincipalType[]>(allowedPrincipals: T, currentPrincipal: PrincipalType): Promise<void> {
+async function assertPrinicpalIsOneOf<T extends readonly PrincipalType[]>(
+    allowedPrincipals: T,
+    currentPrincipal: PrincipalType,
+): Promise<void> {
     if (!allowedPrincipals.includes(currentPrincipal)) {
         throw new ActivepiecesError({
             code: ErrorCode.AUTHORIZATION,

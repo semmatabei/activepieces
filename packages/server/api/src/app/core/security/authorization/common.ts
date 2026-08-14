@@ -51,19 +51,31 @@ export type ProjectParamResource = {
     paramKey?: string // defaults to projectId
 }
 
-export type ProjectResource = ProjectTableResource | ProjectQueryResource | ProjectBodyResource | ProjectParamResource
+export type ProjectResource =
+  | ProjectTableResource
+  | ProjectQueryResource
+  | ProjectBodyResource
+  | ProjectParamResource
 
 export type PlatformAuthorization = {
     type: AuthorizationType.PLATFORM
     adminOnly: boolean
     nonEmbedUsersOnly?: boolean
-    allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]
+    allowedPrincipals: readonly (
+        | PrincipalType.USER
+        | PrincipalType.ENGINE
+        | PrincipalType.SERVICE
+    )[]
     projectResource?: ProjectResource
 }
 
 export type ProjectAuthorization = {
     type: AuthorizationType.PROJECT
-    allowedPrincipals: readonly (PrincipalType.USER | PrincipalType.ENGINE | PrincipalType.SERVICE)[]
+    allowedPrincipals: readonly (
+        | PrincipalType.USER
+        | PrincipalType.ENGINE
+        | PrincipalType.SERVICE
+    )[]
     projectResource: ProjectResource
     permission?: Permission
 }
@@ -71,6 +83,7 @@ export type ProjectAuthorization = {
 export type UnscopedAuthorization = {
     type: AuthorizationType.UNSCOPED
     allowedPrincipals: readonly PrincipalType[]
+    allowProjectScopedEmbed?: boolean
 }
 
 export type NoneAuthorization = {
