@@ -34,7 +34,7 @@ export const tableIdProperty = Property.Dropdown<string, true, typeof passgradAu
         url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/tables`,
         headers: {
           "Content-Type": "application/json",
-          ...getBindingHeaders(),
+          ...getBindingHeaders(auth.props.tenantId),
         },
       });
       return {
@@ -66,7 +66,7 @@ export const recordFieldsProperty = Property.DynamicProperties<true, typeof pass
         url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/tables/${table_id}/fields`,
         headers: {
           "Content-Type": "application/json",
-          ...getBindingHeaders(),
+          ...getBindingHeaders(auth.props.tenantId),
         },
       });
       const props: Record<string, ReturnType<typeof Property.ShortText>> = {};
@@ -84,7 +84,14 @@ export const recordFieldsProperty = Property.DynamicProperties<true, typeof pass
   },
 });
 
-function getBindingHeaders() {
+function getBindingHeaders(tenantId?: string) {
+  const demoSecret = process.env["PASSGRAD_STAGING_DEMO_SECRET"];
+  if (demoSecret && tenantId) {
+    return {
+      "x-passgrad-staging-demo-secret": demoSecret,
+      "x-passgrad-staging-tenant-id": tenantId,
+    };
+  }
   const credentialId = process.env["PASSGRAD_BINDING_CREDENTIAL_ID"];
   const projectId = process.env["PASSGRAD_BINDING_PROJECT_ID"];
   const secret = process.env["PASSGRAD_BINDING_SECRET"];
@@ -107,7 +114,7 @@ export function passgradRequest<T>(
     url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}${path}`,
     headers: {
       "Content-Type": "application/json",
-      ...getBindingHeaders(),
+      ...getBindingHeaders(auth.props.tenantId),
     },
     body: body ? JSON.stringify(body) : undefined,
   });

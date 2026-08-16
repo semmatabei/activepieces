@@ -37,7 +37,7 @@ export const formIdProperty = Property.Dropdown<string, true, typeof passgradAut
         url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/forms`,
         headers: {
           "Content-Type": "application/json",
-          ...getBindingHeaders(),
+          ...getBindingHeaders(auth.props.tenantId),
         },
       });
 
@@ -53,7 +53,14 @@ export const formIdProperty = Property.Dropdown<string, true, typeof passgradAut
   },
 });
 
-function getBindingHeaders() {
+function getBindingHeaders(tenantId?: string) {
+  const demoSecret = process.env["PASSGRAD_STAGING_DEMO_SECRET"];
+  if (demoSecret && tenantId) {
+    return {
+      "x-passgrad-staging-demo-secret": demoSecret,
+      "x-passgrad-staging-tenant-id": tenantId,
+    };
+  }
   const credentialId = process.env["PASSGRAD_BINDING_CREDENTIAL_ID"];
   const projectId = process.env["PASSGRAD_BINDING_PROJECT_ID"];
   const secret = process.env["PASSGRAD_BINDING_SECRET"];
@@ -91,7 +98,7 @@ export function passgradRequest<T>(
     url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}${path}`,
     headers: {
       "Content-Type": "application/json",
-      ...getBindingHeaders(),
+      ...getBindingHeaders(auth.props.tenantId),
     },
     body: body ? JSON.stringify(body) : undefined,
   });
