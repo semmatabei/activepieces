@@ -156,21 +156,21 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/form-workflow-sessions',
-                payload: parseCallbackPayload(params.payload),
+                payload: parseCallbackPayload(workflowSessionPayloadSchema, params.payload, 16 * 1024),
                 callback: true,
             }
         case 'form.project-workflow-run':
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/workflow-run-projections',
-                payload: parseCallbackPayload(params.payload),
+                payload: parseCallbackPayload(workflowRunPayloadSchema, params.payload, 64 * 1024),
                 callback: true,
             }
         case 'task.open-workflow-approval':
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/workflow-task-created',
-                payload: parseCallbackPayload(params.payload),
+                payload: parseCallbackPayload(workflowTaskPayloadSchema, params.payload, 64 * 1024),
                 callback: true,
             }
         default:
@@ -259,24 +259,75 @@ function parseTriggerPayload(
     )
 }
 
-const callbackPayloadSchema = z
+const workflowSessionPayloadSchema = z
     .object({
-        formId: boundedIdSchema.optional(),
-        workflowId: boundedIdSchema.optional(),
-        submissionId: boundedIdSchema.optional(),
-        apRunId: boundedIdSchema.optional(),
-        apStepId: boundedIdSchema.optional(),
-        apTaskId: boundedIdSchema.optional(),
-        eventId: boundedIdSchema.optional(),
-        type: z.string().trim().max(100).optional(),
-        status: z.string().trim().max(100).optional(),
-        result: z.unknown().optional(),
-        task: z.unknown().optional(),
+        actorUserId: z.string().uuid(),
+        formId: z.string().uuid(),
+        resumeUrl: z.string().url().max(8192),
+        workflowNodeReference: boundedIdSchema,
+        workflowReference: boundedIdSchema,
+        workflowRunReference: boundedIdSchema,
     })
     .strict()
 
-function parseCallbackPayload(payload: unknown): Record<string, unknown> {
-    return parseBoundedPayload(callbackPayloadSchema, payload)
+const workflowRunPayloadSchema = z
+    .object({
+        apEventSequence: z.number().int().nonnegative(),
+        apRunId: boundedIdSchema,
+        eventId: boundedIdSchema,
+        finishedAt: z.string().datetime().nullable(),
+        safeFailureSummary: z.string().max(2000).nullable(),
+        result: z.record(z.string(), z.unknown()).nullable(),
+        sourceSubmissionId: z.string().uuid().nullable(),
+        startedAt: z.string().datetime().nullable(),
+        status: z.enum(['pending', 'running', 'waiting', 'succeeded', 'failed', 'cancelled']),
+        triggerKind: z.enum([
+            'form_submission',
+            'record_created',
+            'record_updated',
+            'record_deleted',
+            'schedule',
+            'webhook',
+            'manual',
+        ]),
+        type: z.literal('workflow.run.projection.v1'),
+        workflowId: z.string().uuid(),
+    })
+    .strict()
+
+const taskTargetSchema = z.discriminatedUnion('type', [
+    z.object({ type: z.literal('user'), userId: z.string().uuid() }).strict(),
+    z.object({ type: z.literal('group'), groupId: z.string().uuid() }).strict(),
+])
+
+const workflowTaskPayloadSchema = z
+    .object({
+        apRunId: boundedIdSchema,
+        apStepId: boundedIdSchema,
+        apTaskId: boundedIdSchema,
+        eventId: boundedIdSchema,
+        type: z.literal('workflow.task.created.v1'),
+        workflowId: z.string().uuid(),
+        task: z
+            .object({
+                type: z.enum(['approval', 'action']),
+                title: z.string().trim().min(1).max(200),
+                description: z.string().max(4000),
+                priority: z.enum(['low', 'normal', 'high']),
+                resumeUrl: z.string().url().max(8192).optional(),
+                dueAt: z.string().datetime().nullable(),
+                targets: z.array(taskTargetSchema).min(1).max(100),
+            })
+            .strict(),
+    })
+    .strict()
+
+function parseCallbackPayload<T>(
+    schema: z.ZodType<T>,
+    payload: unknown,
+    maxBytes: number,
+): T {
+    return parseBoundedPayload(schema, payload, maxBytes)
 }
 
 function parseIdPayload(
@@ -295,13 +346,17 @@ function isStringRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && !isNil(value)
 }
 
-function parseBoundedPayload<T>(schema: z.ZodType<T>, payload: unknown): T {
+function parseBoundedPayload<T>(
+    schema: z.ZodType<T>,
+    payload: unknown,
+    maxBytes = 256 * 1024,
+): T {
     const parsed = schema.safeParse(payload)
     if (!parsed.success) {
         throw capabilityError('Passgrad capability payload is invalid')
     }
     const serialized = JSON.stringify(parsed.data)
-    if (serialized.length > 256 * 1024) {
+    if (Buffer.byteLength(serialized) > maxBytes) {
         throw capabilityError('Passgrad capability payload is too large')
     }
     return parsed.data

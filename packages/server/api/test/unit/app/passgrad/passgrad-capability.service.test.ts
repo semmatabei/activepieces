@@ -5,6 +5,48 @@ import { passgradCapabilityService } from '../../../../src/app/passgrad/passgrad
 import { passgradEngineRequestSchema } from '../../../../src/app/passgrad/passgrad-engine-request.schema'
 import { passgradProjectBindingService } from '../../../../src/app/passgrad/passgrad-project-binding.service'
 
+const resourceId = '019ffac2-a4cb-7144-96a5-37d26eed1467'
+const secondResourceId = '019ffac2-a4cb-7144-96a5-37d26eed1468'
+const workflowSessionPayload = {
+    actorUserId: resourceId,
+    formId: secondResourceId,
+    resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
+    workflowNodeReference: 'form-node',
+    workflowReference: 'flow-1',
+    workflowRunReference: 'run-1',
+}
+const workflowRunPayload = {
+    apEventSequence: 1,
+    apRunId: 'run-1',
+    eventId: 'run-1:succeeded',
+    finishedAt: '2026-08-21T10:00:00.000Z',
+    safeFailureSummary: null,
+    result: { accepted: true },
+    sourceSubmissionId: null,
+    startedAt: null,
+    status: 'succeeded' as const,
+    triggerKind: 'manual' as const,
+    type: 'workflow.run.projection.v1' as const,
+    workflowId: resourceId,
+}
+const workflowTaskPayload = {
+    apRunId: 'run-1',
+    apStepId: 'approval-step',
+    apTaskId: 'task-1',
+    eventId: 'task-event-1',
+    type: 'workflow.task.created.v1' as const,
+    workflowId: resourceId,
+    task: {
+        type: 'approval' as const,
+        title: 'Review request',
+        description: '',
+        priority: 'normal' as const,
+        resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
+        dueAt: null,
+        targets: [{ type: 'group' as const, groupId: secondResourceId }],
+    },
+}
+
 describe('passgradCapabilityService', () => {
     beforeEach(() => {
         vi.spyOn(safeHttp.axios, 'request').mockReset()
@@ -46,7 +88,7 @@ describe('passgradCapabilityService', () => {
             projectId: 'engine-project',
             pieceName: '@activepieces/piece-passgrad-form',
             operation: 'form.open-workflow-session',
-            payload: { formId: 'form-1' },
+            payload: workflowSessionPayload,
         })
 
         expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
@@ -161,21 +203,21 @@ describe('passgradCapabilityService', () => {
                 pieceName: '@activepieces/piece-passgrad-form',
                 operation: 'form.open-workflow-session',
                 expectedMethod: 'POST',
-                payload: { formId: 'form-1' },
+                payload: workflowSessionPayload,
                 expectedUrl: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/form-workflow-sessions',
             },
             {
                 pieceName: '@activepieces/piece-passgrad-form',
                 operation: 'form.project-workflow-run',
                 expectedMethod: 'POST',
-                payload: { workflowId: 'workflow-1' },
+                payload: workflowRunPayload,
                 expectedUrl: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/workflow-run-projections',
             },
             {
                 pieceName: '@activepieces/piece-passgrad-form',
                 operation: 'task.open-workflow-approval',
                 expectedMethod: 'POST',
-                payload: { workflowId: 'workflow-1' },
+                payload: workflowTaskPayload,
                 expectedUrl: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/workflow-task-created',
             },
             {
@@ -309,6 +351,48 @@ describe('passgradCapabilityService', () => {
         })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
 
         expect(safeHttp.axios.request).not.toHaveBeenCalled()
+    })
+
+    it('forwards exact callback payloads and rejects omitted or unknown fields', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+
+        for (const [operation, payload] of [
+            ['form.open-workflow-session', workflowSessionPayload],
+            ['form.project-workflow-run', workflowRunPayload],
+            ['task.open-workflow-approval', workflowTaskPayload],
+        ] as const) {
+            await passgradCapabilityService.request({
+                projectId: 'engine-project',
+                pieceName: '@activepieces/piece-passgrad-form',
+                operation,
+                payload,
+            })
+        }
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({ data: workflowSessionPayload }),
+        )
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({ data: workflowRunPayload }),
+        )
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({ data: workflowTaskPayload }),
+        )
+
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.project-workflow-run',
+            payload: { ...workflowRunPayload, attackerField: 'blocked' },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.open-workflow-session',
+            payload: { formId: secondResourceId },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
     })
 
     it('does not forward upstream error payloads into capability context', async () => {
