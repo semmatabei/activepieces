@@ -1,6 +1,7 @@
 import { safeHttp } from '@activepieces/server-utils'
 import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/shared'
 import { AxiosRequestConfig, isAxiosError, Method } from 'axios'
+import { z } from 'zod'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
@@ -24,7 +25,7 @@ export const passgradCapabilityService = {
                 method: route.method,
                 url: route.callback
                     ? `${apiUrl.replace(/\/$/, '')}${route.path}`
-                    : `${apiUrl.replace(/\/$/, '')}/tenants/${binding.tenantId}${
+                    : `${apiUrl.replace(/\/$/, '')}/tenants/${encodeURIComponent(binding.tenantId)}${
                         route.path
                     }`,
                 headers: {
@@ -44,8 +45,9 @@ export const passgradCapabilityService = {
             return response.data === '' ? { acknowledged: true } : response.data
         }
         catch (error) {
-            const message = isAxiosError(error) ? passgradErrorMessage(error.response?.data) : null
-            if (message) throw capabilityError(`Passgrad capability request failed: ${message}`)
+            if (isAxiosError(error)) {
+                throw capabilityError('Passgrad capability request failed')
+            }
             throw error
         }
     },
@@ -53,50 +55,52 @@ export const passgradCapabilityService = {
 
 function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
     switch (params.operation) {
+        case 'form.list':
+            return { method: 'GET', path: '/forms' }
         case 'table.get-record':
             return resourceRoute(
                 params,
                 'GET',
                 (id) =>
-                    `/tables/${id}/records/${requiredPayloadString(
+                    `/tables/${id}/records/${encodeURIComponent(requiredPayloadString(
                         params.payload,
                         'recordId',
-                    )}`,
+                    ))}`,
             )
         case 'table.create-record':
             return resourceRoute(
                 params,
                 'POST',
                 (id) => `/tables/${id}/records`,
-                params.payload,
+                parseRecordPayload(params.payload),
             )
         case 'table.update-record':
             return resourceRoute(
                 params,
                 'PATCH',
                 (id) =>
-                    `/tables/${id}/records/${requiredPayloadString(
+                    `/tables/${id}/records/${encodeURIComponent(requiredPayloadString(
                         params.payload,
                         'recordId',
-                    )}`,
-                params.payload,
+                    ))}`,
+                { values: parseUpdateRecordPayload(params.payload).values },
             )
         case 'table.create-trigger':
             return resourceRoute(
                 params,
                 'POST',
                 (id) => `/tables/${id}/triggers`,
-                params.payload,
+                parseTriggerPayload(params.payload, true),
             )
         case 'table.delete-trigger':
             return resourceRoute(
                 params,
                 'DELETE',
                 (id) =>
-                    `/tables/${id}/triggers/${requiredPayloadString(
+                    `/tables/${id}/triggers/${encodeURIComponent(requiredPayloadString(
                         params.payload,
                         'triggerId',
-                    )}`,
+                    ))}`,
             )
         case 'table.list-records':
             return resourceRoute(
@@ -104,32 +108,40 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                 'GET',
                 (id) => `/tables/${id}/records?limit=1&sort=-created_at`,
             )
+        case 'table.list':
+            return { method: 'GET', path: '/tables' }
+        case 'table.get-fields':
+            return resourceRoute(
+                params,
+                'GET',
+                (id) => `/tables/${id}/fields`,
+            )
         case 'form.get-submission':
             return resourceRoute(
                 params,
                 'GET',
                 (id) =>
-                    `/forms/${id}/submissions/${requiredPayloadString(
+                    `/forms/${id}/submissions/${encodeURIComponent(requiredPayloadString(
                         params.payload,
                         'submissionId',
-                    )}`,
+                    ))}`,
             )
         case 'form.create-trigger':
             return resourceRoute(
                 params,
                 'POST',
                 (id) => `/forms/${id}/triggers`,
-                params.payload,
+                parseTriggerPayload(params.payload, false),
             )
         case 'form.delete-trigger':
             return resourceRoute(
                 params,
                 'DELETE',
                 (id) =>
-                    `/forms/${id}/triggers/${requiredPayloadString(
+                    `/forms/${id}/triggers/${encodeURIComponent(requiredPayloadString(
                         params.payload,
                         'triggerId',
-                    )}`,
+                    ))}`,
             )
         case 'form.list-submissions':
             return resourceRoute(
@@ -141,21 +153,21 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/form-workflow-sessions',
-                payload: params.payload,
+                payload: parseCallbackPayload(params.payload),
                 callback: true,
             }
         case 'form.project-workflow-run':
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/workflow-run-projections',
-                payload: params.payload,
+                payload: parseCallbackPayload(params.payload),
                 callback: true,
             }
         case 'task.open-workflow-approval':
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/workflow-task-created',
-                payload: params.payload,
+                payload: parseCallbackPayload(params.payload),
                 callback: true,
             }
     }
@@ -167,10 +179,10 @@ function resourceRoute(
     path: (resourceId: string) => string,
     payload?: unknown,
 ): PassgradRoute {
-    if (isNil(params.resourceId) || params.resourceId.length === 0) {
+    if (isNil(params.resourceId) || params.resourceId.length === 0 || params.resourceId.length > 255) {
         throw capabilityError('Passgrad resource ID is required')
     }
-    return { method, path: path(params.resourceId), payload }
+    return { method, path: path(encodeURIComponent(params.resourceId)), payload }
 }
 
 function requiredPayloadString(payload: unknown, key: string): string {
@@ -195,9 +207,56 @@ function capabilityError(message: string): ActivepiecesError {
     })
 }
 
-function passgradErrorMessage(payload: unknown): string | null {
-    if (!isStringRecord(payload) || !isStringRecord(payload.error)) return null
-    return typeof payload.error.message === 'string' ? payload.error.message.slice(0, 500) : null
+const recordPayloadSchema = z.object({
+    values: z.record(z.string(), z.unknown()),
+}).strict()
+
+const updateRecordPayloadSchema = z.object({
+    recordId: z.string().min(1).max(255),
+    values: z.record(z.string(), z.unknown()),
+}).strict()
+
+const formTriggerPayloadSchema = z.object({
+    webhook_url: z.string().url().max(2048),
+}).strict()
+
+const tableTriggerPayloadSchema = formTriggerPayloadSchema.extend({
+    event_type: z.enum(['create', 'update', 'delete']),
+}).strict()
+
+function parseRecordPayload(payload: unknown): Record<string, unknown> {
+    return parseBoundedPayload(recordPayloadSchema, payload)
+}
+
+function parseUpdateRecordPayload(payload: unknown): { recordId: string, values: Record<string, unknown> } {
+    return parseBoundedPayload(updateRecordPayloadSchema, payload)
+}
+
+function parseTriggerPayload(payload: unknown, table: boolean): Record<string, unknown> {
+    return parseBoundedPayload(table ? tableTriggerPayloadSchema : formTriggerPayloadSchema, payload)
+}
+
+function parseCallbackPayload(payload: unknown): Record<string, unknown> {
+    if (!isStringRecord(payload)) {
+        throw capabilityError('Passgrad callback payload must be an object')
+    }
+    const forbiddenKeys = ['baseUrl', 'credential', 'credentialId', 'headers', 'method', 'path', 'projectId', 'secret', 'tenantId', 'url']
+    if (Object.keys(payload).some((key) => forbiddenKeys.includes(key))) {
+        throw capabilityError('Passgrad callback payload contains forbidden fields')
+    }
+    return parseBoundedPayload(z.record(z.string(), z.unknown()), payload)
+}
+
+function parseBoundedPayload<T>(schema: z.ZodType<T>, payload: unknown): T {
+    const parsed = schema.safeParse(payload)
+    if (!parsed.success) {
+        throw capabilityError('Passgrad capability payload is invalid')
+    }
+    const serialized = JSON.stringify(parsed.data)
+    if (serialized.length > 256 * 1024) {
+        throw capabilityError('Passgrad capability payload is too large')
+    }
+    return parsed.data
 }
 
 type PassgradCapabilityRequest = {
@@ -209,12 +268,15 @@ type PassgradCapabilityRequest = {
 }
 
 type PassgradOperation =
+  | 'form.list'
   | 'table.get-record'
   | 'table.create-record'
   | 'table.update-record'
   | 'table.create-trigger'
   | 'table.delete-trigger'
   | 'table.list-records'
+  | 'table.list'
+  | 'table.get-fields'
   | 'form.get-submission'
   | 'form.create-trigger'
   | 'form.delete-trigger'
@@ -235,12 +297,32 @@ type PassgradRoute = {
 }
 
 function assertOperationAllowed(params: PassgradCapabilityRequest): void {
-    const tableOperation = params.operation.startsWith('table.')
-    const allowed =
-    (params.pieceName === '@activepieces/piece-passgrad-table' &&
-      tableOperation) ||
-    (params.pieceName === '@activepieces/piece-passgrad-form' &&
-      (!tableOperation || params.operation === 'table.create-record'))
+    const tableOperations: PassgradOperation[] = [
+        'table.get-record',
+        'table.create-record',
+        'table.update-record',
+        'table.create-trigger',
+        'table.delete-trigger',
+        'table.list-records',
+        'table.list',
+        'table.get-fields',
+    ]
+    const formOperations: PassgradOperation[] = [
+        'form.list',
+        'form.get-submission',
+        'form.create-trigger',
+        'form.delete-trigger',
+        'form.list-submissions',
+        'form.open-workflow-session',
+        'form.project-workflow-run',
+        'task.open-workflow-approval',
+        'table.create-record',
+    ]
+    const allowed = params.pieceName === '@activepieces/piece-passgrad-table'
+        ? tableOperations.includes(params.operation)
+        : params.pieceName === '@activepieces/piece-passgrad-form'
+            ? formOperations.includes(params.operation)
+            : false
     if (!allowed) {
         throw capabilityError('Passgrad piece cannot perform this operation')
     }

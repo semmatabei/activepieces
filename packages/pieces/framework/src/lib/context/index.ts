@@ -212,12 +212,15 @@ export type PassgradRequest = {
 };
 
 export type PassgradOperation =
+  | 'form.list'
   | 'table.get-record'
   | 'table.create-record'
   | 'table.update-record'
   | 'table.create-trigger'
   | 'table.delete-trigger'
   | 'table.list-records'
+  | 'table.list'
+  | 'table.get-fields'
   | 'form.get-submission'
   | 'form.create-trigger'
   | 'form.delete-trigger'

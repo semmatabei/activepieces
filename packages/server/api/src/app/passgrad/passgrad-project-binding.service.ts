@@ -1,6 +1,8 @@
 import { ActivepiecesError, apId, ErrorCode, isNil } from '@activepieces/shared'
 import { repoFactory } from '../core/db/repo-factory'
 import { encryptUtils } from '../helper/encryption'
+import { system } from '../helper/system/system'
+import { AppSystemProp } from '../helper/system/system-props'
 import { PassgradProjectBindingEntity, PassgradProjectBindingSchema } from './passgrad-project-binding.entity'
 
 export const passgradProjectBindingRepo = repoFactory(PassgradProjectBindingEntity)
@@ -43,8 +45,18 @@ export const passgradProjectBindingService = {
     },
 
     async getCredentials(projectId: string): Promise<PassgradProjectBindingCredentialsWithTenant | null> {
-        const binding = await passgradProjectBindingRepo().findOneBy({ projectId })
-        if (isNil(binding)) {
+        const binding = await passgradProjectBindingRepo().findOne({
+            where: { projectId },
+            relations: { project: true },
+        })
+        if (
+            isNil(binding) ||
+            isNil(binding.project) ||
+            binding.project.id !== projectId ||
+            binding.project.externalId !== binding.tenantId ||
+            binding.project.platformId !== system.get(AppSystemProp.PASSGRAD_PLATFORM_ID) ||
+            !isNil(binding.project.deleted)
+        ) {
             return null
         }
         const credentials = await encryptUtils.decryptObject<PassgradProjectBindingCredentials>(binding.credentials)

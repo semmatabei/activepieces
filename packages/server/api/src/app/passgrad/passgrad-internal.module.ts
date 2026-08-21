@@ -28,6 +28,7 @@ import { UserSchema } from '../user/user-entity'
 import { userRepo } from '../user/user-service'
 import { passgradCapabilityService } from './passgrad-capability.service'
 import { passgradEmbedSessionMintService } from './passgrad-embed-session-mint.service'
+import { passgradEngineRequestSchema } from './passgrad-engine-request.schema'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
 
 export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
@@ -115,6 +116,9 @@ export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/engine/request', engineRequestOptions, async (request) => {
+        if (isNil(request.principal.projectId)) {
+            throw unauthorized()
+        }
         return passgradCapabilityService.request({
             projectId: request.principal.projectId,
             pieceName: request.body.pieceName,
@@ -131,11 +135,11 @@ async function getOrCreateProject(params: {
     log: import('fastify').FastifyBaseLogger
 }) {
     let result: Project | undefined
+    const platformId = requiredSystemProp(AppSystemProp.PASSGRAD_PLATFORM_ID)
     await distributedLock(params.log).runExclusive({
-        key: `passgrad-project:${params.tenantId}`,
+        key: `passgrad-project:${platformId}:${params.tenantId}`,
         timeoutInSeconds: 30,
         fn: async () => {
-            const platformId = requiredSystemProp(AppSystemProp.PASSGRAD_PLATFORM_ID)
             const existing = await projectService(
                 params.log,
             ).getByPlatformIdAndExternalId({
@@ -272,28 +276,6 @@ const bindingRequestOptions = {
 const engineRequestOptions = {
     config: { security: securityAccess.engine() },
     schema: {
-        body: z.object({
-            pieceName: z.enum([
-                '@activepieces/piece-passgrad-table',
-                '@activepieces/piece-passgrad-form',
-            ]),
-            operation: z.enum([
-                'table.get-record',
-                'table.create-record',
-                'table.update-record',
-                'table.create-trigger',
-                'table.delete-trigger',
-                'table.list-records',
-                'form.get-submission',
-                'form.create-trigger',
-                'form.delete-trigger',
-                'form.list-submissions',
-                'form.open-workflow-session',
-                'form.project-workflow-run',
-                'task.open-workflow-approval',
-            ]),
-            resourceId: z.string().min(1).optional(),
-            payload: z.unknown().optional(),
-        }),
+        body: passgradEngineRequestSchema,
     },
 }
