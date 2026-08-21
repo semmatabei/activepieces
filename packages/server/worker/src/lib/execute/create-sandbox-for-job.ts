@@ -137,6 +137,7 @@ function proxyEnv({ proxyPort }: { proxyPort: number | null }): Record<string, s
 function propagatedEnv({ settings, networkMode }: { settings: WorkerSettings, networkMode: NetworkMode }): Record<string, string> {
     const env: Record<string, string> = {}
     for (const key of settings.SANDBOX_PROPAGATED_ENV_VARS) {
+        if (key === 'AP_PASSGRAD_ENGINE_CAPABILITY_SECRET') continue
         if (STRICT_MODE_BLOCKED_PROPAGATED_KEYS.has(key) && networkMode === NetworkMode.STRICT) {
             continue
         }

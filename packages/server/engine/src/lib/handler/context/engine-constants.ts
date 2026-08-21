@@ -29,6 +29,8 @@ type EngineConstantsParams = {
     timeoutInSeconds: number
     platformId: PlatformId
     stepNames: string[]
+    passgradCapabilities?: Record<string, string>
+    passgradCapability?: string
 }
 
 const DEFAULT_RETRY_CONSTANTS: RetryConstants = {
@@ -67,6 +69,8 @@ export class EngineConstants {
     public readonly stepNameToTest?: string
     public readonly logsFileId?: string
     public readonly stepNames: string[] = []
+    public readonly passgradCapabilities: Record<string, string>
+    public readonly passgradCapability?: string
     private project: Project | null = null
 
     public get isRunningApTests(): boolean {
@@ -113,6 +117,8 @@ export class EngineConstants {
         this.platformId = params.platformId
         this.timeoutInSeconds = params.timeoutInSeconds
         this.stepNames = params.stepNames
+        this.passgradCapabilities = params.passgradCapabilities ?? {}
+        this.passgradCapability = params.passgradCapability
     }
   
     public static fromExecuteFlowInput(input: ResolvedExecuteFlowOperation): EngineConstants {
@@ -137,6 +143,7 @@ export class EngineConstants {
             timeoutInSeconds: input.timeoutInSeconds,
             platformId: input.platformId,
             stepNames: flowStructureUtil.getAllSteps(input.flowVersion.trigger).map((step) => step.name),
+            passgradCapabilities: input.passgradCapabilities,
         })
     }
 
@@ -161,6 +168,7 @@ export class EngineConstants {
             timeoutInSeconds: input.timeoutInSeconds,
             platformId: input.platformId,
             stepNames: [],
+            passgradCapability: input.passgradCapability,
         })
     }
 
@@ -185,6 +193,7 @@ export class EngineConstants {
             timeoutInSeconds: input.timeoutInSeconds,
             platformId: input.platformId,
             stepNames: input.flowVersion?.trigger ? flowStructureUtil.getAllSteps(input.flowVersion.trigger).map((step) => step.name) : [],
+            passgradCapability: input.passgradCapability,
         })
     }
 
@@ -209,6 +218,7 @@ export class EngineConstants {
             timeoutInSeconds: input.timeoutInSeconds,
             platformId: input.platformId,
             stepNames: flowStructureUtil.getAllSteps(input.flowVersion.trigger).map((step) => step.name),
+            passgradCapability: input.passgradCapability,
         })
     }
     public getPropsResolver(contextVersion: ContextVersion | undefined): PropsResolver {

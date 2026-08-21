@@ -205,6 +205,21 @@ describe('createSandboxForJob', () => {
                 process.env = originalProcessEnv
             }
         })
+
+        it('never propagates Passgrad capability secret into sandbox', () => {
+            const original = process.env.AP_PASSGRAD_ENGINE_CAPABILITY_SECRET
+            process.env.AP_PASSGRAD_ENGINE_CAPABILITY_SECRET = 'secret'
+            try {
+                getSettingsMock.mockReturnValue(buildSettings({ SANDBOX_PROPAGATED_ENV_VARS: ['AP_PASSGRAD_ENGINE_CAPABILITY_SECRET'] }))
+                createSandboxForJob({ log, apiClient, boxId: 1, reusable: false, proxyPort: null })
+                const env = createSandboxMock.mock.calls[0][2].env
+                expect(env.AP_PASSGRAD_ENGINE_CAPABILITY_SECRET).toBeUndefined()
+            }
+            finally {
+                if (original === undefined) delete process.env.AP_PASSGRAD_ENGINE_CAPABILITY_SECRET
+                else process.env.AP_PASSGRAD_ENGINE_CAPABILITY_SECRET = original
+            }
+        })
     })
 
     describe('parseMemoryLimit', () => {

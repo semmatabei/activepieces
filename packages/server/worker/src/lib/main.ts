@@ -2,10 +2,12 @@ import { getApiUrl, getSocketUrl, system, WorkerSystemProp } from './config/conf
 import { logger } from './config/logger'
 import { workerSystemSnapshot } from './utils/system-snapshot'
 import { worker } from './worker'
+import { assertPassgradCapabilitySecret } from './execute/passgrad-capability'
 
 const workerToken = system.getOrThrow(WorkerSystemProp.WORKER_TOKEN)
 
 async function main(): Promise<void> {
+    assertPassgradCapabilitySecret(system.get(WorkerSystemProp.PASSGRAD_ENGINE_CAPABILITY_SECRET))
     workerSystemSnapshot.start()
     const containerType = system.get(WorkerSystemProp.CONTAINER_TYPE) ?? 'WORKER_AND_APP'
     await worker.start({ apiUrl: getApiUrl(), socketUrl: getSocketUrl(), workerToken, withHealthServer: containerType === 'WORKER' })
@@ -27,4 +29,3 @@ main().catch((err) => {
     logger.error({ error: err }, 'Worker crashed')
     process.exit(1)
 })
-

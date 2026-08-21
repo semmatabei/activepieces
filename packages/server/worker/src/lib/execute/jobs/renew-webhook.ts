@@ -11,6 +11,8 @@ import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
 import { getWebhookUrl } from '../utils/webhook-url'
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
+import { mintPassgradCapability } from '../passgrad-capability'
 
 export const renewWebhookJob: JobHandler<RenewWebhookJobData, FireAndForgetJobResult> = {
     jobType: WorkerJobType.RENEW_WEBHOOK,
@@ -49,6 +51,7 @@ export const renewWebhookJob: JobHandler<RenewWebhookJobData, FireAndForgetJobRe
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
                     timeoutInSeconds,
+                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: `${data.flowId}:${flowVersion.id}:renew`, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: TriggerHookType.RENEW }) : undefined,
                 },
                 { timeoutInSeconds },
             )

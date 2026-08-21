@@ -28,6 +28,7 @@ export const agentTools = {
                 execute: async ({ instruction }: { instruction: string }) =>
                     execute({
                         ...engineConstants,
+                        passgradCapability: engineConstants.passgradCapabilities[engineConstants.stepNameToTest ?? ''],
                         instruction,
                         pieceName: tool.pieceMetadata.pieceName,
                         pieceVersion: tool.pieceMetadata.pieceVersion,

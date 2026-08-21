@@ -16,12 +16,15 @@ import {
     RunInternalErrorSource,
     tryCatch,
     WorkerJobType,
+    flowStructureUtil,
 } from '@activepieces/shared'
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import { flowCache } from '../../cache/flow/flow-cache'
 import { system, WorkerSystemProp } from '../../config/configs'
 import { workerSettings } from '../../config/worker-settings'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
+import { mintPassgradCapability } from '../passgrad-capability'
 
 export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResult> = {
     jobType: WorkerJobType.EXECUTE_FLOW,
@@ -129,6 +132,9 @@ function buildFlowOperation(
         engineToken: ctx.engineToken,
         internalApiUrl: ctx.internalApiUrl,
         publicApiUrl: ctx.publicApiUrl,
+        passgradCapabilities: Object.fromEntries(flowStructureUtil.getAllSteps(flowVersion.trigger)
+            .filter((step) => PASSGRAD_PIECE_NAMES.includes(step.settings?.pieceName as never))
+            .map((step) => [step.name, mintPassgradCapability({ projectId: data.projectId, pieceName: step.settings.pieceName, invocationType: 'execution', invocationId: `${data.runId}:${step.name}`, flowRunId: data.runId, flowVersionId: flowVersion.id, stepName: step.name })])),
     }
 
     if (data.executionType === ExecutionType.RESUME) {

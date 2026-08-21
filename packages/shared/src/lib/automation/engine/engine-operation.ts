@@ -73,6 +73,7 @@ export type ExecuteToolOperation = BaseEngineOperation & {
     pieceVersion: string
     predefinedInput?: PredefinedInputsStructure
     instruction: string
+    passgradCapability?: string
 }
 
 export type ExecutePropsOptions = BaseEngineOperation & {
@@ -83,6 +84,7 @@ export type ExecutePropsOptions = BaseEngineOperation & {
     input: Record<string, unknown>
     sampleData: Record<string, unknown>
     searchValue?: string
+    passgradCapability?: string
 }
 
 type BaseExecuteFlowOperation<T extends ExecutionType> = BaseEngineOperation & {
@@ -96,6 +98,7 @@ type BaseExecuteFlowOperation<T extends ExecutionType> = BaseEngineOperation & {
     stepNameToTest: string | null
     sampleData?: Record<string, unknown>
     logsFileId?: string
+    passgradCapabilities?: Record<string, string>
 }
 
 export enum StreamStepProgress {
@@ -129,6 +132,7 @@ export type ExecuteTriggerOperation<HT extends TriggerHookType> = BaseEngineOper
     triggerPayload?: JobPayload
     appWebhookUrl?: string
     webhookSecret?: string | Record<string, string>
+    passgradCapability?: string
 }
 
 
