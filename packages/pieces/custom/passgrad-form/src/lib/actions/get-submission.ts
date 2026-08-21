@@ -1,6 +1,5 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { passgradAuth, formIdProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { formIdProperty, passgradRequest } from "../common";
 
 /**
  * Action: Get Submission
@@ -10,7 +9,6 @@ import { HttpMethod } from "@activepieces/pieces-common";
  * form trigger, or to verify submission status.
  */
 export const getSubmission = createAction({
-  auth: passgradAuth,
   name: "get_submission",
   displayName: "Get Submission",
   description: "Retrieve a specific form submission by its ID.",
@@ -34,8 +32,12 @@ export const getSubmission = createAction({
         submittedAt: string;
         submittedByUserId: string | null;
       };
-    }>(context.auth, HttpMethod.GET, `/forms/${form_id}/submissions/${submission_id}`);
+    }>(context, {
+      operation: "form.get-submission",
+      payload: { submissionId: submission_id },
+      resourceId: form_id,
+    });
 
-    return response.body.data;
+    return response.data;
   },
 });

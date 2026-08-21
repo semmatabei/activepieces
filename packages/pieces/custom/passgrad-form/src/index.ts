@@ -1,5 +1,4 @@
-import { createPiece } from "@activepieces/pieces-framework";
-import { passgradAuth } from "./lib/common";
+import { createPiece, PieceAuth } from "@activepieces/pieces-framework";
 import { newSubmission } from "./lib/triggers/new-submission";
 import { getSubmission } from "./lib/actions/get-submission";
 import { reportWorkflowStatus } from "./lib/actions/report-workflow-status";
@@ -13,7 +12,7 @@ export const passgradForm = createPiece({
   logoUrl: "https://asset-stg.pub-passgrad.com/pieces/passgrad-form.svg",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
-  auth: passgradAuth,
+  auth: PieceAuth.None(),
   triggers: [newSubmission],
   actions: [getSubmission, requestSubmission, requestApproval, reportWorkflowStatus],
 });

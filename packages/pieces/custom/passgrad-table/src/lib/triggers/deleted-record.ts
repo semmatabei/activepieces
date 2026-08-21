@@ -1,9 +1,7 @@
 import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
-import { passgradAuth, tableIdProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { tableIdProperty, passgradRequest } from "../common";
 
 export const deletedRecord = createTrigger({
-  auth: passgradAuth,
   name: "deleted_record",
   displayName: "Deleted Record",
   description: "Triggers when a record is deleted from the selected Passgrad table.",
@@ -17,23 +15,22 @@ export const deletedRecord = createTrigger({
   },
 
   async onEnable(context) {
-    const response = await passgradRequest<{ data: { id: string } }>(
-      context.auth,
-      HttpMethod.POST,
-      `/tables/${context.propsValue.table_id}/triggers`,
-      { webhook_url: context.webhookUrl, event_type: "delete" },
-    );
-    await context.store.put("passgrad_trigger_id", response.body.data.id);
+    const response = await passgradRequest<{ data: { id: string } }>(context, {
+      operation: "table.create-trigger",
+      payload: { event_type: "delete", webhook_url: context.webhookUrl },
+      resourceId: context.propsValue.table_id,
+    });
+    await context.store.put("passgrad_trigger_id", response.data.id);
   },
 
   async onDisable(context) {
     const triggerId = await context.store.get<string>("passgrad_trigger_id");
     if (triggerId) {
-      await passgradRequest(
-        context.auth,
-        HttpMethod.DELETE,
-        `/tables/${context.propsValue.table_id}/triggers/${triggerId}`,
-      );
+      await passgradRequest(context, {
+        operation: "table.delete-trigger",
+        payload: { triggerId },
+        resourceId: context.propsValue.table_id,
+      });
     }
   },
 

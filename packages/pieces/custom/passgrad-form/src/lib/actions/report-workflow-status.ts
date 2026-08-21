@@ -1,7 +1,6 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { HttpMethod } from "@activepieces/pieces-common";
 
-import { passgradAuth, passgradCallbackRequest } from "../common";
+import { passgradRequest } from "../common";
 
 const workflowIdProperty = Property.ShortText({
   displayName: "Passgrad workflow ID",
@@ -42,7 +41,6 @@ const resultProperty = Property.Json({
 
 /** Projects a terminal Activepieces run after downstream Form processing completes. */
 export const reportWorkflowStatus = createAction({
-  auth: passgradAuth,
   name: "report_workflow_status",
   displayName: "Report workflow status",
   description: "Record this Activepieces Flow run as succeeded in Passgrad.",
@@ -54,11 +52,9 @@ export const reportWorkflowStatus = createAction({
   },
   async run(context) {
     const sourceSubmissionId = context.propsValue.source_submission_id?.trim() || null;
-    await passgradCallbackRequest(
-      context.auth,
-      HttpMethod.POST,
-      "/callbacks/activepieces/v1/workflow-run-projections",
-      {
+    await passgradRequest(context, {
+      operation: "form.project-workflow-run",
+      payload: {
         apEventSequence: 1,
         apRunId: context.run.id,
         eventId: `${context.run.id}:succeeded`,
@@ -72,7 +68,7 @@ export const reportWorkflowStatus = createAction({
         type: "workflow.run.projection.v1",
         workflowId: context.propsValue.workflow_id,
       },
-    );
+    });
     return { status: "succeeded", workflowId: context.propsValue.workflow_id };
   },
 });

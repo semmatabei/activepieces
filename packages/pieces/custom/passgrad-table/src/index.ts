@@ -1,5 +1,4 @@
-import { createPiece } from "@activepieces/pieces-framework";
-import { passgradAuth } from "./lib/common";
+import { createPiece, PieceAuth } from "@activepieces/pieces-framework";
 import { newRecord } from "./lib/triggers/new-record";
 import { updatedRecord } from "./lib/triggers/updated-record";
 import { deletedRecord } from "./lib/triggers/deleted-record";
@@ -15,7 +14,7 @@ export const passgradTable = createPiece({
   logoUrl: "https://asset-stg.pub-passgrad.com/pieces/passgrad-table.svg",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
-  auth: passgradAuth,
+  auth: PieceAuth.None(),
   triggers: [newRecord, updatedRecord, deletedRecord],
   actions: [createRecord, updateRecord, getRecord],
 });

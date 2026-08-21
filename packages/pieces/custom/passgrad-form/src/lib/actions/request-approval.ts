@@ -2,8 +2,6 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
-import { passgradAuth } from "../common";
-
 const title = Property.ShortText({ displayName: "Title", required: true });
 const description = Property.LongText({ displayName: "Description", required: false });
 const groupId = Property.ShortText({
@@ -20,9 +18,18 @@ const formId = Property.ShortText({ displayName: "KRS form ID", required: false 
 const submissionId = Property.ShortText({ displayName: "KRS submission ID", required: false });
 const classFieldId = Property.ShortText({ displayName: "KRS class field ID", required: false });
 const nilaiTableId = Property.ShortText({ displayName: "Nilai table ID", required: false });
-const nilaiClassFieldId = Property.ShortText({ displayName: "Nilai class field ID", required: false });
-const nilaiStatusFieldId = Property.ShortText({ displayName: "Nilai status field ID", required: false });
-const nilaiStatusOptionId = Property.ShortText({ displayName: "Nilai status option ID", required: false });
+const nilaiClassFieldId = Property.ShortText({
+  displayName: "Nilai class field ID",
+  required: false,
+});
+const nilaiStatusFieldId = Property.ShortText({
+  displayName: "Nilai status field ID",
+  required: false,
+});
+const nilaiStatusOptionId = Property.ShortText({
+  displayName: "Nilai status option ID",
+  required: false,
+});
 const classCount = Property.ShortText({
   displayName: "Class count",
   description: "Optional calculated class count persisted with this workflow run.",
@@ -56,7 +63,6 @@ type ResumePayload = { comment: string; decision: "approve" | "reject"; taskId: 
 
 /** Creates one group approval task, pauses this run, then returns its first durable decision. */
 export const requestApproval = createAction({
-  auth: passgradAuth,
   name: "request_approval",
   displayName: "Request group approval",
   description: "Pause flow until a member of the assigned Passgrad group approves or rejects.",
@@ -175,7 +181,15 @@ async function appendNilaiRows(context: Parameters<typeof requestApproval.run>[0
   const formId = context.propsValue.form_id?.trim();
   const submissionId = context.propsValue.submission_id?.trim();
   const sourceFieldId = context.propsValue.class_field_id?.trim();
-  if (!tableId || !classFieldId || !statusFieldId || !statusOptionId || !formId || !submissionId || !sourceFieldId)
+  if (
+    !tableId ||
+    !classFieldId ||
+    !statusFieldId ||
+    !statusOptionId ||
+    !formId ||
+    !submissionId ||
+    !sourceFieldId
+  )
     return;
   const response = await context.passgrad.request<{ data: { data: Record<string, unknown> } }>({
     operation: "form.get-submission",

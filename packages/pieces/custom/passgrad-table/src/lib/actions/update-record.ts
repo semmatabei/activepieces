@@ -1,9 +1,7 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { passgradAuth, tableIdProperty, recordFieldsProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { tableIdProperty, recordFieldsProperty, passgradRequest } from "../common";
 
 export const updateRecord = createAction({
-  auth: passgradAuth,
   name: "update_record",
   displayName: "Update Record",
   description: "Update an existing record in the selected Passgrad table.",
@@ -18,12 +16,11 @@ export const updateRecord = createAction({
   },
   async run(context) {
     const { table_id, record_id, fields } = context.propsValue;
-    const response = await passgradRequest<{ record: unknown }>(
-      context.auth,
-      HttpMethod.PATCH,
-      `/tables/${table_id}/records/${record_id}`,
-      { values: fields },
-    );
-    return response.body.record;
+    const response = await passgradRequest<{ data: unknown }>(context, {
+      operation: "table.update-record",
+      payload: { recordId: record_id, values: fields },
+      resourceId: table_id,
+    });
+    return response.data;
   },
 });

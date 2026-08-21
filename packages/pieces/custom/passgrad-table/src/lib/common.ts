@@ -1,121 +1,61 @@
-import { httpClient, HttpMethod } from "@activepieces/pieces-common";
-import { PieceAuth, Property } from "@activepieces/pieces-framework";
+import type { PassgradRequest, PropertyContext } from "@activepieces/pieces-framework";
+import { Property } from "@activepieces/pieces-framework";
 
-export const passgradAuth = PieceAuth.CustomAuth({
-  required: true,
-  props: {
-    baseUrl: Property.ShortText({
-      displayName: "Base URL",
-      description: "Passgrad API base URL. Example: https://api.passgrad.id/v1",
-      required: true,
-    }),
-    tenantId: Property.ShortText({
-      displayName: "Tenant ID",
-      description: "Your Passgrad tenant ID",
-      required: true,
-    }),
-  },
-});
+type PassgradContext = Pick<PropertyContext, "passgrad">;
 
-/** Dropdown to select a Passgrad table. */
-export const tableIdProperty = Property.Dropdown<string, true, typeof passgradAuth>({
-  auth: passgradAuth,
+/** Shared table ID property resolved through the authenticated engine capability. */
+export const tableIdProperty = Property.Dropdown<string, true>({
+  auth: undefined,
   displayName: "Table",
   description: "The Passgrad table to use",
-  refreshers: ["auth"],
+  refreshers: [],
   required: true,
-  options: async ({ auth }) => {
-    if (!auth) {
-      return { disabled: true, options: [], placeholder: "Connect your Passgrad account first" };
-    }
+  options: async (_propsValue, context) => {
     try {
-      const response = await httpClient.sendRequest<{ tables: { id: string; name: string }[] }>({
-        method: HttpMethod.GET,
-        url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/tables`,
-        headers: {
-          "Content-Type": "application/json",
-          ...getBindingHeaders(auth.props.tenantId),
-        },
-      });
+      const response = await context.passgrad.request<{
+        data: { id: string; name: string }[];
+      }>({ operation: "table.list" });
+      const tables = response.data ?? [];
+      if (tables.length === 0) {
+        return { disabled: true, options: [], placeholder: "No tables available" };
+      }
       return {
-        options: response.body.tables.map((t) => ({
-          label: t.name,
-          value: t.id,
-        })),
+        options: tables.map((table) => ({ label: table.name, value: table.id })),
       };
     } catch {
-      return { disabled: true, options: [], placeholder: "Failed to load tables" };
+      return { disabled: true, options: [], placeholder: "Unable to load tables" };
     }
   },
 });
 
-/** Description of record fields from the table schema, for use when creating/updating records. */
-export const recordFieldsProperty = Property.DynamicProperties<true, typeof passgradAuth>({
-  auth: passgradAuth,
+/** Dynamic table fields refresh only when the selected table changes. */
+export const recordFieldsProperty = Property.DynamicProperties<true>({
+  auth: undefined,
   displayName: "Fields",
   description: "Record field values",
-  refreshers: ["auth", "table_id"],
+  refreshers: ["table_id"],
   required: true,
-  props: async ({ auth, table_id }) => {
-    if (!auth || !table_id) return {};
+  props: async ({ table_id }, context) => {
+    if (typeof table_id !== "string" || table_id.length === 0) return {};
     try {
-      const response = await httpClient.sendRequest<{
-        fields: { id: string; name: string; type: string }[];
-      }>({
-        method: HttpMethod.GET,
-        url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}/tables/${table_id}/fields`,
-        headers: {
-          "Content-Type": "application/json",
-          ...getBindingHeaders(auth.props.tenantId),
-        },
-      });
-      const props: Record<string, ReturnType<typeof Property.ShortText>> = {};
-      for (const f of response.body.fields) {
-        props[f.id] = Property.ShortText({
-          displayName: f.name,
-          description: `Type: ${f.type}`,
+      const response = await context.passgrad.request<{
+        data: { id: string; name: string; type: string }[];
+      }>({ operation: "table.get-fields", resourceId: table_id });
+      const fields: Record<string, ReturnType<typeof Property.ShortText>> = {};
+      for (const field of response.data ?? []) {
+        fields[field.id] = Property.ShortText({
+          displayName: field.name,
+          description: `Type: ${field.type}`,
           required: false,
         });
       }
-      return props;
+      return fields;
     } catch {
       return {};
     }
   },
 });
 
-function getBindingHeaders(tenantId?: string) {
-  const demoSecret = process.env["PASSGRAD_STAGING_DEMO_SECRET"];
-  if (demoSecret && tenantId) {
-    return {
-      "x-passgrad-staging-demo-secret": demoSecret,
-      "x-passgrad-staging-tenant-id": tenantId,
-    };
-  }
-  const credentialId = process.env["PASSGRAD_BINDING_CREDENTIAL_ID"];
-  const projectId = process.env["PASSGRAD_BINDING_PROJECT_ID"];
-  const secret = process.env["PASSGRAD_BINDING_SECRET"];
-  if (!credentialId || !projectId || !secret) return {};
-  return {
-    "x-passgrad-binding-credential-id": credentialId,
-    "x-passgrad-binding-project-id": projectId,
-    "x-passgrad-binding-secret": secret,
-  };
-}
-
-export function passgradRequest<T>(
-  auth: { props: { baseUrl: string; tenantId: string } },
-  method: HttpMethod,
-  path: string,
-  body?: unknown,
-) {
-  return httpClient.sendRequest<T>({
-    method,
-    url: `${auth.props.baseUrl}/tenants/${auth.props.tenantId}${path}`,
-    headers: {
-      "Content-Type": "application/json",
-      ...getBindingHeaders(auth.props.tenantId),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+export function passgradRequest<T>(context: PassgradContext, request: PassgradRequest) {
+  return context.passgrad.request<T>(request);
 }

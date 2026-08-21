@@ -1,9 +1,7 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { passgradAuth, tableIdProperty, passgradRequest } from "../common";
-import { HttpMethod } from "@activepieces/pieces-common";
+import { tableIdProperty, passgradRequest } from "../common";
 
 export const getRecord = createAction({
-  auth: passgradAuth,
   name: "get_record",
   displayName: "Get Record",
   description: "Retrieve a specific record from the selected Passgrad table.",
@@ -17,11 +15,11 @@ export const getRecord = createAction({
   },
   async run(context) {
     const { table_id, record_id } = context.propsValue;
-    const response = await passgradRequest<{ record: unknown }>(
-      context.auth,
-      HttpMethod.GET,
-      `/tables/${table_id}/records/${record_id}`,
-    );
-    return response.body.record;
+    const response = await passgradRequest<{ data: unknown }>(context, {
+      operation: "table.get-record",
+      payload: { recordId: record_id },
+      resourceId: table_id,
+    });
+    return response.data;
   },
 });
