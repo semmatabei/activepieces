@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from 'node:crypto'
 
 const ISSUER = 'activepieces-passgrad-engine'
-const TTL_SECONDS = 90
+export const PASSGRAD_CAPABILITY_GRACE_SECONDS = 15
 const SECRET_ENV = 'AP_PASSGRAD_ENGINE_CAPABILITY_SECRET'
 
 export type PassgradCapabilityInvocation = {
@@ -16,6 +16,7 @@ export type PassgradCapabilityInvocation = {
     propertyName?: string
     actionOrTriggerName?: string
     hookType?: string
+    timeoutInSeconds: number
 }
 
 export function assertPassgradCapabilitySecret(secret = process.env[SECRET_ENV]): string {
@@ -28,14 +29,15 @@ export function assertPassgradCapabilitySecret(secret = process.env[SECRET_ENV])
 export function mintPassgradCapability(params: PassgradCapabilityInvocation): string {
     const secret = assertPassgradCapabilitySecret()
     const issuedAt = Math.floor(Date.now() / 1000)
+    const { timeoutInSeconds, ...claims } = params
     const header = encode({ alg: 'HS256', typ: 'JWT' })
     const payload = encode({
         iss: ISSUER,
         sub: 'passgrad-engine-capability',
         iat: issuedAt,
-        exp: issuedAt + TTL_SECONDS,
+        ...claims,
+        exp: issuedAt + timeoutInSeconds + PASSGRAD_CAPABILITY_GRACE_SECONDS,
         jti: params.invocationId,
-        ...params,
     })
     const signature = createHmac('sha256', secret)
         .update(`${header}.${payload}`)

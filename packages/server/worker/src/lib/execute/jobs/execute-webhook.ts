@@ -1,3 +1,4 @@
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import {
     EngineOperationType,
     EngineResponseStatus,
@@ -14,12 +15,11 @@ import {
 } from '@activepieces/shared'
 import { flowCache } from '../../cache/flow/flow-cache'
 import { workerSettings } from '../../config/worker-settings'
+import { mintPassgradCapability } from '../passgrad-capability'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
 import { getAppWebhookUrl, getWebhookUrl } from '../utils/webhook-url'
-import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
-import { mintPassgradCapability } from '../passgrad-capability'
 
 function getAppWebhookDetails(flowVersion: FlowVersion, publicApiUrl: string, appWebhookSecretsJson: string): { appWebhookUrl?: string, webhookSecret?: string | Record<string, string> } {
     const trigger = flowVersion.trigger as PieceTrigger
@@ -80,7 +80,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                         timeoutInSeconds,
                         appWebhookUrl,
                         webhookSecret,
-                        passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: `${data.requestId}:sample`, requestId: `${data.requestId}:sample`, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: TriggerHookType.TEST }) : undefined,
+                        passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: `${data.requestId}:sample`, requestId: `${data.requestId}:sample`, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: TriggerHookType.TEST, timeoutInSeconds }) : undefined,
                     },
                     { timeoutInSeconds },
                 )
@@ -118,7 +118,7 @@ export const executeWebhookJob: JobHandler<WebhookJobData, FireAndForgetJobResul
                     timeoutInSeconds,
                     appWebhookUrl,
                     webhookSecret,
-                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: `${data.requestId}:run`, requestId: data.requestId, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: TriggerHookType.RUN }) : undefined,
+                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: `${data.requestId}:run`, requestId: data.requestId, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: TriggerHookType.RUN, timeoutInSeconds }) : undefined,
                 },
                 { timeoutInSeconds },
             )

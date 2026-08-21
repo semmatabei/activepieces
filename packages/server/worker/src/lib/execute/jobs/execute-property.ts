@@ -1,3 +1,4 @@
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import {
     EngineOperationType,
     EngineResponseStatus,
@@ -7,10 +8,9 @@ import {
 } from '@activepieces/shared'
 import { provisioner } from '../../cache/provisioner'
 import { workerSettings } from '../../config/worker-settings'
+import { mintPassgradCapability } from '../passgrad-capability'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
-import { mintPassgradCapability } from '../passgrad-capability'
-import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 
 export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJobResult> = {
     jobType: WorkerJobType.EXECUTE_PROPERTY,
@@ -46,7 +46,7 @@ export const executePropertyJob: JobHandler<ExecutePropertyJobData, SynchronousJ
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
                     timeoutInSeconds,
-                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(data.piece.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: data.piece.pieceName, invocationType: 'property', invocationId: data.requestId, requestId: data.requestId, propertyName: data.propertyName, actionOrTriggerName: data.actionOrTriggerName }) : undefined,
+                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(data.piece.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: data.piece.pieceName, invocationType: 'property', invocationId: data.requestId, requestId: data.requestId, propertyName: data.propertyName, actionOrTriggerName: data.actionOrTriggerName, timeoutInSeconds }) : undefined,
                 },
                 { timeoutInSeconds },
             )

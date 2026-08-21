@@ -1,8 +1,8 @@
 import { getApiUrl, getSocketUrl, system, WorkerSystemProp } from './config/configs'
 import { logger } from './config/logger'
+import { assertPassgradCapabilitySecret } from './execute/passgrad-capability'
 import { workerSystemSnapshot } from './utils/system-snapshot'
 import { worker } from './worker'
-import { assertPassgradCapabilitySecret } from './execute/passgrad-capability'
 
 const workerToken = system.getOrThrow(WorkerSystemProp.WORKER_TOKEN)
 

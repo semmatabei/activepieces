@@ -117,6 +117,26 @@ export const passgradProjectBindingService = {
         params: { message: 'Passgrad binding has been revoked' },
       });
     }
+    if (!isNil(existing)) {
+      assertSameBinding(existing, params);
+      const credentials = await encryptUtils.encryptObject({
+        callbackSecret: params.callbackSecret,
+        credentialId: params.credentialId,
+      });
+      const result = await passgradProjectBindingRepo().update(
+        { id: existing.id, status: PassgradProjectBindingStatus.ACTIVE },
+        { credentials, updated: new Date() },
+      );
+      if (result.affected !== 1) {
+        throw new ActivepiecesError({
+          code: ErrorCode.AUTHORIZATION,
+          params: { message: 'Passgrad binding is no longer active' },
+        });
+      }
+      const binding = await findByProjectOrTenant(params.projectId, params.tenantId);
+      if (isNil(binding)) throw new Error('Passgrad project binding was not persisted');
+      return { binding, created: false };
+    }
     return passgradProjectBindingService.createOrGet(params);
   },
 

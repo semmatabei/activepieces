@@ -44,32 +44,6 @@ export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
   });
 
   app.post(
-    '/projects/:projectId/binding',
-    bindingRequestOptions,
-    async (request, reply) => {
-      assertGatewaySecret(request.headers['x-passgrad-provisioning-secret']);
-      const project = await projectService(request.log).getOneOrThrow(
-        request.params.projectId
-      );
-      if (
-        project.platformId !==
-          requiredSystemProp(AppSystemProp.PASSGRAD_PLATFORM_ID) ||
-        project.externalId !== request.body.tenantId
-      ) {
-        throw unauthorized();
-      }
-      await passgradProjectBindingService.createOrGet({
-        projectId: project.id,
-        tenantId: request.body.tenantId,
-        provisioningKey: request.body.provisioningKey,
-        credentialId: request.body.credentialId,
-        callbackSecret: request.body.callbackSecret,
-      });
-      return reply.code(204).send();
-    }
-  );
-
-  app.post(
     '/projects/:projectId/binding/synchronize',
     bindingRequestOptions,
     async (request, reply) => {

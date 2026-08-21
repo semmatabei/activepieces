@@ -1,3 +1,4 @@
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import {
     EngineOperationType,
     EngineResponseStatus,
@@ -8,12 +9,11 @@ import {
 } from '@activepieces/shared'
 import { flowCache } from '../../cache/flow/flow-cache'
 import { workerSettings } from '../../config/worker-settings'
+import { mintPassgradCapability } from '../passgrad-capability'
 import { JobContext, JobHandler, JobResultKind, SynchronousJobResult } from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
 import { isSandboxTimeout } from '../utils/sandbox-helpers'
 import { getWebhookUrl } from '../utils/webhook-url'
-import { mintPassgradCapability } from '../passgrad-capability'
-import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 
 export const executeTriggerHookJob: JobHandler<ExecuteTriggerHookJobData, SynchronousJobResult> = {
     jobType: WorkerJobType.EXECUTE_TRIGGER_HOOK,
@@ -54,7 +54,7 @@ export const executeTriggerHookJob: JobHandler<ExecuteTriggerHookJobData, Synchr
                     internalApiUrl: ctx.internalApiUrl,
                     publicApiUrl: ctx.publicApiUrl,
                     timeoutInSeconds,
-                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: data.requestId, requestId: data.requestId, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: data.hookType }) : undefined,
+                    passgradCapability: PASSGRAD_PIECE_NAMES.includes(flowVersion.trigger.settings.pieceName as never) ? mintPassgradCapability({ projectId: data.projectId, pieceName: flowVersion.trigger.settings.pieceName, invocationType: 'trigger', invocationId: data.requestId, requestId: data.requestId, flowVersionId: flowVersion.id, stepName: flowVersion.trigger.name, hookType: data.hookType, timeoutInSeconds }) : undefined,
                 },
                 { timeoutInSeconds },
             )

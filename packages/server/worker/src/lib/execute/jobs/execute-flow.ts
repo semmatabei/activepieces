@@ -1,4 +1,5 @@
 import { inspect } from 'node:util'
+import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import { onCallService } from '@activepieces/server-utils'
 import {
     ActivepiecesError,
@@ -9,6 +10,7 @@ import {
     ExecuteFlowJobData,
     ExecutionType,
     FlowRunStatus,
+    flowStructureUtil,
     FlowVersion,
     isNil,
     ResumeExecuteFlowOperation,
@@ -16,15 +18,13 @@ import {
     RunInternalErrorSource,
     tryCatch,
     WorkerJobType,
-    flowStructureUtil,
 } from '@activepieces/shared'
-import { PASSGRAD_PIECE_NAMES } from '@activepieces/pieces-framework'
 import { flowCache } from '../../cache/flow/flow-cache'
 import { system, WorkerSystemProp } from '../../config/configs'
 import { workerSettings } from '../../config/worker-settings'
+import { mintPassgradCapability } from '../passgrad-capability'
 import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
-import { mintPassgradCapability } from '../passgrad-capability'
 
 export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResult> = {
     jobType: WorkerJobType.EXECUTE_FLOW,
@@ -134,7 +134,7 @@ function buildFlowOperation(
         publicApiUrl: ctx.publicApiUrl,
         passgradCapabilities: Object.fromEntries(flowStructureUtil.getAllSteps(flowVersion.trigger)
             .filter((step) => PASSGRAD_PIECE_NAMES.includes(step.settings?.pieceName as never))
-            .map((step) => [step.name, mintPassgradCapability({ projectId: data.projectId, pieceName: step.settings.pieceName, invocationType: 'execution', invocationId: `${data.runId}:${step.name}`, flowRunId: data.runId, flowVersionId: flowVersion.id, stepName: step.name })])),
+            .map((step) => [step.name, mintPassgradCapability({ projectId: data.projectId, pieceName: step.settings.pieceName, invocationType: 'execution', invocationId: `${data.runId}:${step.name}`, flowRunId: data.runId, flowVersionId: flowVersion.id, stepName: step.name, timeoutInSeconds })])),
     }
 
     if (data.executionType === ExecutionType.RESUME) {
