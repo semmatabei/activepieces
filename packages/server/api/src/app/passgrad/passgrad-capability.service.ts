@@ -1,9 +1,8 @@
 import { safeHttp } from '@activepieces/server-utils';
 import {
   isPassgradOperationAllowed,
-  PassgradOperation,
-  PassgradPieceName,
 } from '@activepieces/pieces-framework';
+import type { PassgradOperation, PassgradPieceName } from '@activepieces/pieces-framework';
 import { ActivepiecesError, ErrorCode, isNil } from '@activepieces/shared';
 import { AxiosRequestConfig, isAxiosError, Method } from 'axios';
 import { z } from 'zod';
