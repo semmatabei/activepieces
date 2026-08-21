@@ -166,4 +166,42 @@ describe('passgradProjectBindingService.getCredentials', () => {
             callbackSecret: 'new-secret', credentialId: 'new-credential', tenantId: 'tenant-1',
         })
     })
+
+    it('keeps concurrent synchronization updates on the same binding identity', async () => {
+        const existing = {
+            id: 'binding-1',
+            projectId: 'project-1',
+            tenantId: 'tenant-1',
+            provisioningKey: 'key-1',
+            status: 'ACTIVE',
+            credentials: { iv: 'old-iv', data: 'old-data' },
+        }
+        mocks.repo.findOne.mockResolvedValue(existing)
+        mocks.repo.update.mockResolvedValue({ affected: 1 })
+        mocks.repo.findOne.mockResolvedValue(existing)
+        mocks.encryptObject.mockImplementation(async (credentials) => credentials)
+
+        await Promise.all([
+            passgradProjectBindingService.synchronize({
+                projectId: 'project-1', tenantId: 'tenant-1', provisioningKey: 'key-1',
+                callbackSecret: 'secret-a', credentialId: 'credential-a',
+            }),
+            passgradProjectBindingService.synchronize({
+                projectId: 'project-1', tenantId: 'tenant-1', provisioningKey: 'key-1',
+                callbackSecret: 'secret-b', credentialId: 'credential-b',
+            }),
+        ])
+
+        expect(mocks.repo.update).toHaveBeenCalledTimes(2)
+        expect(mocks.repo.update.mock.calls).toEqual([
+            [
+                { id: 'binding-1', status: 'ACTIVE' },
+                { credentials: { callbackSecret: 'secret-a', credentialId: 'credential-a' }, updated: expect.any(Date) },
+            ],
+            [
+                { id: 'binding-1', status: 'ACTIVE' },
+                { credentials: { callbackSecret: 'secret-b', credentialId: 'credential-b' }, updated: expect.any(Date) },
+            ],
+        ])
+    })
 })
