@@ -385,6 +385,7 @@ import { AddDataManipulationEnabledToPlatformPlan1794000000000 } from './migrati
 import { AddExternalIdToFolder1795000000000 } from './migration/postgres/1795000000000-AddExternalIdToFolder';
 import { AddPassgradProjectBinding1796000000000 } from './migration/postgres/1796000000000-AddPassgradProjectBinding';
 import { AddPassgradEmbedSessionMint1796100000000 } from './migration/postgres/1796100000000-AddPassgradEmbedSessionMint';
+import { AddPassgradProjectBindingStatus1796200000000 } from './migration/postgres/1796200000000-AddPassgradProjectBindingStatus';
 
 const getSslConfig = (): boolean | TlsOptions => {
   const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL);
@@ -785,6 +786,7 @@ export const getMigrations = (): (new () => Migration)[] => {
     AddExternalIdToFolder1795000000000,
     AddPassgradProjectBinding1796000000000,
     AddPassgradEmbedSessionMint1796100000000,
+    AddPassgradProjectBindingStatus1796200000000,
   ];
   return migrations;
 };

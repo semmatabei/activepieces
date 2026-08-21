@@ -5,7 +5,7 @@ import {
   isNil,
 } from '@activepieces/shared';
 import { repoFactory } from '../core/db/repo-factory';
-import { PassgradProjectBindingEntity } from './passgrad-project-binding.entity';
+import { passgradProjectBindingService } from './passgrad-project-binding.service';
 import {
   PassgradEmbedSessionMintEntity,
   PassgradEmbedSessionMintSchema,
@@ -14,7 +14,6 @@ import {
 const passgradEmbedSessionMintRepo = repoFactory(
   PassgradEmbedSessionMintEntity
 );
-const passgradProjectBindingRepo = repoFactory(PassgradProjectBindingEntity);
 
 export const passgradEmbedSessionMintService = {
   async createOrGet(
@@ -53,7 +52,7 @@ export const passgradEmbedSessionMintService = {
 };
 
 async function assertProjectIsBound(projectId: string): Promise<void> {
-  const binding = await passgradProjectBindingRepo().findOneBy({ projectId });
+  const binding = await passgradProjectBindingService.getActive(projectId);
   if (!isNil(binding)) {
     return;
   }
