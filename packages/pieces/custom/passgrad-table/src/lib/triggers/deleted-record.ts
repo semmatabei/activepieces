@@ -5,7 +5,7 @@ export const deletedRecord = createTrigger({
   name: "deleted_record",
   displayName: "Deleted Record",
   description: "Triggers when a record is deleted from the selected Passgrad table.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: { table_id: tableIdProperty },
   sampleData: {
     record_id: "rec_abc123",

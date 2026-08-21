@@ -5,7 +5,7 @@ export const updatedRecord = createTrigger({
   name: "updated_record",
   displayName: "Updated Record",
   description: "Triggers when a record is updated in the selected Passgrad table.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: { table_id: tableIdProperty },
   sampleData: {
     record_id: "rec_abc123",

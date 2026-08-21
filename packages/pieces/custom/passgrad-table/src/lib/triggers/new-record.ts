@@ -10,13 +10,13 @@ const sampleData = {
 
 /**
  * Trigger: New Record — fires when a record is created in the selected table.
- * Uses APP_WEBHOOK: onEnable registers webhook with Passgrad, onDisable removes it.
+ * Registers the Flow-specific webhook URL with Passgrad and removes it on disable.
  */
 export const newRecord = createTrigger({
   name: "new_record",
   displayName: "New Record",
   description: "Triggers when a new record is created in the selected Passgrad table.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: { table_id: tableIdProperty },
   sampleData,
 

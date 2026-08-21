@@ -11,14 +11,14 @@ const sampleData = {
  * Trigger: New Submission
  *
  * Fires when a user submits the selected Passgrad form.
- * Uses APP_WEBHOOK strategy and keeps the trigger registration ID in Flow storage.
+ * Registers the Flow-specific webhook URL and keeps its Passgrad trigger ID in Flow storage.
  */
 export const newSubmission = createTrigger({
   name: "new_submission",
   displayName: "New Submission",
   description:
     "Triggers when a new submission is received. Use Get Submission to retrieve its payload.",
-  type: TriggerStrategy.APP_WEBHOOK,
+  type: TriggerStrategy.WEBHOOK,
   props: {
     form_id: formIdProperty,
   },
