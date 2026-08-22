@@ -61,6 +61,12 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
     switch (params.operation) {
         case 'form.list':
             return { method: 'GET', path: '/forms' }
+        case 'user.list':
+            return { method: 'GET', path: '/members' }
+        case 'group.list':
+            return { method: 'GET', path: '/groups' }
+        case 'workflow.list':
+            return { method: 'GET', path: '/workflows' }
         case 'table.get-record':
             return resourceRoute(
                 params,

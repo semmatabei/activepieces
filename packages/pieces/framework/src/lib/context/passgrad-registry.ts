@@ -33,6 +33,9 @@ export const PASSGRAD_OPERATION_REGISTRY = {
   'task.open-workflow-approval': {
     pieces: ['@activepieces/piece-passgrad-form'],
   },
+  'user.list': { pieces: ['@activepieces/piece-passgrad-form'] },
+  'group.list': { pieces: ['@activepieces/piece-passgrad-form'] },
+  'workflow.list': { pieces: ['@activepieces/piece-passgrad-form'] },
 } as const;
 
 export const PASSGRAD_OPERATION_SCHEMA = z.enum(

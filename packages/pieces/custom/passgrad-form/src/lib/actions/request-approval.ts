@@ -2,21 +2,16 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
+import {
+  formFieldIdProperty,
+  formIdProperty,
+  groupIdProperty,
+  workflowIdProperty,
+} from "../common";
+
 const title = Property.ShortText({ displayName: "Title", required: true });
 const description = Property.LongText({ displayName: "Description", required: false });
-const groupId = Property.ShortText({
-  displayName: "Approver group ID",
-  description: "Passgrad group responsible for this approval.",
-  required: true,
-});
-const workflowId = Property.ShortText({
-  displayName: "Passgrad workflow ID",
-  description: "Workflow record that owns this Activepieces Flow.",
-  required: true,
-});
-const formId = Property.ShortText({ displayName: "KRS form ID", required: false });
 const submissionId = Property.ShortText({ displayName: "KRS submission ID", required: false });
-const classFieldId = Property.ShortText({ displayName: "KRS class field ID", required: false });
 const nilaiTableId = Property.ShortText({ displayName: "Nilai table ID", required: false });
 const nilaiClassFieldId = Property.ShortText({
   displayName: "Nilai class field ID",
@@ -67,9 +62,9 @@ export const requestApproval = createAction({
   displayName: "Request group approval",
   description: "Pause flow until a member of the assigned Passgrad group approves or rejects.",
   props: {
-    group_id: groupId,
-    class_field_id: classFieldId,
-    form_id: formId,
+    group_id: groupIdProperty,
+    form_id: { ...formIdProperty, required: false },
+    class_field_id: { ...formFieldIdProperty, required: false },
     class_count: classCount,
     nilai_class_field_id: nilaiClassFieldId,
     nilai_status_field_id: nilaiStatusFieldId,
@@ -80,7 +75,7 @@ export const requestApproval = createAction({
     submission_id: submissionId,
     total_fee: totalFee,
     trigger_kind: triggerKind,
-    workflow_id: workflowId,
+    workflow_id: workflowIdProperty,
   },
   async run(context) {
     const occurrenceKey = `approval:${context.run.id}:${context.step.name}`;

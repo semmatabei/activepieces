@@ -1,12 +1,12 @@
-import { createAction, Property } from "@activepieces/pieces-framework";
+import { createAction } from "@activepieces/pieces-framework";
 
-import { formIdProperty, passgradRequest } from "../common";
+import { formIdProperty, passgradRequest, userIdProperty } from "../common";
 
-const actorUserIdProperty = Property.ShortText({
-  displayName: "Assigned user ID",
-  description: "Passgrad user ID of the current tenant member who must submit this Form.",
-  required: true,
-});
+const actorUserIdProperty = {
+  ...userIdProperty,
+  displayName: "Assigned user",
+  description: "Pick a tenant member or paste a user ID from a previous step.",
+};
 
 interface OpenedSession {
   data: { id: string };
