@@ -294,7 +294,8 @@ const bindingRequestOptions = {
         body: z.object({
             tenantId: z.string().uuid(),
             provisioningKey: z.string().uuid(),
-            credentialId: z.string().uuid(),
+            // Passgrad S1-10 issues binding credential IDs as opaque resource IDs.
+            credentialId: z.string().min(1),
             callbackSecret: z.string().min(32).max(4096),
         }),
     },
