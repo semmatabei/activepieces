@@ -91,6 +91,13 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                         parseIdPayload(recordPayloadIdSchema, params.payload, 'recordId'),
                     )}`,
             )
+        case 'table.get-records-by-ids':
+            return resourceRoute(
+                params,
+                'POST',
+                (id) => `/tables/${id}/records/batch-get`,
+                parseBoundedPayload(getRecordsByIdsPayloadSchema, params.payload, 16 * 1024),
+            )
         case 'table.create-record':
             return resourceRoute(
                 params,
@@ -241,6 +248,15 @@ function capabilityError(message: string): ActivepiecesError {
 
 const boundedIdSchema = z.string().trim().min(1).max(255)
 const recordPayloadIdSchema = z.object({ recordId: boundedIdSchema }).strict()
+const getRecordsByIdsPayloadSchema = z
+    .object({
+        recordIds: z.array(passgradResourceIdSchema).min(1).max(100).refine(
+            (recordIds) => new Set(recordIds).size === recordIds.length,
+            'Record IDs must be unique',
+        ),
+        missingRecordPolicy: z.literal('fail'),
+    })
+    .strict()
 const submissionIdPayloadSchema = z
     .object({ submissionId: boundedIdSchema })
     .strict()

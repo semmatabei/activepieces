@@ -5,6 +5,7 @@ import { deletedRecord } from "./lib/triggers/deleted-record";
 import { createRecord } from "./lib/actions/create-record";
 import { updateRecord } from "./lib/actions/update-record";
 import { getRecord } from "./lib/actions/get-record";
+import { getRecordsByIds } from "./lib/actions/get-records-by-ids";
 
 export const passgradTable = createPiece({
   displayName: "Passgrad Table",
@@ -16,5 +17,5 @@ export const passgradTable = createPiece({
   authors: ["Passgrad"],
   auth: PieceAuth.None(),
   triggers: [newRecord, updatedRecord, deletedRecord],
-  actions: [createRecord, updateRecord, getRecord],
+  actions: [createRecord, updateRecord, getRecord, getRecordsByIds],
 });

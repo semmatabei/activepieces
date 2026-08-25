@@ -247,6 +247,14 @@ describe('passgradCapabilityService', () => {
             },
             {
                 pieceName: '@activepieces/piece-passgrad-table',
+                operation: 'table.get-records-by-ids',
+                expectedMethod: 'POST',
+                resourceId: 'table-1',
+                payload: { recordIds: [submissionResourceId], missingRecordPolicy: 'fail' },
+                expectedUrl: 'https://api.passgrad.test/v1/tenants/tenant-from-binding/tables/table-1/records/batch-get',
+            },
+            {
+                pieceName: '@activepieces/piece-passgrad-table',
                 operation: 'table.create-record',
                 expectedMethod: 'POST',
                 resourceId: 'table-1',
@@ -308,6 +316,7 @@ describe('passgradCapabilityService', () => {
     it('rejects every Table-only operation from the Form piece', async () => {
         const requests = [
             { operation: 'table.get-record', resourceId: 'table-1', payload: { recordId: 'record-1' } },
+            { operation: 'table.get-records-by-ids', resourceId: 'table-1', payload: { recordIds: [submissionResourceId], missingRecordPolicy: 'fail' } },
             { operation: 'table.update-record', resourceId: 'table-1', payload: { recordId: 'record-1', values: {} } },
             { operation: 'table.create-trigger', resourceId: 'table-1', payload: { webhook_url: 'https://hooks.test/table', event_type: 'create' } },
             { operation: 'table.delete-trigger', resourceId: 'table-1', payload: { triggerId: 'trigger-1' } },

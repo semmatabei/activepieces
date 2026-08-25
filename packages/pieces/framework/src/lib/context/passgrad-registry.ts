@@ -8,6 +8,7 @@ export const PASSGRAD_PIECE_NAMES = [
 export const PASSGRAD_OPERATION_REGISTRY = {
   'form.list': { pieces: ['@activepieces/piece-passgrad-form'] },
   'table.get-record': { pieces: ['@activepieces/piece-passgrad-table'] },
+  'table.get-records-by-ids': { pieces: ['@activepieces/piece-passgrad-table'] },
   'table.create-record': {
     pieces: [
       '@activepieces/piece-passgrad-table',
