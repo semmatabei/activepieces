@@ -215,6 +215,22 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                 payload: trustedCallbackPayload(params, completeProcessPayloadSchema, 64 * 1024),
                 callback: true,
             }
+        case 'workflow.open-action-request':
+            assertNoEnclosingLoop(params)
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/action-requests',
+                payload: trustedCallbackPayload(params, actionRequestPayloadSchema, 128 * 1024),
+                callback: true,
+            }
+        case 'workflow.open-approval-request':
+            assertNoEnclosingLoop(params)
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/approval-requests',
+                payload: trustedCallbackPayload(params, approvalRequestPayloadSchema, 128 * 1024),
+                callback: true,
+            }
         default:
             throw capabilityError('Passgrad operation is not registered')
     }
@@ -411,6 +427,98 @@ const completeProcessPayloadSchema = z
         data: z.record(z.string(), z.unknown()),
     })
     .strict()
+
+const boundedUniqueUserIdsSchema = z
+    .array(z.string().uuid())
+    .min(1)
+    .max(100)
+    .refine((userIds) => new Set(userIds).size === userIds.length, 'User IDs must be unique')
+const boundedUniqueGroupIdsSchema = z
+    .array(passgradResourceIdSchema)
+    .min(1)
+    .max(100)
+    .refine(
+        (groupIds) => new Set(groupIds).size === groupIds.length,
+        'Group IDs must be unique',
+    )
+
+const workflowActionAssigneeSchema = z.discriminatedUnion('type', [
+    z.object({ type: z.literal('source_submitter') }).strict(),
+    z.object({ type: z.literal('users'), userIds: boundedUniqueUserIdsSchema }).strict(),
+    z.object({ type: z.literal('groups'), groupIds: boundedUniqueGroupIdsSchema }).strict(),
+])
+
+const workflowApprovalApproverSchema = z.discriminatedUnion('type', [
+    z.object({ type: z.literal('users'), userIds: boundedUniqueUserIdsSchema }).strict(),
+    z.object({ type: z.literal('groups'), groupIds: boundedUniqueGroupIdsSchema }).strict(),
+])
+
+const optionalTaskScheduleShape = {
+    priority: z.enum(['low', 'normal', 'high']).optional(),
+    dueAt: z.string().datetime().nullable().optional(),
+}
+
+const actionRequestPayloadSchema = z
+    .object({
+        type: z.literal('workflow.action.requested.v1'),
+        eventId: boundedIdSchema,
+        sourceSubmissionId: passgradResourceIdSchema,
+        definition: z
+            .object({
+                title: z.string().trim().min(1).max(200),
+                description: z.string().max(4000),
+                assignee: workflowActionAssigneeSchema,
+                fields: z.array(z.record(z.string(), z.unknown())).min(1).max(100),
+                policy: z.literal('any'),
+            })
+            .strict(),
+        ...optionalTaskScheduleShape,
+        resumeUrl: z.string().url().max(8192),
+    })
+    .strict()
+
+const approvalRequestPayloadSchema = z
+    .object({
+        type: z.literal('workflow.approval.requested.v2'),
+        eventId: boundedIdSchema,
+        definition: z
+            .object({
+                sourceSubmissionId: passgradResourceIdSchema,
+                title: z.string().trim().min(1).max(200),
+                description: z.string().max(4000),
+                approver: workflowApprovalApproverSchema,
+                minimumApprovals: z.number().int().min(1).max(100),
+                rejectionPolicy: z.literal('any_rejection'),
+                comment: z
+                    .object({ enabled: z.boolean(), required: z.boolean() })
+                    .strict()
+                    .refine(
+                        (config) => !config.required || config.enabled,
+                        'Required comments imply enabled comments',
+                    ),
+                attachment: z
+                    .object({
+                        enabled: z.boolean(),
+                        required: z.boolean(),
+                        maxFiles: z.number().int().min(1).max(10),
+                    })
+                    .strict()
+                    .refine(
+                        (config) => !config.required || config.enabled,
+                        'Required attachments imply enabled attachments',
+                    ),
+                ...optionalTaskScheduleShape,
+            })
+            .strict(),
+        resumeUrl: z.string().url().max(8192),
+    })
+    .strict()
+
+function assertNoEnclosingLoop(params: PassgradCapabilityRequest): void {
+    if ((params.execution?.executionPath.length ?? 0) > 0) {
+        throw capabilityError('Passgrad waitpoint operations do not support loops')
+    }
+}
 
 function trustedCallbackPayload<T extends Record<string, unknown>>(
     params: PassgradCapabilityRequest,

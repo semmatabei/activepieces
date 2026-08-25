@@ -50,6 +50,36 @@ const workflowTaskPayload = {
         targets: [{ type: 'group' as const, groupId: groupResourceId }],
     },
 }
+const actionRequestPayload = {
+    type: 'workflow.action.requested.v1' as const,
+    eventId: 'action-event-1',
+    sourceSubmissionId: submissionResourceId,
+    definition: {
+        title: 'Complete enrollment data',
+        description: '',
+        assignee: { type: 'source_submitter' as const },
+        fields: [{ key: 'notes', label: 'Notes', type: 'text' }],
+        policy: 'any' as const,
+    },
+    priority: 'normal' as const,
+    dueAt: null,
+    resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
+}
+const approvalRequestPayload = {
+    type: 'workflow.approval.requested.v2' as const,
+    eventId: 'approval-event-1',
+    definition: {
+        sourceSubmissionId: submissionResourceId,
+        title: 'Approve enrollment',
+        description: '',
+        approver: { type: 'groups' as const, groupIds: [groupResourceId] },
+        minimumApprovals: 1,
+        rejectionPolicy: 'any_rejection' as const,
+        comment: { enabled: true, required: false },
+        attachment: { enabled: true, required: false, maxFiles: 3 },
+    },
+    resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
+}
 
 describe('passgradCapabilityService', () => {
     beforeEach(() => {
@@ -156,6 +186,92 @@ describe('passgradCapabilityService', () => {
         expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
             url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/process-completions',
         }))
+    })
+
+    it('injects trusted execution into action and approval waitpoint callbacks', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { data: {} } })
+        const execution = {
+            runId: 'run-1',
+            stepId: 'step-1',
+            executionPath: [] as readonly [string, number][],
+        }
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-action-request',
+            payload: actionRequestPayload,
+            execution,
+        })
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-approval-request',
+            payload: approvalRequestPayload,
+            execution,
+        })
+
+        const occurrenceId = derivePassgradOccurrenceId({
+            flowRunId: execution.runId,
+            stepName: execution.stepId,
+            executionPath: execution.executionPath,
+        })
+        const expectedExecution = {
+            apRunId: 'run-1',
+            apStepId: 'step-1',
+            apOccurrenceId: occurrenceId,
+        }
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/action-requests',
+            data: expect.objectContaining({ execution: expectedExecution }),
+            headers: expect.objectContaining({ 'x-passgrad-ap-occurrence-id': occurrenceId }),
+        }))
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/approval-requests',
+            data: expect.objectContaining({ execution: expectedExecution }),
+        }))
+    })
+
+    it('rejects Action and Approval waitpoints inside loops', async () => {
+        const execution = {
+            runId: 'run-1',
+            stepId: 'step-1',
+            executionPath: [['loop', 0]] as readonly [string, number][],
+        }
+
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-action-request',
+            payload: actionRequestPayload,
+            execution,
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-approval-request',
+            payload: approvalRequestPayload,
+            execution,
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
+    })
+
+    it('requires execution context for Action and Approval waitpoints', async () => {
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-action-request',
+            payload: actionRequestPayload,
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-approval-request',
+            payload: approvalRequestPayload,
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
     })
 
     it('rejects engine project without a persisted binding', async () => {
