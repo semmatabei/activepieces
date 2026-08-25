@@ -201,6 +201,20 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                 payload: parseCallbackPayload(workflowTaskPayloadSchema, params.payload, 64 * 1024),
                 callback: true,
             }
+        case 'workflow.add-information':
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/submission-information',
+                payload: trustedCallbackPayload(params, addInformationPayloadSchema, 64 * 1024),
+                callback: true,
+            }
+        case 'workflow.complete-process':
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/process-completions',
+                payload: trustedCallbackPayload(params, completeProcessPayloadSchema, 64 * 1024),
+                callback: true,
+            }
         default:
             throw capabilityError('Passgrad operation is not registered')
     }
@@ -375,6 +389,57 @@ const workflowTaskPayloadSchema = z
             .strict(),
     })
     .strict()
+
+const addInformationPayloadSchema = z
+    .object({
+        type: z.literal('workflow.submission-information.appended.v1'),
+        eventId: boundedIdSchema,
+        sourceSubmissionId: passgradResourceIdSchema,
+        title: z.string().trim().min(1).max(200),
+        description: z.string().max(4000),
+        data: z.record(z.string(), z.unknown()),
+    })
+    .strict()
+
+const completeProcessPayloadSchema = z
+    .object({
+        type: z.literal('workflow.process.completed.v1'),
+        eventId: boundedIdSchema,
+        sourceSubmissionId: passgradResourceIdSchema,
+        resolution: z.enum(['approved', 'rejected', 'cancelled']),
+        summary: z.string().max(2000),
+        data: z.record(z.string(), z.unknown()),
+    })
+    .strict()
+
+function trustedCallbackPayload<T extends Record<string, unknown>>(
+    params: PassgradCapabilityRequest,
+    schema: z.ZodType<T>,
+    maxBytes: number,
+): T & {
+    execution: {
+        apRunId: string
+        apStepId: string
+        apOccurrenceId: string
+    }
+} {
+    if (isNil(params.execution)) {
+        throw capabilityError('Passgrad workflow callback requires execution context')
+    }
+    const payload = parseBoundedPayload(schema, params.payload, maxBytes)
+    return {
+        ...payload,
+        execution: {
+            apRunId: params.execution.runId,
+            apStepId: params.execution.stepId,
+            apOccurrenceId: derivePassgradOccurrenceId({
+                flowRunId: params.execution.runId,
+                stepName: params.execution.stepId,
+                executionPath: params.execution.executionPath,
+            }),
+        },
+    }
+}
 
 function parseCallbackPayload<T>(
     schema: z.ZodType<T>,

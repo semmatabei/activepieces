@@ -104,6 +104,60 @@ describe('passgradCapabilityService', () => {
         }))
     })
 
+    it('injects trusted execution into submission interaction callbacks', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { data: {} } })
+        const execution = {
+            runId: 'run-1',
+            stepId: 'step-1',
+            executionPath: [] as readonly [string, number][],
+        }
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.add-information',
+            payload: {
+                type: 'workflow.submission-information.appended.v1',
+                eventId: 'information-event-1',
+                sourceSubmissionId: submissionResourceId,
+                title: 'Fee Summary',
+                description: '',
+                data: { total: 500000 },
+            },
+            execution,
+        })
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.complete-process',
+            payload: {
+                type: 'workflow.process.completed.v1',
+                eventId: 'completion-event-1',
+                sourceSubmissionId: submissionResourceId,
+                resolution: 'approved',
+                summary: '',
+                data: {},
+            },
+            execution,
+        })
+
+        const occurrenceId = derivePassgradOccurrenceId({
+            flowRunId: execution.runId,
+            stepName: execution.stepId,
+            executionPath: execution.executionPath,
+        })
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/submission-information',
+            data: expect.objectContaining({
+                execution: { apRunId: 'run-1', apStepId: 'step-1', apOccurrenceId: occurrenceId },
+            }),
+            headers: expect.objectContaining({ 'x-passgrad-ap-occurrence-id': occurrenceId }),
+        }))
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/process-completions',
+        }))
+    })
+
     it('rejects engine project without a persisted binding', async () => {
         vi.mocked(passgradProjectBindingService.getCredentials).mockResolvedValue(null)
 

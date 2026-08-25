@@ -4,6 +4,8 @@ import { getSubmission } from "./lib/actions/get-submission";
 import { reportWorkflowStatus } from "./lib/actions/report-workflow-status";
 import { requestSubmission } from "./lib/actions/request-submission";
 import { requestApproval } from "./lib/actions/request-approval";
+import { addInformation } from "./lib/actions/add-information";
+import { completeProcess } from "./lib/actions/complete-process";
 
 export const passgradForm = createPiece({
   displayName: "Passgrad Form",
@@ -14,5 +16,5 @@ export const passgradForm = createPiece({
   authors: ["Passgrad"],
   auth: PieceAuth.None(),
   triggers: [newSubmission],
-  actions: [getSubmission, requestSubmission, requestApproval, reportWorkflowStatus],
+  actions: [getSubmission, requestSubmission, requestApproval, reportWorkflowStatus, addInformation, completeProcess],
 });
