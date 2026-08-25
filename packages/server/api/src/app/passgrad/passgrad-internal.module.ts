@@ -26,11 +26,12 @@ import { platformService } from '../platform/platform.service'
 import { projectService } from '../project/project-service'
 import { UserSchema } from '../user/user-entity'
 import { userRepo } from '../user/user-service'
-import { passgradCapabilityAuthService } from './passgrad-capability-auth.service'
+import { passgradCapabilityAuthService, resolvePassgradTrustedExecutionPath } from './passgrad-capability-auth.service'
 import { passgradCapabilityService } from './passgrad-capability.service'
 import { passgradEmbedSessionMintService } from './passgrad-embed-session-mint.service'
 import { passgradEngineRequestSchema } from './passgrad-engine-request.schema'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
+import { passgradResourceIdSchema } from './passgrad-resource-id'
 
 export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
     app.post('/projects', projectRequestOptions, async (request) => {
@@ -129,12 +130,26 @@ export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
       await passgradCapabilityAuthService.verifyAuthorizationHeader(
           request.headers.authorization,
       )
+        const executionPath =
+      resolvePassgradTrustedExecutionPath({
+          invocationType: claims.invocationType,
+          executionPath: request.body.executionPath,
+      })
         return passgradCapabilityService.request({
             projectId: claims.projectId,
             pieceName: claims.pieceName,
             operation: request.body.operation,
             resourceId: request.body.resourceId,
             payload: request.body.payload,
+            ...(claims.invocationType === 'execution' && !isNil(executionPath)
+                ? {
+                    execution: {
+                        runId: claims.flowRunId,
+                        stepId: claims.stepName,
+                        executionPath,
+                    },
+                }
+                : {}),
         })
     })
 }
@@ -295,7 +310,7 @@ const bindingRequestOptions = {
             tenantId: z.string().uuid(),
             provisioningKey: z.string().uuid(),
             // Passgrad S1-10 issues binding credential IDs as opaque resource IDs.
-            credentialId: z.string().min(1),
+            credentialId: passgradResourceIdSchema,
             callbackSecret: z.string().min(32).max(4096),
         }),
     },

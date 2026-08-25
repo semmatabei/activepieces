@@ -1,15 +1,19 @@
 import { safeHttp } from '@activepieces/server-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { system } from '../../../../src/app/helper/system/system'
-import { passgradCapabilityService } from '../../../../src/app/passgrad/passgrad-capability.service'
+import { derivePassgradOccurrenceId, passgradCapabilityService } from '../../../../src/app/passgrad/passgrad-capability.service'
 import { passgradEngineRequestSchema } from '../../../../src/app/passgrad/passgrad-engine-request.schema'
 import { passgradProjectBindingService } from '../../../../src/app/passgrad/passgrad-project-binding.service'
+import { passgradResourceIdSchema } from '../../../../src/app/passgrad/passgrad-resource-id'
 
-const resourceId = '019ffac2-a4cb-7144-96a5-37d26eed1467'
-const secondResourceId = '019ffac2-a4cb-7144-96a5-37d26eed1468'
+const actorUserId = '019ffac2-a4cb-7144-96a5-37d26eed1467'
+const formResourceId = '7zzzzzzzzzzzzzzzzzzzzzzzzz'
+const workflowResourceId = '3abcdefghjkmnpqrstvwxyz456'
+const submissionResourceId = '2abcdefghjkmnpqrstvwxyz789'
+const groupResourceId = '6abcdefghjkmnpqrstvwxyz123'
 const workflowSessionPayload = {
-    actorUserId: resourceId,
-    formId: secondResourceId,
+    actorUserId,
+    formId: formResourceId,
     resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
     workflowNodeReference: 'form-node',
     workflowReference: 'flow-1',
@@ -27,7 +31,7 @@ const workflowRunPayload = {
     status: 'succeeded' as const,
     triggerKind: 'manual' as const,
     type: 'workflow.run.projection.v1' as const,
-    workflowId: resourceId,
+    workflowId: workflowResourceId,
 }
 const workflowTaskPayload = {
     apRunId: 'run-1',
@@ -35,7 +39,7 @@ const workflowTaskPayload = {
     apTaskId: 'task-1',
     eventId: 'task-event-1',
     type: 'workflow.task.created.v1' as const,
-    workflowId: resourceId,
+    workflowId: workflowResourceId,
     task: {
         type: 'approval' as const,
         title: 'Review request',
@@ -43,7 +47,7 @@ const workflowTaskPayload = {
         priority: 'normal' as const,
         resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
         dueAt: null,
-        targets: [{ type: 'group' as const, groupId: secondResourceId }],
+        targets: [{ type: 'group' as const, groupId: groupResourceId }],
     },
 }
 
@@ -391,7 +395,7 @@ describe('passgradCapabilityService', () => {
             projectId: 'engine-project',
             pieceName: '@activepieces/piece-passgrad-form',
             operation: 'form.open-workflow-session',
-            payload: { formId: secondResourceId },
+            payload: { formId: formResourceId },
         })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
     })
 
@@ -410,6 +414,252 @@ describe('passgradCapabilityService', () => {
                 params: { message: 'Passgrad capability request failed' },
             },
         })
+    })
+
+    it('appends trusted execution headers only when execution context is provided', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.list',
+            execution: {
+                runId: 'run-1',
+                stepId: 'add_information',
+                executionPath: [['loop', 0]],
+            },
+        })
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.list',
+        })
+
+        const withExecution = vi.mocked(safeHttp.axios.request).mock.calls[0][0]
+        expect(withExecution.headers).toMatchObject({
+            'x-passgrad-ap-run-id': 'run-1',
+            'x-passgrad-ap-step-id': 'add_information',
+        })
+        expect(withExecution.headers?.['x-passgrad-ap-occurrence-id']).toMatch(
+            /^pgocc_v1_[0-9a-f]{64}$/,
+        )
+        const withoutExecution = vi.mocked(safeHttp.axios.request).mock.calls[1][0]
+        expect(withoutExecution.headers?.['x-passgrad-ap-run-id']).toBeUndefined()
+        expect(withoutExecution.headers?.['x-passgrad-ap-step-id']).toBeUndefined()
+        expect(withoutExecution.headers?.['x-passgrad-ap-occurrence-id']).toBeUndefined()
+    })
+
+    it('derives stable occurrence ids that differ per iteration and nesting', () => {
+        const emptyPath = derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [],
+        })
+        expect(emptyPath).toMatch(/^pgocc_v1_[0-9a-f]{64}$/)
+        expect(emptyPath).toBe(derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [],
+        }))
+
+        const iterationZero = derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['loop', 0]],
+        })
+        const iterationOne = derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['loop', 1]],
+        })
+        expect(iterationZero).not.toBe(iterationOne)
+        expect(iterationZero).not.toBe(emptyPath)
+
+        const nested = derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['outer', 1], ['inner', 0]],
+        })
+        expect(nested).toMatch(/^pgocc_v1_[0-9a-f]{64}$/)
+        expect(nested).toBe(derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['outer', 1], ['inner', 0]],
+        }))
+        expect(nested).not.toBe(derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['inner', 1], ['outer', 0]],
+        }))
+        expect(nested).not.toBe(derivePassgradOccurrenceId({
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+            executionPath: [['outer', 1], ['inner', 1]],
+        }))
+    })
+
+    it('binds execution path bounds in the engine request schema', () => {
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: [],
+        }).success).toBe(true)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: [['loop', 0], ['inner', 31]],
+        }).success).toBe(true)
+        expect(passgradEngineRequestSchema.safeParse({ operation: 'form.list' }).success).toBe(true)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: [['loop', -1]],
+        }).success).toBe(false)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: [['loop', 1.5]],
+        }).success).toBe(false)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: [['loop']],
+        }).success).toBe(false)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'form.list',
+            executionPath: Array.from({ length: 33 }, (_, index) => [`loop_${index}`, 0]),
+        }).success).toBe(false)
+    })
+
+    it('rejects trusted field overrides at the engine boundary', () => {
+        for (const override of [
+            { runId: 'attacker-run' },
+            { stepId: 'attacker-step' },
+            { occurrenceId: 'pgocc_v1_attacker' },
+            { projectId: 'attacker-project' },
+            { tenantId: 'attacker-tenant' },
+            { headers: { 'x-passgrad-ap-run-id': 'attacker' } },
+            { method: 'DELETE' },
+            { url: 'https://attacker.invalid' },
+            { callbackRoute: '/callbacks/activepieces/v1/workflow-task-created' },
+        ]) {
+            expect(passgradEngineRequestSchema.safeParse({
+                operation: 'form.list',
+                ...override,
+            }).success).toBe(false)
+        }
+    })
+
+    it('accepts S1-10 resource ids and rejects old UUID resource forms', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+
+        for (const candidate of [formResourceId, workflowResourceId, submissionResourceId, groupResourceId]) {
+            expect(passgradResourceIdSchema.safeParse(candidate).success).toBe(true)
+        }
+        expect(passgradResourceIdSchema.safeParse(actorUserId).success).toBe(false)
+        expect(passgradResourceIdSchema.safeParse('short').success).toBe(false)
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.open-workflow-session',
+            payload: workflowSessionPayload,
+        })
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.project-workflow-run',
+            payload: { ...workflowRunPayload, sourceSubmissionId: submissionResourceId },
+        })
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'task.open-workflow-approval',
+            payload: workflowTaskPayload,
+        })
+
+        const uuidRejections = [
+            {
+                operation: 'form.open-workflow-session' as const,
+                payload: { ...workflowSessionPayload, formId: actorUserId },
+            },
+            {
+                operation: 'form.project-workflow-run' as const,
+                payload: { ...workflowRunPayload, workflowId: actorUserId },
+            },
+            {
+                operation: 'form.project-workflow-run' as const,
+                payload: { ...workflowRunPayload, sourceSubmissionId: actorUserId },
+            },
+            {
+                operation: 'task.open-workflow-approval' as const,
+                payload: { ...workflowTaskPayload, workflowId: actorUserId },
+            },
+            {
+                operation: 'task.open-workflow-approval' as const,
+                payload: {
+                    ...workflowTaskPayload,
+                    task: {
+                        ...workflowTaskPayload.task,
+                        targets: [{ type: 'group' as const, groupId: actorUserId }],
+                    },
+                },
+            },
+        ]
+        for (const rejection of uuidRejections) {
+            await expect(passgradCapabilityService.request({
+                projectId: 'engine-project',
+                pieceName: '@activepieces/piece-passgrad-form',
+                operation: rejection.operation,
+                payload: rejection.payload,
+            })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        }
+    })
+
+    it('keeps UUID validation for Better Auth identity and technical ids', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.open-workflow-session',
+            payload: workflowSessionPayload,
+        })
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.open-workflow-session',
+            payload: { ...workflowSessionPayload, actorUserId: formResourceId },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'task.open-workflow-approval',
+            payload: {
+                ...workflowTaskPayload,
+                task: {
+                    ...workflowTaskPayload.task,
+                    targets: [{ type: 'user' as const, userId: formResourceId }],
+                },
+            },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+    })
+
+    it('does not leak execution path or occurrence into capability errors', async () => {
+        vi.mocked(safeHttp.axios.request).mockRejectedValue({
+            isAxiosError: true,
+            response: { data: { error: { message: 'server-only-secret' } } },
+        })
+
+        const error = await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.list',
+            execution: {
+                runId: 'run-1',
+                stepId: 'add_information',
+                executionPath: [['secret-loop-name', 2]],
+            },
+        }).catch((thrown: unknown) => thrown)
+
+        expect(JSON.stringify(error)).not.toContain('secret-loop-name')
+        expect(JSON.stringify(error)).not.toContain('pgocc_v1_')
+        expect(JSON.stringify(error)).not.toContain('server-only-secret')
     })
 
     it('rejects non-Passgrad pieces and body scope overrides at the engine boundary', () => {

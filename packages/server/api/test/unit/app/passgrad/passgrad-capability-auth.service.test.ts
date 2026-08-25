@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { jwtUtils } from '../../../../src/app/helper/jwt-utils'
 import { system } from '../../../../src/app/helper/system/system'
 import { AppSystemProp } from '../../../../src/app/helper/system/system-props'
-import { passgradCapabilityAuthService } from '../../../../src/app/passgrad/passgrad-capability-auth.service'
+import { passgradCapabilityAuthService, resolvePassgradTrustedExecutionPath } from '../../../../src/app/passgrad/passgrad-capability-auth.service'
 
 const secret = 'capability-secret'
 
@@ -93,5 +93,59 @@ describe('passgradCapabilityAuthService', () => {
             key: secret, expiresInSeconds: 60, issuer: 'activepieces-passgrad-engine',
         })
         await expect(passgradCapabilityAuthService.verifyAuthorizationHeader(`Bearer ${token}`)).rejects.toMatchObject({ error: { code: 'AUTHENTICATION' } })
+    })
+
+    it('verifies execution claims including run, version, and step', async () => {
+        const token = await jwtUtils.sign({
+            payload: {
+                sub: 'passgrad-engine-capability',
+                projectId: 'project-1',
+                pieceName: '@activepieces/piece-passgrad-form',
+                invocationType: 'execution',
+                jti: 'invocation-123456789',
+                invocationId: 'invocation-123456789',
+                flowRunId: 'run-1',
+                flowVersionId: 'version-1',
+                stepName: 'add_information',
+            },
+            key: secret,
+            expiresInSeconds: 60,
+            issuer: 'activepieces-passgrad-engine',
+        })
+        await expect(
+            passgradCapabilityAuthService.verifyAuthorizationHeader(`Bearer ${token}`),
+        ).resolves.toMatchObject({
+            invocationType: 'execution',
+            flowRunId: 'run-1',
+            stepName: 'add_information',
+        })
+    })
+
+    it('requires execution path for execution claims and rejects it for property and trigger claims', async () => {
+        expect(resolvePassgradTrustedExecutionPath({
+            invocationType: 'execution',
+            executionPath: [['loop', 0]],
+        })).toEqual([['loop', 0]])
+        expect(() => resolvePassgradTrustedExecutionPath({
+            invocationType: 'execution',
+            executionPath: undefined,
+        })).toThrow()
+
+        expect(resolvePassgradTrustedExecutionPath({
+            invocationType: 'property',
+            executionPath: undefined,
+        })).toBeUndefined()
+        expect(() => resolvePassgradTrustedExecutionPath({
+            invocationType: 'property',
+            executionPath: [['loop', 0]],
+        })).toThrow()
+        expect(resolvePassgradTrustedExecutionPath({
+            invocationType: 'trigger',
+            executionPath: undefined,
+        })).toBeUndefined()
+        expect(() => resolvePassgradTrustedExecutionPath({
+            invocationType: 'trigger',
+            executionPath: [],
+        })).toThrow()
     })
 })

@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import {
     isPassgradOperationAllowed,
 } from '@activepieces/pieces-framework'
@@ -9,6 +10,19 @@ import { z } from 'zod'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
+import { passgradResourceIdSchema } from './passgrad-resource-id'
+
+export function derivePassgradOccurrenceId(
+    params: DerivePassgradOccurrenceIdParams,
+): string {
+    const canonical = JSON.stringify([
+        'passgrad-occurrence-v1',
+        params.flowRunId,
+        params.stepName,
+        params.executionPath,
+    ])
+    return `pgocc_v1_${createHash('sha256').update(canonical, 'utf8').digest('hex')}`
+}
 
 export const passgradCapabilityService = {
     async request(params: PassgradCapabilityRequest): Promise<unknown> {
@@ -33,6 +47,7 @@ export const passgradCapabilityService = {
                         binding.tenantId,
                     )}${route.path}`,
                 headers: {
+                    ...trustedExecutionHeaders(params.execution),
                     'x-passgrad-binding-credential-id': binding.credentialId,
                     'x-passgrad-binding-project-id': params.projectId,
                     'x-passgrad-binding-secret': binding.callbackSecret,
@@ -200,6 +215,23 @@ function resourceRoute(
     return { method, path: path(encodeURIComponent(params.resourceId)), payload }
 }
 
+function trustedExecutionHeaders(
+    execution: PassgradTrustedExecution | undefined,
+): Record<string, string> {
+    if (isNil(execution)) {
+        return {}
+    }
+    return {
+        'x-passgrad-ap-run-id': execution.runId,
+        'x-passgrad-ap-step-id': execution.stepId,
+        'x-passgrad-ap-occurrence-id': derivePassgradOccurrenceId({
+            flowRunId: execution.runId,
+            stepName: execution.stepId,
+            executionPath: execution.executionPath,
+        }),
+    }
+}
+
 function capabilityError(message: string): ActivepiecesError {
     return new ActivepiecesError({
         code: ErrorCode.AUTHORIZATION,
@@ -268,7 +300,7 @@ function parseTriggerPayload(
 const workflowSessionPayloadSchema = z
     .object({
         actorUserId: z.string().uuid(),
-        formId: z.string().uuid(),
+        formId: passgradResourceIdSchema,
         resumeUrl: z.string().url().max(8192),
         workflowNodeReference: boundedIdSchema,
         workflowReference: boundedIdSchema,
@@ -284,7 +316,7 @@ const workflowRunPayloadSchema = z
         finishedAt: z.string().datetime().nullable(),
         safeFailureSummary: z.string().max(2000).nullable(),
         result: z.record(z.string(), z.unknown()).nullable(),
-        sourceSubmissionId: z.string().uuid().nullable(),
+        sourceSubmissionId: passgradResourceIdSchema.nullable(),
         startedAt: z.string().datetime().nullable(),
         status: z.enum(['pending', 'running', 'waiting', 'succeeded', 'failed', 'cancelled']),
         triggerKind: z.enum([
@@ -297,13 +329,13 @@ const workflowRunPayloadSchema = z
             'manual',
         ]),
         type: z.literal('workflow.run.projection.v1'),
-        workflowId: z.string().uuid(),
+        workflowId: passgradResourceIdSchema,
     })
     .strict()
 
 const taskTargetSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('user'), userId: z.string().uuid() }).strict(),
-    z.object({ type: z.literal('group'), groupId: z.string().uuid() }).strict(),
+    z.object({ type: z.literal('group'), groupId: passgradResourceIdSchema }).strict(),
 ])
 
 const workflowTaskPayloadSchema = z
@@ -313,7 +345,7 @@ const workflowTaskPayloadSchema = z
         apTaskId: boundedIdSchema,
         eventId: boundedIdSchema,
         type: z.literal('workflow.task.created.v1'),
-        workflowId: z.string().uuid(),
+        workflowId: passgradResourceIdSchema,
         task: z
             .object({
                 type: z.enum(['approval', 'action']),
@@ -374,6 +406,19 @@ type PassgradCapabilityRequest = {
     operation: PassgradOperation
     resourceId?: string
     payload?: unknown
+    execution?: PassgradTrustedExecution
+}
+
+type PassgradTrustedExecution = {
+    runId: string
+    stepId: string
+    executionPath: readonly [string, number][]
+}
+
+type DerivePassgradOccurrenceIdParams = {
+    flowRunId: string
+    stepName: string
+    executionPath: readonly [string, number][]
 }
 
 type PassgradRoute = {

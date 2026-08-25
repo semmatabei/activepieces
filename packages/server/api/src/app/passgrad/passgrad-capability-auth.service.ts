@@ -46,6 +46,21 @@ export const passgradCapabilityAuthService = {
     },
 }
 
+export function resolvePassgradTrustedExecutionPath(
+    params: ResolvePassgradTrustedExecutionPathParams,
+): readonly [string, number][] | undefined {
+    if (params.invocationType === 'execution') {
+        if (isNil(params.executionPath)) {
+            throw unauthorized()
+        }
+        return params.executionPath
+    }
+    if (!isNil(params.executionPath)) {
+        throw unauthorized()
+    }
+    return undefined
+}
+
 function extractBearerToken(header: string | string[] | undefined): string {
     const value = Array.isArray(header) ? undefined : header
     if (isNil(value)) {
@@ -66,3 +81,8 @@ function unauthorized(): ActivepiecesError {
 }
 
 export type PassgradCapabilityClaims = z.infer<typeof capabilityClaimsSchema>
+
+type ResolvePassgradTrustedExecutionPathParams = {
+    invocationType: PassgradCapabilityClaims['invocationType']
+    executionPath: readonly [string, number][] | undefined
+}

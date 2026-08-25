@@ -210,6 +210,7 @@ const executeAction: ActionHandler<PieceAction> = async ({
             passgrad: createPassgradCapability({
                 apiUrl: constants.internalApiUrl,
                 credential: constants.passgradCapabilities[action.name],
+                executionPath: executionState.currentPath.path,
             }),
         }
         const backwardCompatibleContext =
