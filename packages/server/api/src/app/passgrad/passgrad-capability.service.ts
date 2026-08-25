@@ -27,6 +27,7 @@ export function derivePassgradOccurrenceId(
 export const passgradCapabilityService = {
     async request(params: PassgradCapabilityRequest): Promise<unknown> {
         assertOperationAllowed(params)
+        assertWorkflowRecordRequiresExecution(params)
         const binding = await passgradProjectBindingService.getCredentials(
             params.projectId,
         )
@@ -104,6 +105,13 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                 'POST',
                 (id) => `/tables/${id}/records`,
                 parseRecordPayload(params.payload),
+            )
+        case 'table.create-workflow-record':
+            return resourceRoute(
+                params,
+                'POST',
+                (id) => `/tables/${id}/records/workflow-create`,
+                parseBoundedPayload(createWorkflowRecordPayloadSchema, params.payload, 16 * 1024),
             )
         case 'table.update-record':
             return resourceRoute(
@@ -294,6 +302,12 @@ const triggerIdPayloadSchema = z
     .object({ triggerId: boundedIdSchema })
     .strict()
 const recordPayloadSchema = z
+    .object({
+        values: z.record(z.string(), z.unknown()),
+    })
+    .strict()
+
+const createWorkflowRecordPayloadSchema = z
     .object({
         values: z.record(z.string(), z.unknown()),
     })
@@ -620,5 +634,18 @@ type PassgradRoute = {
 function assertOperationAllowed(params: PassgradCapabilityRequest): void {
     if (!isPassgradOperationAllowed(params.pieceName, params.operation)) {
         throw capabilityError('Passgrad piece cannot perform this operation')
+    }
+}
+
+function assertWorkflowRecordRequiresExecution(
+    params: PassgradCapabilityRequest,
+): void {
+    if (
+        params.operation === 'table.create-workflow-record'
+        && isNil(params.execution)
+    ) {
+        throw capabilityError(
+            'Passgrad workflow record create requires a trusted execution context',
+        )
     }
 }

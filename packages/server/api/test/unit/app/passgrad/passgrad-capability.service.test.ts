@@ -81,6 +81,12 @@ const approvalRequestPayload = {
     resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
 }
 
+const workflowExecution = {
+    runId: 'run-1',
+    stepId: 'create_record',
+    executionPath: [['loop', 0]],
+} as const
+
 describe('passgradCapabilityService', () => {
     beforeEach(() => {
         vi.spyOn(safeHttp.axios, 'request').mockReset()
@@ -433,6 +439,15 @@ describe('passgradCapabilityService', () => {
             },
             {
                 pieceName: '@activepieces/piece-passgrad-table',
+                operation: 'table.create-workflow-record',
+                expectedMethod: 'POST',
+                resourceId: 'table-1',
+                payload: { values: { title: 'safe' } },
+                execution: workflowExecution,
+                expectedUrl: 'https://api.passgrad.test/v1/tenants/tenant-from-binding/tables/table-1/records/workflow-create',
+            },
+            {
+                pieceName: '@activepieces/piece-passgrad-table',
                 operation: 'table.update-record',
                 expectedMethod: 'PATCH',
                 resourceId: 'table-1',
@@ -471,6 +486,7 @@ describe('passgradCapabilityService', () => {
                 operation: testCase.operation,
                 resourceId: testCase.resourceId,
                 payload: testCase.payload,
+                ...('execution' in testCase ? { execution: testCase.execution } : {}),
             })
         }
 
@@ -626,6 +642,60 @@ describe('passgradCapabilityService', () => {
         expect(withoutExecution.headers?.['x-passgrad-ap-run-id']).toBeUndefined()
         expect(withoutExecution.headers?.['x-passgrad-ap-step-id']).toBeUndefined()
         expect(withoutExecution.headers?.['x-passgrad-ap-occurrence-id']).toBeUndefined()
+    })
+
+    it('forwards trusted execution headers on the workflow create route', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { record: { id: 'record-1' } } })
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-table',
+            operation: 'table.create-workflow-record',
+            resourceId: 'table-1',
+            payload: { values: { title: 'safe' } },
+            execution: workflowExecution,
+        })
+
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+            method: 'POST',
+            url: 'https://api.passgrad.test/v1/tenants/tenant-from-binding/tables/table-1/records/workflow-create',
+            headers: expect.objectContaining({
+                'x-passgrad-ap-run-id': 'run-1',
+                'x-passgrad-ap-step-id': 'create_record',
+            }),
+        }))
+        const call = vi.mocked(safeHttp.axios.request).mock.calls[0][0]
+        expect(call.headers?.['x-passgrad-ap-occurrence-id']).toMatch(/^pgocc_v1_[0-9a-f]{64}$/)
+    })
+
+    it('rejects property and trigger claims on the workflow create operation', async () => {
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-table',
+            operation: 'table.create-workflow-record',
+            resourceId: 'table-1',
+            payload: { values: { title: 'safe' } },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+
+        expect(passgradProjectBindingService.getCredentials).not.toHaveBeenCalled()
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
+
+        // executionPath alone is inert: only an execution claim yields trusted execution.
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'table.create-workflow-record',
+            resourceId: 'table-1',
+            executionPath: [['loop', 0]],
+        }).success).toBe(true)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'table.create-workflow-record',
+            resourceId: 'table-1',
+            occurrenceId: 'pgocc_v1_attacker',
+        }).success).toBe(false)
+        expect(passgradEngineRequestSchema.safeParse({
+            operation: 'table.create-workflow-record',
+            resourceId: 'table-1',
+            headers: { 'x-passgrad-ap-run-id': 'attacker-run' },
+        }).success).toBe(false)
     })
 
     it('derives stable occurrence ids that differ per iteration and nesting', () => {

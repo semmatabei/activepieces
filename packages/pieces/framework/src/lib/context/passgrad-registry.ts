@@ -15,6 +15,9 @@ export const PASSGRAD_OPERATION_REGISTRY = {
       '@activepieces/piece-passgrad-form',
     ],
   },
+  'table.create-workflow-record': {
+    pieces: ['@activepieces/piece-passgrad-table'],
+  },
   'table.update-record': { pieces: ['@activepieces/piece-passgrad-table'] },
   'table.create-trigger': { pieces: ['@activepieces/piece-passgrad-table'] },
   'table.delete-trigger': { pieces: ['@activepieces/piece-passgrad-table'] },
