@@ -1,5 +1,6 @@
 import { createPiece, PieceAuth } from "@activepieces/pieces-framework";
 import { newSubmission } from "./lib/triggers/new-submission";
+import { newSubmissionV2 } from "./lib/triggers/new-submission-v2";
 import { getSubmission } from "./lib/actions/get-submission";
 import { reportWorkflowStatus } from "./lib/actions/report-workflow-status";
 import { requestSubmission } from "./lib/actions/request-submission";
@@ -17,7 +18,7 @@ export const passgradForm = createPiece({
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
   auth: PieceAuth.None(),
-  triggers: [newSubmission],
+  triggers: [newSubmissionV2, newSubmission],
   actions: [
     getSubmission,
     requestSubmission,

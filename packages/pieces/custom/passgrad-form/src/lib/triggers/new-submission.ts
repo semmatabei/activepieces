@@ -3,8 +3,8 @@ import { formIdProperty, passgradRequest } from "../common";
 
 const sampleData = {
   event: "form.submitted.v1",
-  formId: "019c70d8-e000-7000-8000-000000000001",
-  submissionId: "019c70d8-e000-7000-8000-000000000002",
+  formId: "01khrdhr00e008000000000001",
+  submissionId: "01khrdhr00e008000000000002",
 };
 
 /**
@@ -15,9 +15,9 @@ const sampleData = {
  */
 export const newSubmission = createTrigger({
   name: "new_submission",
-  displayName: "New Submission",
+  displayName: "New Submission (Legacy V1)",
   description:
-    "Triggers when a new submission is received. Use Get Submission to retrieve its payload.",
+    "Legacy reference-only trigger retained for published workflows. New workflows should use New Submission.",
   type: TriggerStrategy.WEBHOOK,
   props: {
     form_id: formIdProperty,
@@ -30,7 +30,7 @@ export const newSubmission = createTrigger({
 
     const response = await passgradRequest<{ data: { id: string } }>(context, {
       operation: "form.create-trigger",
-      payload: { webhook_url: webhookUrl },
+      payload: { output_version: "v1", webhook_url: webhookUrl },
       resourceId: formId,
     });
 

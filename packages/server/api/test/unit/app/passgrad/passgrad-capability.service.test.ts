@@ -361,7 +361,7 @@ describe('passgradCapabilityService', () => {
                 operation: 'form.create-trigger',
                 expectedMethod: 'POST',
                 resourceId: 'form-1',
-                payload: { webhook_url: 'https://hooks.test/form' },
+                payload: { output_version: 'v2', webhook_url: 'https://hooks.test/form' },
                 expectedUrl: 'https://api.passgrad.test/v1/tenants/tenant-from-binding/forms/form-1/triggers',
             },
             {
@@ -606,7 +606,8 @@ describe('passgradCapabilityService', () => {
             operation: 'form.list',
         })).rejects.toMatchObject({
             error: {
-                params: { message: 'Passgrad capability request failed' },
+                code: 'GENERIC_ERROR',
+                params: { message: 'Passgrad capability request failed with status 500' },
             },
         })
     })

@@ -66,6 +66,12 @@ export const passgradCapabilityService = {
         }
         catch (error) {
             if (isAxiosError(error)) {
+                if ((error.response?.status ?? 500) >= 500) {
+                    throw new ActivepiecesError({
+                        code: ErrorCode.GENERIC_ERROR,
+                        params: { message: `Passgrad capability request failed with status ${error.response?.status ?? 500}` },
+                    })
+                }
                 throw capabilityError('Passgrad capability request failed')
             }
             throw error
@@ -322,6 +328,7 @@ const updateRecordPayloadSchema = z
 
 const formTriggerPayloadSchema = z
     .object({
+        output_version: z.enum(['v1', 'v2']).optional(),
         webhook_url: z
             .string()
             .url()

@@ -107,9 +107,7 @@ export const formFieldIdProperty = dropdownFromList<{ id: string; label: string 
   refreshers: ["form_id"],
   guard: (propsValue) => {
     const formId = propsValue["form_id"];
-    return typeof formId === "string" && formId.length > 0
-      ? undefined
-      : "Select a KRS form first";
+    return typeof formId === "string" && formId.length > 0 ? undefined : "Select a KRS form first";
   },
   fetch: async (propsValue, context) => {
     const formId = propsValue["form_id"] as string;

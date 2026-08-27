@@ -41,13 +41,9 @@ export const recordFieldsProperty = Property.DynamicProperties<true>({
       const response = await context.passgrad.request<{
         data: { id: string; name: string; type: string }[];
       }>({ operation: "table.get-fields", resourceId: table_id });
-      const fields: Record<string, ReturnType<typeof Property.ShortText>> = {};
+      const fields: Record<string, ReturnType<typeof propertyForFieldType>> = {};
       for (const field of response.data ?? []) {
-        fields[field.id] = Property.ShortText({
-          displayName: field.name,
-          description: `Type: ${field.type}`,
-          required: false,
-        });
+        fields[field.id] = propertyForFieldType(field.type, field.name);
       }
       return fields;
     } catch {
@@ -55,6 +51,21 @@ export const recordFieldsProperty = Property.DynamicProperties<true>({
     }
   },
 });
+
+export function propertyForFieldType(type: string, name: string) {
+  if (type === "number" || type === "currency") {
+    return Property.Number({
+      displayName: name,
+      description: `Type: ${type}`,
+      required: false,
+    });
+  }
+  return Property.ShortText({
+    displayName: name,
+    description: `Type: ${type}`,
+    required: false,
+  });
+}
 
 export function passgradRequest<T>(context: PassgradContext, request: PassgradRequest) {
   return context.passgrad.request<T>(request);

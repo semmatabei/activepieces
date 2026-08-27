@@ -2,12 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
-function parseIdList(value: string | undefined): string[] {
-  return (value ?? "")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
-}
+import { buildActionRequestPayload } from "./request-action-payload";
 
 const priority = Property.StaticDropdown({
   displayName: "Priority",
@@ -76,31 +71,14 @@ export const requestAction = createAction({
     }
 
     const waitpoint = await context.run.createWaitpoint({ type: "WEBHOOK", version: "V1" });
-    const assigneeType = context.propsValue.assignee_type;
-    const assignee =
-      assigneeType === "users"
-        ? { type: "users", userIds: parseIdList(context.propsValue.assignee_user_ids) }
-        : assigneeType === "groups"
-          ? { type: "groups", groupIds: parseIdList(context.propsValue.assignee_group_ids) }
-          : { type: "source_submitter" };
 
     await context.passgrad.request({
       operation: "workflow.open-action-request",
-      payload: {
-        type: "workflow.action.requested.v1",
+      payload: buildActionRequestPayload({
+        props: context.propsValue,
         eventId: randomUUID(),
-        sourceSubmissionId: context.propsValue.source_submission_id,
-        definition: {
-          title: context.propsValue.title,
-          description: context.propsValue.description ?? "",
-          assignee,
-          policy: "any",
-          fields: context.propsValue.fields,
-        },
-        ...(context.propsValue.priority ? { priority: context.propsValue.priority } : {}),
-        ...(context.propsValue.due_at ? { dueAt: context.propsValue.due_at } : {}),
         resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
-      },
+      }),
     });
 
     context.run.waitForWaitpoint(waitpoint.id);

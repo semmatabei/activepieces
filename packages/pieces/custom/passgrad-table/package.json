@@ -1,6 +1,6 @@
 {
   "name": "@activepieces/piece-passgrad-table",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Passgrad Table piece — trigger flows on record changes, or manage table records from flows.",
   "dependencies": {
     "@activepieces/pieces-framework": "*",
