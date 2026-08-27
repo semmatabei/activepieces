@@ -5,25 +5,12 @@ function parseIdList(value: string | undefined): string[] {
     .filter((entry) => entry.length > 0);
 }
 
-export interface RequestActionProps {
-  source_submission_id: string;
-  title: string;
-  description?: string;
-  /** Runtime dropdown values are plain strings; narrowed inside the builder. */
-  assignee_type: string;
-  assignee_user_ids?: string;
-  assignee_group_ids?: string;
-  fields: unknown;
-  priority?: string;
-  due_at?: string;
-}
-
 /**
  * Builds the frozen `workflow.action.requested.v1` callback payload. Both
  * `priority` and `dueAt` keys are always present: the Passgrad contract
  * validates fixed objects strictly and rejects omitted required keys.
  */
-export function buildActionRequestPayload(input: {
+function buildActionRequestPayload(input: {
   props: RequestActionProps;
   eventId: string;
   resumeUrl: string;
@@ -50,4 +37,22 @@ export function buildActionRequestPayload(input: {
     dueAt: input.props.due_at ?? null,
     resumeUrl: input.resumeUrl,
   };
+}
+
+/** Public utility surface for request action payload construction. */
+export const requestActionPayloadUtils = {
+  buildActionRequestPayload,
+};
+
+/** Props shape accepted by the Request Action piece UI (runtime dropdown values are plain strings). */
+export interface RequestActionProps {
+  source_submission_id: string;
+  title: string;
+  description?: string;
+  assignee_type: string;
+  assignee_user_ids?: string;
+  assignee_group_ids?: string;
+  fields: unknown;
+  priority?: string;
+  due_at?: string;
 }

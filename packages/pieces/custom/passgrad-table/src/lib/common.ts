@@ -1,6 +1,8 @@
 import type { PassgradRequest, PropertyContext } from "@activepieces/pieces-framework";
 import { Property } from "@activepieces/pieces-framework";
 
+import { classifyFieldType } from "./field-type";
+
 type PassgradContext = Pick<PropertyContext, "passgrad">;
 
 /** Shared table ID property resolved through the authenticated engine capability. */
@@ -53,7 +55,8 @@ export const recordFieldsProperty = Property.DynamicProperties<true>({
 });
 
 export function propertyForFieldType(type: string, name: string) {
-  if (type === "number" || type === "currency") {
+  const classification = classifyFieldType(type);
+  if (classification === "NUMBER") {
     return Property.Number({
       displayName: name,
       description: `Type: ${type}`,

@@ -1,6 +1,12 @@
 import { createAction, Property } from "@activepieces/pieces-framework";
 
 import { passgradRequest } from "../common";
+import {
+  buildEventId,
+  buildStoreKey,
+  buildWorkflowRunProjectionPayload,
+  type StoredProjectionTimestamps,
+} from "./report-workflow-status-payload";
 
 const workflowIdProperty = Property.ShortText({
   displayName: "Passgrad workflow ID",
@@ -74,28 +80,39 @@ export const reportWorkflowStatus = createAction({
   },
   async run(context) {
     const sourceSubmissionId = context.propsValue.source_submission_id?.trim() || null;
-    const status = context.propsValue.status;
+    const status = context.propsValue.status as "running" | "succeeded";
     const eventSequence = context.propsValue.event_sequence;
     const terminal = status === "succeeded";
+
+    const storeKey = buildStoreKey(context.run.id, context.step.name, status, eventSequence);
+    const stored = await context.store.get<StoredProjectionTimestamps>(storeKey);
+
+    const now = new Date().toISOString();
+    const timestamps: StoredProjectionTimestamps = stored ?? {
+      startedAt: terminal ? null : now,
+      finishedAt: terminal ? now : null,
+    };
+
+    if (!stored) {
+      await context.store.put(storeKey, timestamps);
+    }
+
+    const payload = buildWorkflowRunProjectionPayload({
+      apEventSequence: eventSequence,
+      apRunId: context.run.id,
+      status,
+      eventSequence,
+      triggerKind: context.propsValue.trigger_kind,
+      workflowId: context.propsValue.workflow_id,
+      sourceSubmissionId,
+      result: context.propsValue.result ?? null,
+      startedAt: timestamps.startedAt,
+      finishedAt: timestamps.finishedAt,
+    });
+
     await passgradRequest(context, {
       operation: "form.project-workflow-run",
-      payload: {
-        apEventSequence: eventSequence,
-        apRunId: context.run.id,
-        eventId:
-          status === "succeeded" && eventSequence === 1
-            ? `${context.run.id}:succeeded`
-            : `${context.run.id}:${eventSequence}:${status}`,
-        finishedAt: terminal ? new Date().toISOString() : null,
-        safeFailureSummary: null,
-        result: context.propsValue.result ?? null,
-        sourceSubmissionId,
-        startedAt: terminal ? null : new Date().toISOString(),
-        status,
-        triggerKind: context.propsValue.trigger_kind,
-        type: "workflow.run.projection.v1",
-        workflowId: context.propsValue.workflow_id,
-      },
+      payload,
     });
     return { status, workflowId: context.propsValue.workflow_id };
   },

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
-import { buildActionRequestPayload } from "./request-action-payload";
+import { requestActionPayloadUtils } from "./request-action-payload";
 
 const priority = Property.StaticDropdown({
   displayName: "Priority",
@@ -74,7 +74,7 @@ export const requestAction = createAction({
 
     await context.passgrad.request({
       operation: "workflow.open-action-request",
-      payload: buildActionRequestPayload({
+      payload: requestActionPayloadUtils.buildActionRequestPayload({
         props: context.propsValue,
         eventId: randomUUID(),
         resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
