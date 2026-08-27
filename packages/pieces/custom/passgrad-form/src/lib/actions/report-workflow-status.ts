@@ -2,10 +2,8 @@ import { createAction, Property } from "@activepieces/pieces-framework";
 
 import { passgradRequest } from "../common";
 import {
-  buildEventId,
-  buildStoreKey,
-  buildWorkflowRunProjectionPayload,
-  type StoredProjectionTimestamps,
+  workflowRunProjectionPayloadUtils,
+  type WorkflowProjectionStatus,
 } from "./report-workflow-status-payload";
 
 const workflowIdProperty = Property.ShortText({
@@ -45,7 +43,7 @@ const resultProperty = Property.Json({
   required: false,
 });
 
-const statusProperty = Property.StaticDropdown({
+const statusProperty = Property.StaticDropdown<WorkflowProjectionStatus, true>({
   displayName: "Status",
   description: "Operational workflow-run status to project into Passgrad.",
   required: true,
@@ -80,24 +78,23 @@ export const reportWorkflowStatus = createAction({
   },
   async run(context) {
     const sourceSubmissionId = context.propsValue.source_submission_id?.trim() || null;
-    const status = context.propsValue.status as "running" | "succeeded";
+    const status = context.propsValue.status;
     const eventSequence = context.propsValue.event_sequence;
-    const terminal = status === "succeeded";
 
-    const storeKey = buildStoreKey(context.run.id, context.step.name, status, eventSequence);
-    const stored = await context.store.get<StoredProjectionTimestamps>(storeKey);
+    const storeKey = workflowRunProjectionPayloadUtils.buildStoreKey({
+      runId: context.run.id,
+      stepName: context.step.name,
+      status,
+      eventSequence,
+    });
+    const timestamps = await workflowRunProjectionPayloadUtils.getOrCreateTimestamps({
+      store: context.store,
+      storeKey,
+      status,
+      now: new Date().toISOString(),
+    });
 
-    const now = new Date().toISOString();
-    const timestamps: StoredProjectionTimestamps = stored ?? {
-      startedAt: terminal ? null : now,
-      finishedAt: terminal ? now : null,
-    };
-
-    if (!stored) {
-      await context.store.put(storeKey, timestamps);
-    }
-
-    const payload = buildWorkflowRunProjectionPayload({
+    const payload = workflowRunProjectionPayloadUtils.buildWorkflowRunProjectionPayload({
       apEventSequence: eventSequence,
       apRunId: context.run.id,
       status,

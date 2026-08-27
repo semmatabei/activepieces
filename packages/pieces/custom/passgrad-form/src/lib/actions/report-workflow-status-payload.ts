@@ -1,14 +1,86 @@
-/** Pure workflow-run projection payload building logic without Activepieces framework dependencies. */
+function buildEventId(input: {
+  runId: string;
+  status: WorkflowProjectionStatus;
+  eventSequence: number;
+}): string {
+  if (input.status === "succeeded" && input.eventSequence === 1) {
+    return `${input.runId}:succeeded`;
+  }
+  return `${input.runId}:${input.eventSequence}:${input.status}`;
+}
+
+function buildStoreKey(input: {
+  runId: string;
+  stepName: string;
+  status: WorkflowProjectionStatus;
+  eventSequence: number;
+}): string {
+  return `workflow-projection:${input.runId}:${input.stepName}:${input.status}:${input.eventSequence}`;
+}
+
+async function getOrCreateTimestamps(input: {
+  store: ProjectionTimestampStore;
+  storeKey: string;
+  status: WorkflowProjectionStatus;
+  now: string;
+}): Promise<StoredProjectionTimestamps> {
+  const stored = await input.store.get<StoredProjectionTimestamps>(input.storeKey);
+  if (stored) return stored;
+
+  const timestamps: StoredProjectionTimestamps = {
+    startedAt: input.status === "succeeded" ? null : input.now,
+    finishedAt: input.status === "succeeded" ? input.now : null,
+  };
+  await input.store.put(input.storeKey, timestamps);
+  return timestamps;
+}
+
+function buildWorkflowRunProjectionPayload(
+  input: WorkflowRunProjectionPayloadInput,
+): WorkflowRunProjectionPayload {
+  return {
+    apEventSequence: input.apEventSequence,
+    apRunId: input.apRunId,
+    eventId: buildEventId({
+      runId: input.apRunId,
+      status: input.status,
+      eventSequence: input.eventSequence,
+    }),
+    finishedAt: input.finishedAt,
+    safeFailureSummary: null,
+    result: input.result,
+    sourceSubmissionId: input.sourceSubmissionId,
+    startedAt: input.startedAt,
+    status: input.status,
+    triggerKind: input.triggerKind,
+    type: "workflow.run.projection.v1",
+    workflowId: input.workflowId,
+  };
+}
+
+export const workflowRunProjectionPayloadUtils = {
+  buildEventId,
+  buildStoreKey,
+  buildWorkflowRunProjectionPayload,
+  getOrCreateTimestamps,
+};
+
+export type WorkflowProjectionStatus = "running" | "succeeded";
 
 export interface StoredProjectionTimestamps {
   startedAt: string | null;
   finishedAt: string | null;
 }
 
+export interface ProjectionTimestampStore {
+  get<T>(key: string): Promise<T | null>;
+  put<T>(key: string, value: T): Promise<T>;
+}
+
 export interface WorkflowRunProjectionPayloadInput {
   apEventSequence: number;
   apRunId: string;
-  status: "running" | "succeeded";
+  status: WorkflowProjectionStatus;
   eventSequence: number;
   triggerKind: string;
   workflowId: string;
@@ -27,48 +99,8 @@ export interface WorkflowRunProjectionPayload {
   result: Record<string, unknown> | null;
   sourceSubmissionId: string | null;
   startedAt: string | null;
-  status: "running" | "succeeded";
+  status: WorkflowProjectionStatus;
   triggerKind: string;
   type: "workflow.run.projection.v1";
   workflowId: string;
-}
-
-export function buildEventId(
-  runId: string,
-  status: "running" | "succeeded",
-  eventSequence: number,
-): string {
-  if (status === "succeeded" && eventSequence === 1) {
-    return `${runId}:succeeded`;
-  }
-  return `${runId}:${eventSequence}:${status}`;
-}
-
-export function buildStoreKey(
-  runId: string,
-  stepName: string,
-  status: "running" | "succeeded",
-  eventSequence: number,
-): string {
-  return `workflow-projection:${runId}:${stepName}:${status}:${eventSequence}`;
-}
-
-export function buildWorkflowRunProjectionPayload(
-  input: WorkflowRunProjectionPayloadInput,
-): WorkflowRunProjectionPayload {
-  const eventId = buildEventId(input.apRunId, input.status, input.eventSequence);
-  return {
-    apEventSequence: input.apEventSequence,
-    apRunId: input.apRunId,
-    eventId,
-    finishedAt: input.finishedAt,
-    safeFailureSummary: null,
-    result: input.result,
-    sourceSubmissionId: input.sourceSubmissionId,
-    startedAt: input.startedAt,
-    status: input.status,
-    triggerKind: input.triggerKind,
-    type: "workflow.run.projection.v1",
-    workflowId: input.workflowId,
-  };
 }
