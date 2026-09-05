@@ -38,12 +38,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { secretManagersUtils } from './util';
-
 import { ProjectSelector } from '@/features/connections';
 import { secretManagersHooks } from '@/features/secret-managers';
 import { api } from '@/lib/api';
+
+import { secretManagersUtils } from './util';
 
 const AddEditSecretManagerConnectionDialog = ({
   children,

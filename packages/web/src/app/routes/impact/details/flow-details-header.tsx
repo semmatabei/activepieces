@@ -3,7 +3,6 @@ import { t } from 'i18next';
 import { Download } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-
 import { downloadFile } from '@/lib/dom-utils';
 
 type FlowDetailsHeaderProps = {

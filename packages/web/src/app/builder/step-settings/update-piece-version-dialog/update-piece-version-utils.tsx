@@ -13,7 +13,6 @@ import { AlertTriangle, ArrowUp, Info } from 'lucide-react';
 import semver from 'semver';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
 import { formUtils, pieceSelectorUtils, piecesApi } from '@/features/pieces';
 
 function getVersionChangeType({

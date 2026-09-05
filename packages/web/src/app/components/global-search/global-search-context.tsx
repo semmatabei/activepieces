@@ -18,6 +18,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
+import { projectCollectionUtils } from '@/features/projects';
 
 import { recordAccess, type AccessedItemType } from './access-history';
 import { SearchResultRow } from './search-result-item';
@@ -25,8 +26,6 @@ import {
   type SearchResultItem,
   useGlobalSearchResults,
 } from './use-global-search-results';
-
-import { projectCollectionUtils } from '@/features/projects';
 
 type GlobalSearchContextType = {
   open: boolean;

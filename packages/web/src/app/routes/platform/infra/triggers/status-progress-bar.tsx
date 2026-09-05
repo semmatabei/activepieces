@@ -3,7 +3,6 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-
 import { cn } from '@/lib/utils';
 
 export type DayStatus = {

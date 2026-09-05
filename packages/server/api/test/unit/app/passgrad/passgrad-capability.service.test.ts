@@ -1,3 +1,4 @@
+import { isPassgradOperationAllowed } from '@activepieces/pieces-framework'
 import { safeHttp } from '@activepieces/server-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { system } from '../../../../src/app/helper/system/system'
@@ -5,6 +6,7 @@ import { derivePassgradOccurrenceId, passgradCapabilityService } from '../../../
 import { passgradEngineRequestSchema } from '../../../../src/app/passgrad/passgrad-engine-request.schema'
 import { passgradProjectBindingService } from '../../../../src/app/passgrad/passgrad-project-binding.service'
 import { passgradResourceIdSchema } from '../../../../src/app/passgrad/passgrad-resource-id'
+import { buildApprovalRequestPayload } from '../../../../../../../packages/pieces/custom/passgrad-form/src/lib/actions/request-approval-payload'
 
 const actorUserId = '019ffac2-a4cb-7144-96a5-37d26eed1467'
 const formResourceId = '7zzzzzzzzzzzzzzzzzzzzzzzzz'
@@ -53,7 +55,6 @@ const workflowTaskPayload = {
 const actionRequestPayload = {
     type: 'workflow.action.requested.v1' as const,
     eventId: 'action-event-1',
-    sourceSubmissionId: submissionResourceId,
     definition: {
         title: 'Complete enrollment data',
         description: '',
@@ -65,21 +66,15 @@ const actionRequestPayload = {
     dueAt: null,
     resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
 }
-const approvalRequestPayload = {
-    type: 'workflow.approval.requested.v2' as const,
-    eventId: 'approval-event-1',
-    definition: {
-        sourceSubmissionId: submissionResourceId,
+const approvalRequestPayload = buildApprovalRequestPayload({
+    props: {
         title: 'Approve enrollment',
-        description: '',
-        approver: { type: 'groups' as const, groupIds: [groupResourceId] },
-        minimumApprovals: 1,
-        rejectionPolicy: 'any_rejection' as const,
-        comment: { enabled: true, required: false },
-        attachment: { enabled: true, required: false, maxFiles: 3 },
+        approver_type: 'groups',
+        approver_group_ids: groupResourceId,
     },
+    eventId: 'approval-event-1',
     resumeUrl: 'https://activepieces.test/v1/flow-runs/run/waitpoints/node',
-}
+})
 
 const workflowExecution = {
     runId: 'run-1',
@@ -146,6 +141,7 @@ describe('passgradCapabilityService', () => {
             runId: 'run-1',
             stepId: 'step-1',
             executionPath: [] as readonly [string, number][],
+            sourceSubmissionId: submissionResourceId,
         }
 
         await passgradCapabilityService.request({
@@ -155,7 +151,6 @@ describe('passgradCapabilityService', () => {
             payload: {
                 type: 'workflow.submission-information.appended.v1',
                 eventId: 'information-event-1',
-                sourceSubmissionId: submissionResourceId,
                 title: 'Fee Summary',
                 description: '',
                 data: { total: 500000 },
@@ -169,7 +164,6 @@ describe('passgradCapabilityService', () => {
             payload: {
                 type: 'workflow.process.completed.v1',
                 eventId: 'completion-event-1',
-                sourceSubmissionId: submissionResourceId,
                 resolution: 'approved',
                 summary: '',
                 data: {},
@@ -185,13 +179,114 @@ describe('passgradCapabilityService', () => {
         expect(safeHttp.axios.request).toHaveBeenNthCalledWith(1, expect.objectContaining({
             url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/submission-information',
             data: expect.objectContaining({
+                sourceSubmissionId: submissionResourceId,
                 execution: { apRunId: 'run-1', apStepId: 'step-1', apOccurrenceId: occurrenceId },
             }),
             headers: expect.objectContaining({ 'x-passgrad-ap-occurrence-id': occurrenceId }),
         }))
         expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
             url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/process-completions',
+            data: expect.objectContaining({ sourceSubmissionId: submissionResourceId }),
         }))
+    })
+
+    it('rejects submission-bound callbacks when admission has no source submission', async () => {
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.add-information',
+            payload: {
+                type: 'workflow.submission-information.appended.v1',
+                eventId: 'information-event-1',
+                title: 'Fee Summary',
+                description: '',
+                data: {},
+            },
+            execution: {
+                runId: 'run-1',
+                stepId: 'step-1',
+                executionPath: [],
+                sourceSubmissionId: null,
+            },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
+    })
+
+    it('routes Persuratan case opens with trusted deterministic occurrence', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { data: { caseId: 'case-1' } } })
+        const payload = {
+            type: 'workflow.persuratan.case.opened.v1' as const,
+            eventId: 'delivery-1',
+            moderator: { type: 'fixed_group' as const, groupId: groupResourceId },
+            fieldMapping: {
+                sourceParty: 'external' as const,
+                letterNumberFieldId: formResourceId,
+                letterDateFieldId: workflowResourceId,
+                letterTitleFieldId: submissionResourceId,
+                letterDescriptionFieldId: groupResourceId,
+                letterAttachmentFieldId: formResourceId,
+                senderFieldId: workflowResourceId,
+                recipientFieldId: submissionResourceId,
+                letterTypeFieldId: groupResourceId,
+                noteFieldId: formResourceId,
+            },
+        }
+        const execution = { runId: 'run-1', stepId: 'open_case', executionPath: [['loop', 2]] as const, sourceSubmissionId: submissionResourceId }
+
+        expect(isPassgradOperationAllowed('@activepieces/piece-passgrad-form', 'workflow.open-persuratan-case')).toBe(true)
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-persuratan-case',
+            payload,
+            execution,
+        })
+        const occurrence = derivePassgradOccurrenceId({ flowRunId: execution.runId, stepName: execution.stepId, executionPath: execution.executionPath })
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+            method: 'POST',
+            url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/persuratan-case-open',
+            data: expect.objectContaining({ apRunId: 'run-1', apStepId: 'open_case', apOccurrenceId: occurrence, sourceSubmissionId: submissionResourceId }),
+            headers: expect.objectContaining({ 'x-passgrad-ap-occurrence-id': occurrence }),
+        }))
+        expect(derivePassgradOccurrenceId({ flowRunId: execution.runId, stepName: execution.stepId, executionPath: [['loop', 3]] })).not.toBe(occurrence)
+    })
+
+    it('requires execution before routing Persuratan case opens', async () => {
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-persuratan-case',
+            payload: {},
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
+    })
+
+    it('rejects unknown Persuratan payload keys after execution is present', async () => {
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-persuratan-case',
+            payload: {
+                type: 'workflow.persuratan.case.opened.v1' as const,
+                eventId: 'delivery-1',
+                moderator: { type: 'fixed_group' as const, groupId: groupResourceId },
+                fieldMapping: {
+                    sourceParty: 'external' as const,
+                    letterNumberFieldId: formResourceId,
+                    letterDateFieldId: workflowResourceId,
+                    letterTitleFieldId: submissionResourceId,
+                    letterDescriptionFieldId: groupResourceId,
+                    letterAttachmentFieldId: formResourceId,
+                    senderFieldId: workflowResourceId,
+                    recipientFieldId: submissionResourceId,
+                    letterTypeFieldId: groupResourceId,
+                    noteFieldId: formResourceId,
+                },
+                unexpected: 'value',
+            },
+            execution: { runId: 'run-1', stepId: 'open_case', executionPath: [] },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
     })
 
     it('injects trusted execution into action and approval waitpoint callbacks', async () => {
@@ -200,6 +295,7 @@ describe('passgradCapabilityService', () => {
             runId: 'run-1',
             stepId: 'step-1',
             executionPath: [] as readonly [string, number][],
+            sourceSubmissionId: submissionResourceId,
         }
 
         await passgradCapabilityService.request({
@@ -229,12 +325,15 @@ describe('passgradCapabilityService', () => {
         }
         expect(safeHttp.axios.request).toHaveBeenNthCalledWith(1, expect.objectContaining({
             url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/action-requests',
-            data: expect.objectContaining({ execution: expectedExecution }),
+            data: expect.objectContaining({ execution: expectedExecution, sourceSubmissionId: submissionResourceId }),
             headers: expect.objectContaining({ 'x-passgrad-ap-occurrence-id': occurrenceId }),
         }))
         expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
             url: 'https://api.passgrad.test/v1/callbacks/activepieces/v1/approval-requests',
-            data: expect.objectContaining({ execution: expectedExecution }),
+            data: expect.objectContaining({
+                execution: expectedExecution,
+                definition: expect.objectContaining({ sourceSubmissionId: submissionResourceId }),
+            }),
         }))
     })
 
@@ -260,6 +359,22 @@ describe('passgradCapabilityService', () => {
             execution,
         })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
 
+        expect(safeHttp.axios.request).not.toHaveBeenCalled()
+    })
+
+    it('rejects legacy approval dueAt payloads', async () => {
+        const legacyPayload = {
+            ...approvalRequestPayload,
+            definition: { ...approvalRequestPayload.definition, dueAt: null },
+        }
+
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-approval-request',
+            payload: legacyPayload,
+            execution: { runId: 'run-1', stepId: 'step-1', executionPath: [] },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
         expect(safeHttp.axios.request).not.toHaveBeenCalled()
     })
 

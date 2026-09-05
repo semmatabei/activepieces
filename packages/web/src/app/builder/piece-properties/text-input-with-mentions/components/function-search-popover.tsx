@@ -5,10 +5,9 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import { FunctionTooltipCard } from './function-hover-popover';
-
-import { cn } from '@/lib/utils';
 
 const SCREEN_MARGIN = 8;
 

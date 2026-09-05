@@ -1,7 +1,6 @@
 import { FlowActionType, FlowTriggerType } from '@activepieces/shared';
 
 import { CardListItem } from '@/components/custom/card-list';
-
 import {
   PieceIcon,
   PieceSelectorItem,

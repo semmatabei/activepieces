@@ -7,7 +7,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 interface UserBadgesProps {

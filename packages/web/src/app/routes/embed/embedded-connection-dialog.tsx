@@ -16,13 +16,12 @@ import { useEffect, useRef, useState } from 'react';
 import { memoryRouter } from '@/app/guards';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-
-import { CreateOrEditConnectionDialogContent } from '../../connections/create-edit-connection-dialog';
-
 import { oauthAppsQueries } from '@/features/connections';
 import { piecesHooks } from '@/features/pieces';
 import { parentWindow } from '@/lib/dom-utils';
 import { cn } from '@/lib/utils';
+
+import { CreateOrEditConnectionDialogContent } from '../../connections/create-edit-connection-dialog';
 
 const extractIdFromQueryParams = () => {
   const connectionName = new URLSearchParams(

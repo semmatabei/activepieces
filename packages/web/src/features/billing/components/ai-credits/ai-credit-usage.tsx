@@ -19,14 +19,13 @@ import {
 } from '@/components/custom/item';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { isRunningCloudInDevMode } from '@/lib/api';
 
 import { billingMutations } from '../../hooks/billing-hooks';
 
 import { AutoTopUpConfigDialog } from './auto-topup-config-dialog';
 import { PurchaseAICreditsDialog } from './purchase-ai-credits-dialog';
-
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { isRunningCloudInDevMode } from '@/lib/api';
 
 interface AiCreditUsageProps {
   platformSubscription: PlatformBillingInformation;

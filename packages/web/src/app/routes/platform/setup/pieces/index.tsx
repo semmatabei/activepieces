@@ -17,7 +17,6 @@ import { ConfigurePieceOAuth2Dialog } from '@/app/routes/platform/setup/pieces/u
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
-
 import { oauthAppsQueries } from '@/features/connections';
 import { InstallPieceDialog, PieceIcon, piecesHooks } from '@/features/pieces';
 import { platformHooks } from '@/hooks/platform-hooks';

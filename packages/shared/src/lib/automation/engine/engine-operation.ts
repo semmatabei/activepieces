@@ -99,6 +99,9 @@ type BaseExecuteFlowOperation<T extends ExecutionType> = BaseEngineOperation & {
     sampleData?: Record<string, unknown>
     logsFileId?: string
     passgradCapabilities?: Record<string, string>
+    passgradWorkflowId?: string
+    passgradTriggerKind?: string
+    passgradSourceSubmissionId?: string | null
 }
 
 export enum StreamStepProgress {

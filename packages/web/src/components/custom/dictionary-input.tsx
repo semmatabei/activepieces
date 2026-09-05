@@ -5,7 +5,6 @@ import { useRef } from 'react';
 import { TextWithIcon } from '@/components/custom/text-with-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import { cn } from '@/lib/utils';
 
 type DictionaryInputItem = {

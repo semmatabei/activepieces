@@ -5,16 +5,15 @@ import { t } from 'i18next';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Navigate } from 'react-router-dom';
 
+import { platformApi } from '@/api/platforms-api';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthLayout } from '@/features/authentication/components/auth-form-template';
-import { useRedirectAfterLogin } from '@/lib/navigation-utils';
-
-import { platformApi } from '@/api/platforms-api';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
+import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
 type CreatePlatformSchema = {
   name: string;

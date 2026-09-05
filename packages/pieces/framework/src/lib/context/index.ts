@@ -12,7 +12,7 @@ import {
   TriggerPayload,
   TriggerStrategy,
 } from '@activepieces/shared';
-import { PassgradOperation } from './passgrad-registry';
+import type { PassgradOperation } from './passgrad-registry';
 export * from './passgrad-registry';
 import { LanguageModel, Tool } from 'ai';
 
@@ -213,7 +213,7 @@ export type PassgradRequest = {
   payload?: unknown;
 };
 
-export { PassgradOperation } from './passgrad-registry';
+export type { PassgradOperation } from './passgrad-registry';
 
 export type ServerContext = {
   apiUrl: string;

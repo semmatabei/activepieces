@@ -7,11 +7,10 @@ import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-import { DelayedTooltip } from './components/delayed-tooltip';
-
 import { chatApi } from '@/features/chat/lib/chat-api';
 import { cn } from '@/lib/utils';
+
+import { DelayedTooltip } from './components/delayed-tooltip';
 
 export function ConversationList({
   onSelect,

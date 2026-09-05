@@ -3,10 +3,9 @@ import { PackageOpen } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 import { Skeleton } from '../ui/skeleton';
-
-import { cn } from '@/lib/utils';
 
 const CardList = forwardRef<
   HTMLDivElement,

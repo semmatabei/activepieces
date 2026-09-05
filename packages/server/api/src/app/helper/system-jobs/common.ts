@@ -1,4 +1,11 @@
-import { Flow, FlowId, FlowRunId, PlatformId, ProjectId, UserId } from '@activepieces/shared'
+import {
+    Flow,
+    FlowId,
+    FlowRunId,
+    PlatformId,
+    ProjectId,
+    UserId,
+} from '@activepieces/shared'
 import { Job, JobsOptions } from 'bullmq'
 import { Dayjs } from 'dayjs'
 
@@ -14,9 +21,10 @@ export enum SystemJobName {
     HARD_DELETE_PLATFORM = 'hard-delete-platform',
     FLOW_RUN_TRACKING = 'flow-run-tracking',
     RESUME_DELAY_WAITPOINT = 'resume-delay-waitpoint',
+    PASSGRAD_LIFECYCLE_OUTBOX = 'passgrad-lifecycle-outbox',
 }
 
-type DeleteFlowDurableSystemJobData =  {
+type DeleteFlowDurableSystemJobData = {
     flow: Flow
     preDeleteDone: boolean
 }
@@ -56,9 +64,11 @@ type SystemJobDataMap = {
     [SystemJobName.HARD_DELETE_PLATFORM]: HardDeletePlatformSystemJobData
     [SystemJobName.FLOW_RUN_TRACKING]: Record<string, never>
     [SystemJobName.RESUME_DELAY_WAITPOINT]: ResumeDelayWaitpointSystemJobData
+    [SystemJobName.PASSGRAD_LIFECYCLE_OUTBOX]: Record<string, never>
 }
 
-export type SystemJobData<T extends SystemJobName = SystemJobName> = T extends SystemJobName ? SystemJobDataMap[T] : never
+export type SystemJobData<T extends SystemJobName = SystemJobName> =
+  T extends SystemJobName ? SystemJobDataMap[T] : never
 
 export type SystemJobDefinition<T extends SystemJobName> = {
     name: T
@@ -66,7 +76,9 @@ export type SystemJobDefinition<T extends SystemJobName> = {
     jobId: string
 }
 
-export type SystemJobHandler<T extends SystemJobName = SystemJobName> = (data: SystemJobData<T>) => Promise<void>
+export type SystemJobHandler<T extends SystemJobName = SystemJobName> = (
+    data: SystemJobData<T>
+) => Promise<void>
 
 type OneTimeJobSchedule = {
     type: 'one-time'
@@ -90,6 +102,8 @@ export type SystemJobSchedule = {
     init(): Promise<void>
     startWorker(): Promise<void>
     upsertJob<T extends SystemJobName>(params: UpsertJobParams<T>): Promise<void>
-    getJob<T extends SystemJobName>(jobId: string): Promise<Job<SystemJobData<T>> | undefined>
+    getJob<T extends SystemJobName>(
+        jobId: string
+    ): Promise<Job<SystemJobData<T>> | undefined>
     close(): Promise<void>
 }

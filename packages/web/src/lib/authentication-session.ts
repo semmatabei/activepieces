@@ -7,10 +7,10 @@ import {
 import dayjs from 'dayjs';
 import { jwtDecode } from 'jwt-decode';
 
-import { ApStorage } from './ap-browser-storage';
-
 import { authenticationApi } from '@/api/authentication-api';
 import { queryClient } from '@/app/query-client';
+
+import { ApStorage } from './ap-browser-storage';
 
 const tokenKey = 'token';
 const projectIdKey = 'projectId';

@@ -10,11 +10,8 @@ import { AxiosError } from 'axios';
 import { nanoid } from 'nanoid';
 import { useEffect, useRef, useState } from 'react';
 
-import { LoadingScreen } from '@/components/custom/loading-screen';
-
-import NotFoundPage from '../404-page';
-
 import { ChatDrawerSource } from '@/app/builder/types';
+import { LoadingScreen } from '@/components/custom/loading-screen';
 import {
   ChatInput,
   ChatMessage,
@@ -25,6 +22,8 @@ import {
 } from '@/features/chat';
 import { humanInputApi } from '@/features/forms';
 import { cn } from '@/lib/utils';
+
+import NotFoundPage from '../404-page';
 
 interface FlowChatProps {
   flowId: string;

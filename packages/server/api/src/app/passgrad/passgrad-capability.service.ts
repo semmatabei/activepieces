@@ -281,9 +281,19 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
             return {
                 method: 'POST',
                 path: '/callbacks/activepieces/v1/approval-requests',
-                payload: trustedCallbackPayload(
+                payload: trustedApprovalCallbackPayload(
                     params,
-                    approvalRequestPayloadSchema,
+                    128 * 1024,
+                ),
+                callback: true,
+            }
+        case 'workflow.open-persuratan-case':
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/persuratan-case-open',
+                payload: trustedPersuratanCallbackPayload(
+                    params,
+                    persuratanCaseOpenPayloadSchema,
                     128 * 1024,
                 ),
                 callback: true,
@@ -334,6 +344,27 @@ function capabilityError(message: string): ActivepiecesError {
 }
 
 const boundedIdSchema = z.string().trim().min(1).max(255)
+const persuratanCaseOpenPayloadSchema = z.object({
+    type: z.literal('workflow.persuratan.case.opened.v1'),
+    eventId: boundedIdSchema,
+    moderator: z.discriminatedUnion('type', [
+        z.object({ type: z.literal('fixed_user'), userId: z.string().trim().min(1).max(255) }).strict(),
+        z.object({ type: z.literal('fixed_group'), groupId: passgradResourceIdSchema }).strict(),
+        z.object({ type: z.literal('submission_person_field'), fieldId: passgradResourceIdSchema }).strict(),
+    ]),
+    fieldMapping: z.object({
+        sourceParty: z.enum(['internal', 'external']),
+        letterNumberFieldId: passgradResourceIdSchema,
+        letterDateFieldId: passgradResourceIdSchema,
+        letterTitleFieldId: passgradResourceIdSchema,
+        letterDescriptionFieldId: passgradResourceIdSchema,
+        letterAttachmentFieldId: passgradResourceIdSchema,
+        senderFieldId: passgradResourceIdSchema,
+        recipientFieldId: passgradResourceIdSchema,
+        letterTypeFieldId: passgradResourceIdSchema,
+        noteFieldId: passgradResourceIdSchema,
+    }).strict(),
+}).strict()
 const recordPayloadIdSchema = z.object({ recordId: boundedIdSchema }).strict()
 const getRecordsByIdsPayloadSchema = z
     .object({
@@ -375,6 +406,7 @@ const updateRecordPayloadSchema = z
 
 const formTriggerPayloadSchema = z
     .object({
+        mark_submission_actionable: z.boolean().default(true),
         output_version: z.enum(['v1', 'v2']).optional(),
         webhook_url: z
             .string()
@@ -424,7 +456,7 @@ const workflowSessionPayloadSchema = z
 
 const workflowRunPayloadSchema = z
     .object({
-        apEventSequence: z.number().int().nonnegative(),
+        apEventSequence: z.number().int().nonnegative().optional(),
         apRunId: boundedIdSchema,
         eventId: boundedIdSchema,
         finishedAt: z.string().datetime().nullable(),
@@ -487,7 +519,6 @@ const addInformationPayloadSchema = z
     .object({
         type: z.literal('workflow.submission-information.appended.v1'),
         eventId: boundedIdSchema,
-        sourceSubmissionId: passgradResourceIdSchema,
         title: z.string().trim().min(1).max(200),
         description: z.string().max(4000),
         data: z.record(z.string(), z.unknown()),
@@ -498,7 +529,6 @@ const completeProcessPayloadSchema = z
     .object({
         type: z.literal('workflow.process.completed.v1'),
         eventId: boundedIdSchema,
-        sourceSubmissionId: passgradResourceIdSchema,
         resolution: z.enum(['approved', 'rejected', 'cancelled']),
         summary: z.string().max(2000),
         data: z.record(z.string(), z.unknown()),
@@ -556,7 +586,6 @@ const actionRequestPayloadSchema = z
     .object({
         type: z.literal('workflow.action.requested.v1'),
         eventId: boundedIdSchema,
-        sourceSubmissionId: passgradResourceIdSchema,
         definition: z
             .object({
                 title: z.string().trim().min(1).max(200),
@@ -577,7 +606,6 @@ const approvalRequestPayloadSchema = z
         eventId: boundedIdSchema,
         definition: z
             .object({
-                sourceSubmissionId: passgradResourceIdSchema,
                 title: z.string().trim().min(1).max(200),
                 description: z.string().max(4000),
                 approver: workflowApprovalApproverSchema,
@@ -601,7 +629,8 @@ const approvalRequestPayloadSchema = z
                         (config) => !config.required || config.enabled,
                         'Required attachments imply enabled attachments',
                     ),
-                ...optionalTaskScheduleShape,
+                priority: z.enum(['low', 'normal', 'high']),
+                dueInHours: z.number().int().min(1).max(8760).nullable(),
             })
             .strict(),
         resumeUrl: z.string().url().max(8192),
@@ -619,6 +648,7 @@ function trustedCallbackPayload<T extends Record<string, unknown>>(
     schema: z.ZodType<T>,
     maxBytes: number,
 ): T & {
+        sourceSubmissionId: string
         execution: {
             apRunId: string
             apStepId: string
@@ -633,6 +663,7 @@ function trustedCallbackPayload<T extends Record<string, unknown>>(
     const payload = parseBoundedPayload(schema, params.payload, maxBytes)
     return {
         ...payload,
+        sourceSubmissionId: requireSourceSubmissionId(params),
         execution: {
             apRunId: params.execution.runId,
             apStepId: params.execution.stepId,
@@ -643,6 +674,62 @@ function trustedCallbackPayload<T extends Record<string, unknown>>(
             }),
         },
     }
+}
+
+function trustedApprovalCallbackPayload(
+    params: PassgradCapabilityRequest,
+    maxBytes: number,
+): Record<string, unknown> {
+    if (isNil(params.execution)) {
+        throw capabilityError('Passgrad workflow callback requires execution context')
+    }
+    const payload = parseBoundedPayload(approvalRequestPayloadSchema, params.payload, maxBytes)
+    return {
+        ...payload,
+        definition: {
+            ...payload.definition,
+            sourceSubmissionId: requireSourceSubmissionId(params),
+        },
+        execution: {
+            apRunId: params.execution.runId,
+            apStepId: params.execution.stepId,
+            apOccurrenceId: derivePassgradOccurrenceId({
+                flowRunId: params.execution.runId,
+                stepName: params.execution.stepId,
+                executionPath: params.execution.executionPath,
+            }),
+        },
+    }
+}
+
+function trustedPersuratanCallbackPayload<T extends Record<string, unknown>>(
+    params: PassgradCapabilityRequest,
+    schema: z.ZodType<T>,
+    maxBytes: number,
+): T & { sourceSubmissionId: string, apRunId: string, apStepId: string, apOccurrenceId: string } {
+    if (isNil(params.execution)) {
+        throw capabilityError('Passgrad workflow callback requires execution context')
+    }
+    const payload = parseBoundedPayload(schema, params.payload, maxBytes)
+    return {
+        ...payload,
+        sourceSubmissionId: requireSourceSubmissionId(params),
+        apRunId: params.execution.runId,
+        apStepId: params.execution.stepId,
+        apOccurrenceId: derivePassgradOccurrenceId({
+            flowRunId: params.execution.runId,
+            stepName: params.execution.stepId,
+            executionPath: params.execution.executionPath,
+        }),
+    }
+}
+
+function requireSourceSubmissionId(params: PassgradCapabilityRequest): string {
+    const sourceSubmissionId = params.execution?.sourceSubmissionId
+    if (isNil(sourceSubmissionId)) {
+        throw capabilityError('Passgrad submission-bound workflow requires a source submission')
+    }
+    return sourceSubmissionId
 }
 
 function parseCallbackPayload<T>(
@@ -698,6 +785,7 @@ type PassgradTrustedExecution = {
     runId: string
     stepId: string
     executionPath: readonly [string, number][]
+    sourceSubmissionId?: string | null
 }
 
 type DerivePassgradOccurrenceIdParams = {

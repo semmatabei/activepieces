@@ -17,12 +17,11 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormField, FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import { piecesHooks } from '@/features/pieces';
+import { projectCollectionUtils } from '@/features/projects';
 
 import { MultiSelectPieceProperty } from '../../../../components/custom/multi-select-piece-property';
 import { authenticationSession } from '../../../../lib/authentication-session';
-
-import { piecesHooks } from '@/features/pieces';
-import { projectCollectionUtils } from '@/features/projects';
 
 type ManagePiecesDialogProps = {
   onSuccess: () => void;

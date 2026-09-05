@@ -24,10 +24,9 @@ import {
   Tooltip,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { useManagePlanDialogStore } from '../../stores/active-flows-addon-dialog-state';
-
-import { flagsHooks } from '@/hooks/flags-hooks';
 
 type BusinessActiveFlowsProps = {
   platformSubscription: PlatformBillingInformation;

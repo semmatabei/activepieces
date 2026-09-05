@@ -26,11 +26,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-
-import { OperationChange } from './operation-change';
-
 import { projectReleaseMutations } from '@/features/project-releases';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { OperationChange } from './operation-change';
 
 type CreateReleaseDialogProps = {
   open: boolean;

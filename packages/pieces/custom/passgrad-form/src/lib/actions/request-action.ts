@@ -24,10 +24,6 @@ export const requestAction = createAction({
   description:
     "Pause the flow until the assigned Passgrad member completes an Action task on the source submission.",
   props: {
-    source_submission_id: Property.ShortText({
-      displayName: "Source Submission ID",
-      required: true,
-    }),
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),
     assignee_type: Property.StaticDropdown({
@@ -59,7 +55,7 @@ export const requestAction = createAction({
       required: true,
     }),
     priority,
-    due_at: Property.ShortText({
+    due_at: Property.DateTime({
       displayName: "Due At",
       description: "Optional ISO 8601 due date for the Action task.",
       required: false,

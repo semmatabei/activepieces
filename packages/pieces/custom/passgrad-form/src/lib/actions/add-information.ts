@@ -7,10 +7,6 @@ export const addInformation = createAction({
   displayName: "Add Information",
   description: "Append an immutable information tab to the source submission.",
   props: {
-    source_submission_id: Property.ShortText({
-      displayName: "Source Submission ID",
-      required: true,
-    }),
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),
     data: Property.Json({ displayName: "Data", required: true }),
@@ -21,7 +17,6 @@ export const addInformation = createAction({
       payload: {
         type: "workflow.submission-information.appended.v1",
         eventId: randomUUID(),
-        sourceSubmissionId: context.propsValue.source_submission_id,
         title: context.propsValue.title,
         description: context.propsValue.description ?? "",
         data: context.propsValue.data,

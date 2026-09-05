@@ -5,16 +5,15 @@ import { t } from 'i18next';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { UseFormReturn, useWatch } from 'react-hook-form';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { SearchableSelect } from '@/components/custom/searchable-select';
+import { piecesHooks } from '@/features/pieces';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { MultiSelectPieceProperty } from '../../../components/custom/multi-select-piece-property';
 
 import { DynamicPropertiesErrorBoundary } from './dynamic-piece-properties-error-boundary';
 import { DynamicPropertiesContext } from './dynamic-properties-context';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { piecesHooks } from '@/features/pieces';
-import { authenticationSession } from '@/lib/authentication-session';
 
 const DynamicDropdownPiecePropertyImplementation = React.memo(
   (props: DynamicDropdownProps) => {

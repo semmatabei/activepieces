@@ -2,13 +2,12 @@ import { t } from 'i18next';
 
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { McpCredentials } from './mcp-credentials';
 import { McpFlows } from './mcp-flows';
 import { McpTools } from './mcp-tools';
 import { mcpHooks } from './utils/mcp-hooks';
-
-import { authenticationSession } from '@/lib/authentication-session';
 
 export const McpServerSettings = () => {
   const currentProjectId = authenticationSession.getProjectId();

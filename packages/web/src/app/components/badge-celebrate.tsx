@@ -10,11 +10,10 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useSocket } from '@/components/providers/socket-provider';
-
-import { AccountSettingsDialog } from './account-settings';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { userHooks } from '@/hooks/user-hooks';
+
+import { AccountSettingsDialog } from './account-settings';
 
 export const BadgeCelebrate = () => {
   const socket = useSocket();

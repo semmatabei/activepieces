@@ -2,14 +2,13 @@ import { Permission } from '@activepieces/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 
-import { useSocket } from '@/components/providers/socket-provider';
-
 import {
   BuilderInitialState,
   BuilderStateContext,
   BuilderStore,
   createBuilderStore,
 } from '@/app/builder/builder-hooks';
+import { useSocket } from '@/components/providers/socket-provider';
 import { projectHooks } from '@/features/projects';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 

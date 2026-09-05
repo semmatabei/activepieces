@@ -13,12 +13,11 @@ import {
   ApTableStore,
   createApTableStore,
 } from '@/features/tables/stores/store/ap-tables-client-state';
+import { cn } from '@/lib/utils';
 
 import { fieldsApi } from '../api/fields-api';
 import { recordsApi } from '../api/records-api';
 import { tablesApi } from '../api/tables-api';
-
-import { cn } from '@/lib/utils';
 
 const TableContext = createContext<ApTableStore | null>(null);
 

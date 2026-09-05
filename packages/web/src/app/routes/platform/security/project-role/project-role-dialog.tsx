@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
 import { projectRoleMutations } from '@/features/platform-admin';
 
 const initialPermissions = [

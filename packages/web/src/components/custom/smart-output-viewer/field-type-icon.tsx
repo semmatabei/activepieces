@@ -16,9 +16,9 @@ import {
   ToggleLeft,
 } from 'lucide-react';
 
-import { FieldFormat } from './types';
-
 import { cn } from '@/lib/utils';
+
+import { FieldFormat } from './types';
 
 function FieldTypeIcon({
   value,

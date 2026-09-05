@@ -1,9 +1,8 @@
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
+import { cn } from '@/lib/utils';
 
 import { StepNodeRunDurationAndPieceName } from './step-node-run-duration-and-piece-name';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { cn } from '@/lib/utils';
 
 const StepNodeDisplayName = ({
   stepDisplayName,

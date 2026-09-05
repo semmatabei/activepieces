@@ -89,41 +89,135 @@ export const groupIdProperty = dropdownFromList<{ id: string; name: string }>({
   errorPlaceholder: "Unable to load groups",
 });
 
-/** Shared workflow ID property resolved through the authenticated engine capability. */
-export const workflowIdProperty = dropdownFromList<{ id: string; name: string }>({
-  displayName: "Workflow",
-  description: "The Passgrad workflow to use",
-  refreshers: [],
-  fetch: listOperation("workflow.list"),
-  mapOption: (workflow) => ({ label: workflow.name, value: workflow.id }),
-  emptyPlaceholder: "No workflows available",
-  errorPlaceholder: "Unable to load workflows",
-});
-
-/** Form field ID property scoped to the selected KRS form. */
-export const formFieldIdProperty = dropdownFromList<{ id: string; label: string }>({
-  displayName: "Form field",
-  description: "The Passgrad form field to use",
-  refreshers: ["form_id"],
+export const moderatorTargetProperty = dropdownFromList<{ id: string; label: string }>({
+  displayName: "Moderator target",
+  description: "User, group, or submitted Person field used as moderator",
+  refreshers: ["moderator_type", "source_form_id"],
   guard: (propsValue) => {
-    const formId = propsValue["form_id"];
-    return typeof formId === "string" && formId.length > 0 ? undefined : "Select a KRS form first";
+    const moderatorType = propsValue["moderator_type"];
+    if (
+      moderatorType !== "fixed_user" &&
+      moderatorType !== "fixed_group" &&
+      moderatorType !== "submission_person_field"
+    ) {
+      return "Select a moderator mode first";
+    }
+    if (
+      moderatorType === "submission_person_field" &&
+      (typeof propsValue["source_form_id"] !== "string" || !propsValue["source_form_id"])
+    ) {
+      return "Select a source Form first";
+    }
+    return undefined;
   },
   fetch: async (propsValue, context) => {
-    const formId = propsValue["form_id"] as string;
+    if (propsValue["moderator_type"] === "fixed_user") {
+      const response = await context.passgrad.request<{
+        data: { email: string; name: string; userId: string }[];
+      }>({ operation: "user.list" });
+      return (response.data ?? []).map((member) => ({
+        id: member.userId,
+        label: `${member.name} (${member.email})`,
+      }));
+    }
+    if (propsValue["moderator_type"] === "fixed_group") {
+      const response = await context.passgrad.request<{ data: { id: string; name: string }[] }>({
+        operation: "group.list",
+      });
+      return (response.data ?? []).map((group) => ({ id: group.id, label: group.name }));
+    }
     const response = await context.passgrad.request<{
       data: {
         id: string;
-        draftDefinition?: { fields?: { id: string; label: string }[] };
+        draftDefinition?: {
+          fields?: {
+            id: string;
+            label: string;
+            type?: string;
+            visible?: boolean;
+            config?: { multiple?: boolean };
+          }[];
+        };
       }[];
     }>({ operation: "form.list" });
-    const form = (response.data ?? []).find((candidate) => candidate.id === formId);
-    return form?.draftDefinition?.fields ?? [];
+    const sourceFormId = propsValue["source_form_id"] as string;
+    const fields =
+      response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
+    return fields
+      .filter(
+        (field) =>
+          field.visible !== false && field.type === "person" && field.config?.multiple !== true,
+      )
+      .map((field) => ({ id: field.id, label: field.label }));
   },
-  mapOption: (field) => ({ label: field.label, value: field.id }),
-  emptyPlaceholder: "No form fields available",
-  errorPlaceholder: "Unable to load form fields",
+  mapOption: (target) => ({ label: target.label, value: target.id }),
+  emptyPlaceholder: "No compatible moderator targets available",
+  errorPlaceholder: "Unable to load moderator targets",
 });
+
+export function formFieldProperty(
+  displayName: string,
+  compatibleTypes?: readonly string[],
+  options: {
+    requireSingle?: boolean;
+    refreshers?: string[];
+    excludeKeys?: string[];
+    propertyKey?: string;
+    compatible?: (field: { type?: string }, propsValue: DropdownPropsValue) => boolean;
+  } = {},
+) {
+  return dropdownFromList<{
+    id: string;
+    label: string;
+    type?: string;
+    visible?: boolean;
+    config?: { multiple?: boolean };
+  }>({
+    displayName,
+    description: "Field from selected Passgrad form",
+    refreshers: ["source_form_id", ...(options.refreshers ?? []), ...(options.excludeKeys ?? [])],
+    guard: (propsValue) =>
+      typeof propsValue["source_form_id"] === "string" && propsValue["source_form_id"]
+        ? undefined
+        : "Select a source Form first",
+    fetch: async (propsValue, context) => {
+      const sourceFormId = propsValue["source_form_id"] as string;
+      const response = await context.passgrad.request<{
+        data: {
+          id: string;
+          draftDefinition?: {
+            fields?: {
+              id: string;
+              label: string;
+              type?: string;
+              visible?: boolean;
+              config?: { multiple?: boolean };
+            }[];
+          };
+        }[];
+      }>({ operation: "form.list" });
+      const fields =
+        response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
+      const selectedIds = new Set(
+        (options.excludeKeys ?? [])
+          .filter((key) => key !== options.propertyKey)
+          .map((key) => propsValue[key])
+          .filter((value): value is string => typeof value === "string"),
+      );
+      return fields.filter(
+        (field) =>
+          field.visible !== false &&
+          !selectedIds.has(field.id) &&
+          (!compatibleTypes || compatibleTypes.includes(field.type ?? "")) &&
+          (!options.requireSingle || field.config?.multiple !== true) &&
+          (!options.compatible || options.compatible(field, propsValue)),
+      );
+    },
+    mapOption: (field) => ({ label: field.label, value: field.id }),
+    emptyPlaceholder: "No compatible form fields available",
+    errorPlaceholder: "Unable to load form fields",
+  });
+}
 
 export function passgradRequest<T>(context: PassgradContext, request: PassgradRequest) {
   return context.passgrad.request<T>(request);

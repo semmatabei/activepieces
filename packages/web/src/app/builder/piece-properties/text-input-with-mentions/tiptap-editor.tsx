@@ -24,6 +24,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { inputClass } from '@/components/ui/input';
+import { stepsHooks } from '@/features/pieces';
+import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
+import { platformHooks } from '@/hooks/platform-hooks';
+import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 
@@ -47,12 +52,6 @@ import {
   setSlashCommandHandler,
 } from './extensions/function-slash-extension';
 import { textMentionUtils } from './text-input-utils';
-
-import { stepsHooks } from '@/features/pieces';
-import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
-import { cn } from '@/lib/utils';
 
 type TiptapEditorProps = {
   className?: string;

@@ -16,6 +16,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { platformApi } from '@/api/platforms-api';
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { ApMarkdown } from '@/components/custom/markdown';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -38,8 +39,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-
-import { platformApi } from '@/api/platforms-api';
 import { samlSsoApi } from '@/features/platform-admin';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { api } from '@/lib/api';

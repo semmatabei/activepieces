@@ -29,6 +29,9 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { api } from '@/lib/api';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { recordsApi } from '../api/records-api';
 import { tableHooks } from '../hooks/table-hooks';
@@ -36,10 +39,6 @@ import { FieldsMapping, fileUtils, SupportedFileType } from '../utils/utils';
 
 import { useOptionalTableStore } from './ap-table-state-provider';
 import { FieldsMappingControl } from './fields-mapping';
-
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { api } from '@/lib/api';
-import { authenticationSession } from '@/lib/authentication-session';
 
 type ImportTableDialogProps = {
   open?: boolean;

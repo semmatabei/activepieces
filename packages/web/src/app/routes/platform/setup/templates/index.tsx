@@ -26,13 +26,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { CreateTemplateDialog } from './create-template-dialog';
-import { UpdateTemplateDialog } from './update-template-dialog';
-
 import { PieceIconList } from '@/features/pieces';
 import { templatesApi, templatesMutations } from '@/features/templates';
 import { platformHooks } from '@/hooks/platform-hooks';
+
+import { CreateTemplateDialog } from './create-template-dialog';
+import { UpdateTemplateDialog } from './update-template-dialog';
 
 const PlatformTemplatesPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();

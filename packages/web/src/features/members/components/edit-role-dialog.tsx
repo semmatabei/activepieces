@@ -15,12 +15,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { internalErrorToast } from '@/components/ui/sonner';
+import { projectRoleApi } from '@/features/platform-admin/api/project-role-api';
 
 import { projectMembersApi } from '../api/project-members-api';
 
 import { RoleSelector } from './role-selector';
-
-import { projectRoleApi } from '@/features/platform-admin/api/project-role-api';
 
 interface EditRoleDialogProps {
   member: ProjectMemberWithUser;

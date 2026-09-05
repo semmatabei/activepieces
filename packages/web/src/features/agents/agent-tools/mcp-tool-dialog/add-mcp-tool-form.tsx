@@ -29,13 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { agentMutations } from '../../hooks/agent-hooks';
 import { useMcpToolDialogStore } from '../stores/mcp-tools';
 
 import { McpToolFormData, ValidationStep } from '.';
-
-import { authenticationSession } from '@/lib/authentication-session';
 
 type AddMcpToolFormProps = {
   tools: AgentTool[];

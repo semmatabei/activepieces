@@ -7,10 +7,6 @@ export const completeProcess = createAction({
   displayName: "Complete Process",
   description: "Record the business resolution for the source submission process.",
   props: {
-    source_submission_id: Property.ShortText({
-      displayName: "Source Submission ID",
-      required: true,
-    }),
     resolution: Property.StaticDropdown({
       displayName: "Resolution",
       required: true,
@@ -32,7 +28,6 @@ export const completeProcess = createAction({
       payload: {
         type: "workflow.process.completed.v1",
         eventId: randomUUID(),
-        sourceSubmissionId: context.propsValue.source_submission_id,
         resolution: context.propsValue.resolution,
         summary: context.propsValue.summary ?? "",
         data: context.propsValue.data ?? {},

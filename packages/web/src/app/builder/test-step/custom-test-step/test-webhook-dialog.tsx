@@ -20,11 +20,10 @@ import {
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import { useBuilderStateContext } from '../../builder-hooks';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { api } from '@/lib/api';
+
+import { useBuilderStateContext } from '../../builder-hooks';
 
 enum BodyType {
   JSON = 'json',

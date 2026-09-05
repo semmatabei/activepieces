@@ -13,11 +13,10 @@ import { ArrayInput } from '@/components/custom/array-input';
 import { TextWithIcon } from '@/components/custom/text-with-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { GenericPropertiesForm } from './generic-properties-form';
 import { TextInputWithMentions } from './text-input-with-mentions';
-
-import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 type ArrayPropertyProps = {
   inputName: string;

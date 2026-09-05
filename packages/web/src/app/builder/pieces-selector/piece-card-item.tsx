@@ -1,20 +1,19 @@
 import { useRef } from 'react';
 
 import { CardListItem } from '@/components/custom/card-list';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-import { useBuilderStateContext } from '../builder-hooks';
-
-import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
-
 import {
   PieceIcon,
   PieceSelectorOperation,
   StepMetadataWithSuggestions,
   PIECE_SELECTOR_ELEMENTS_HEIGHTS,
 } from '@/features/pieces';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { wait } from '@/lib/dom-utils';
 import { cn } from '@/lib/utils';
+
+import { useBuilderStateContext } from '../builder-hooks';
+
+import { PieceActionsOrTriggersList } from './piece-actions-or-triggers-list';
 
 type PieceCardListItemProps = {
   pieceMetadata: StepMetadataWithSuggestions;

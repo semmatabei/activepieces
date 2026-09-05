@@ -1,10 +1,10 @@
 import { ApFlagId, isNil } from '@activepieces/shared';
 
-import { authenticationSession } from './authentication-session';
-import { sentry } from './sentry';
-
 import { FlagsMap } from '@/api/flags-api';
 import { queryClient } from '@/app/query-client';
+
+import { authenticationSession } from './authentication-session';
+import { sentry } from './sentry';
 
 const CHUNK_LOAD_ERROR_REGEX =
   /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Unable to preload CSS|ChunkLoadError|Loading chunk \d+ failed/i;

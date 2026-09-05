@@ -8,7 +8,6 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSocket } from '@/components/providers/socket-provider';
-
 import { authenticationSession } from '@/lib/authentication-session';
 
 function useResourceLock({ resourceId }: UseResourceLockParams) {

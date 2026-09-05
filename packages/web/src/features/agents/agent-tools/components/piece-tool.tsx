@@ -15,11 +15,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { usePieceToolsDialogStore } from '../stores/pieces-tools';
-
 import { stepsHooks } from '@/features/pieces/hooks/steps-hooks';
 import { PieceStepMetadataWithSuggestions } from '@/features/pieces/types';
+
+import { usePieceToolsDialogStore } from '../stores/pieces-tools';
 
 type AgentPieceToolProps = {
   disabled?: boolean;

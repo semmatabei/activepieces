@@ -7,10 +7,9 @@ import {
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { extractPieceNamesAndCoreMetadata } from '@/features/pieces/utils/step-utils';
-
 import { piecesHooks } from '@/features/pieces/hooks/pieces-hooks';
 import { StepMetadata } from '@/features/pieces/types';
+import { extractPieceNamesAndCoreMetadata } from '@/features/pieces/utils/step-utils';
 import { colorsUtils } from '@/lib/color-utils';
 
 const rgbToHex = (r: number, g: number, b: number): string => {

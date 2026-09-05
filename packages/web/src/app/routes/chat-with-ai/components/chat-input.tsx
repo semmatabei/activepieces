@@ -17,7 +17,6 @@ import {
 } from '@/components/prompt-kit/prompt-input';
 import { Button } from '@/components/ui/button';
 import { VoiceWaveformBars } from '@/features/chat/components/voice-waveform';
-
 import { useVoiceInput } from '@/features/chat/lib/use-voice-input';
 
 export function ChatInput({

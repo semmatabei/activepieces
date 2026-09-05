@@ -15,10 +15,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 import { TOOL_CATEGORIES } from './utils/mcp-tools-metadata';
-
-import { cn } from '@/lib/utils';
 
 type McpToolsProps = {
   disabledTools: string[] | null;

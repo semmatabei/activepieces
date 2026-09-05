@@ -24,6 +24,14 @@ import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
 import { useTelemetry } from '@/components/providers/telemetry-provider';
+import { appConnectionsApi } from '@/features/connections/api/app-connections';
+import {
+  StepMetadataWithSuggestions,
+  CategorizedStepMetadataWithSuggestions,
+} from '@/features/pieces/types';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { platformHooks } from '@/hooks/platform-hooks';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { piecesApi } from '../api/pieces-api';
 import {
@@ -33,15 +41,6 @@ import {
 import { pieceSearchUtils } from '../utils/piece-search-utils';
 
 import { stepsHooks } from './steps-hooks';
-
-import { appConnectionsApi } from '@/features/connections/api/app-connections';
-import {
-  StepMetadataWithSuggestions,
-  CategorizedStepMetadataWithSuggestions,
-} from '@/features/pieces/types';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { platformHooks } from '@/hooks/platform-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
 
 const {
   getPinnedPieces,

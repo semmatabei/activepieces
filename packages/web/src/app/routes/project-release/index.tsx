@@ -35,15 +35,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { ApplyButton } from './apply-plan';
-import { PushEverythingDialog } from './push-everything-dialog';
-import { SelectionButton } from './selection-dialog';
-
 import { projectReleaseQueries } from '@/features/project-releases';
 import { projectCollectionUtils } from '@/features/projects';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { ApplyButton } from './apply-plan';
+import { PushEverythingDialog } from './push-everything-dialog';
+import { SelectionButton } from './selection-dialog';
 
 const ProjectReleasesPage = () => {
   const navigate = useNavigate();

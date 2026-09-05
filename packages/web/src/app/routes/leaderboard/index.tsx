@@ -20,6 +20,7 @@ import {
 import { useContext, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { userApi } from '@/api/user-api';
 import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { PageHeader } from '@/components/custom/page-header';
 import { SearchInput } from '@/components/custom/search-input';
@@ -42,18 +43,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { TimeSavedFilterContent } from '../impact/components/time-saved-filter-content';
-import {
-  convertToSeconds,
-  TIME_UNITS,
-  TimeUnit,
-} from '../impact/lib/impact-utils';
-
-import { ProjectsLeaderboard, ProjectStats } from './projects-leaderboard';
-import { UsersLeaderboard, UserStats } from './users-leaderboard';
-
-import { userApi } from '@/api/user-api';
 import {
   platformAnalyticsHooks,
   RefreshAnalyticsContext,
@@ -64,6 +53,16 @@ import { platformHooks } from '@/hooks/platform-hooks';
 import { downloadFile } from '@/lib/dom-utils';
 import { formatUtils } from '@/lib/format-utils';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
+
+import { TimeSavedFilterContent } from '../impact/components/time-saved-filter-content';
+import {
+  convertToSeconds,
+  TIME_UNITS,
+  TimeUnit,
+} from '../impact/lib/impact-utils';
+
+import { ProjectsLeaderboard, ProjectStats } from './projects-leaderboard';
+import { UsersLeaderboard, UserStats } from './users-leaderboard';
 
 type TimeSavedFilter = {
   min: string;

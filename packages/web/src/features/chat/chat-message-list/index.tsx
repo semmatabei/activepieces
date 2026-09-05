@@ -8,6 +8,8 @@ import { BotIcon } from 'lucide-react';
 import React from 'react';
 import { z } from 'zod';
 
+import { cn } from '@/lib/utils';
+
 import {
   ChatBubble,
   ChatBubbleAvatar,
@@ -17,8 +19,6 @@ import { ChatMessage } from '../chat-input';
 import { MultiMediaMessage } from '../chat-message';
 
 import { ErrorBubble } from './error-bubble';
-
-import { cn } from '@/lib/utils';
 
 export const Messages = z.array(
   z.object({

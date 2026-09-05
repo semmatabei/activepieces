@@ -8,14 +8,13 @@ import TelemetryProvider from '@/components/providers/telemetry-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { RefreshAnalyticsProvider } from '@/features/platform-admin';
 
 import { EmbeddingFontLoader } from './components/embedding-font-loader';
 import { GlobalErrorBoundary } from './components/global-error-boundary';
 import { InitialDataGuard } from './components/initial-data-guard';
 import { ApRouter } from './guards';
 import { queryClient } from './query-client';
-
-import { RefreshAnalyticsProvider } from '@/features/platform-admin';
 
 export function App() {
   const { i18n } = useTranslation();

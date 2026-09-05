@@ -12,7 +12,7 @@ const commonClaims = {
     projectId: z.string().min(1).max(255), pieceName: z.enum(PASSGRAD_PIECE_NAMES),
 }
 const capabilityClaimsSchema = z.discriminatedUnion('invocationType', [
-    z.object({ ...commonClaims, invocationType: z.literal('execution'), flowRunId: z.string().min(1).max(255), flowVersionId: z.string().min(1).max(255), stepName: z.string().min(1).max(255) }).strict(),
+    z.object({ ...commonClaims, invocationType: z.literal('execution'), flowRunId: z.string().min(1).max(255), flowVersionId: z.string().min(1).max(255), stepName: z.string().min(1).max(255), sourceSubmissionId: z.string().nullable().optional() }).strict(),
     z.object({ ...commonClaims, invocationType: z.literal('property'), requestId: z.string().min(1).max(255), propertyName: z.string().min(1).max(255), actionOrTriggerName: z.string().min(1).max(255) }).strict(),
     z.object({ ...commonClaims, invocationType: z.literal('trigger'), requestId: z.string().min(1).max(255).optional(), flowVersionId: z.string().min(1).max(255), stepName: z.string().min(1).max(255), hookType: z.enum(['ON_ENABLE', 'ON_DISABLE', 'HANDSHAKE', 'RENEW', 'RUN', 'TEST']) }).strict(),
 ]).superRefine((claims, ctx) => {

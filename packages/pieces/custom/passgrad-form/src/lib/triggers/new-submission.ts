@@ -1,4 +1,4 @@
-import { createTrigger, TriggerStrategy } from "@activepieces/pieces-framework";
+import { createTrigger, Property, TriggerStrategy } from "@activepieces/pieces-framework";
 import { formIdProperty, passgradRequest } from "../common";
 
 const sampleData = {
@@ -21,6 +21,12 @@ export const newSubmission = createTrigger({
   type: TriggerStrategy.WEBHOOK,
   props: {
     form_id: formIdProperty,
+    mark_submission_actionable: Property.Checkbox({
+      displayName: "Add to Submissions",
+      description: "Expose this submission in the workflow-backed Submissions view.",
+      defaultValue: true,
+      required: false,
+    }),
   },
   sampleData,
 
@@ -30,7 +36,11 @@ export const newSubmission = createTrigger({
 
     const response = await passgradRequest<{ data: { id: string } }>(context, {
       operation: "form.create-trigger",
-      payload: { output_version: "v1", webhook_url: webhookUrl },
+      payload: {
+        output_version: "v1",
+        webhook_url: webhookUrl,
+        mark_submission_actionable: context.propsValue.mark_submission_actionable ?? true,
+      },
       resourceId: formId,
     });
 

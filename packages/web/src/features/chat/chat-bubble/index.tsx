@@ -3,10 +3,9 @@ import * as React from 'react';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button, ButtonProps } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import MessageLoading from './message-loading';
-
-import { cn } from '@/lib/utils';
 
 // ChatBubble
 const chatBubbleVariant = cva('flex gap-2 w-full items-start relative group', {

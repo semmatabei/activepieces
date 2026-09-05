@@ -40,10 +40,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { AWS_BEDROCK_REGIONS } from '@/features/agents/aws-regions';
 
 import { ModelFormPopover } from './model-form-popover';
-
-import { AWS_BEDROCK_REGIONS } from '@/features/agents/aws-regions';
 
 type UpsertProviderConfigFormProps = {
   form: UseFormReturn<CreateAIProviderRequest>;

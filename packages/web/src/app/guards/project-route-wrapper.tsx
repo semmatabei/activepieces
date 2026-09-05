@@ -4,6 +4,7 @@ import React from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { projectCollectionUtils } from '@/features/projects';
 import {
   FROM_QUERY_PARAM,
   useDefaultRedirectPath,
@@ -11,8 +12,6 @@ import {
 
 import { authenticationSession } from '../../lib/authentication-session';
 import { AllowOnlyLoggedInUserOnlyGuard } from '../components/allow-logged-in-user-only-guard';
-
-import { projectCollectionUtils } from '@/features/projects';
 
 export const TokenCheckerWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,

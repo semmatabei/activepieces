@@ -7,10 +7,9 @@ import { useState } from 'react';
 import { SimpleJsonViewer } from '@/components/custom/simple-json-viewer';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { PieceIconWithPieceName } from '@/features/pieces/components/piece-icon-from-name';
+import { cn } from '@/lib/utils';
 
 import { normalizePieceName } from '../lib/message-parsers';
-
-import { cn } from '@/lib/utils';
 
 export function ActionReceiptCard({
   receipt,

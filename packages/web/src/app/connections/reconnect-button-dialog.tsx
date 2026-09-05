@@ -13,7 +13,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 import { piecesHooks } from '@/features/pieces';
 
 type ReconnectButtonDialogProps = {

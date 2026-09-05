@@ -6,7 +6,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-
 import { cn } from '@/lib/utils';
 
 function getDomain(url: string): string {

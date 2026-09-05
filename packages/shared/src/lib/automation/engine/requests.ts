@@ -22,6 +22,10 @@ export const UploadRunLogsRequest = z.object({
     stepResponse: StepRunResponse.optional(),
     stepsCount: z.number().optional(),
     internalError: RunInternalError.optional(),
+    passgradWorkflowId: z.string().optional(),
+    passgradTriggerKind: z.string().optional(),
+    passgradSourceSubmissionId: z.string().nullable().optional(),
+    passgradEventId: z.string().optional(),
 })
 
 export type UploadRunLogsRequest = z.infer<typeof UploadRunLogsRequest>

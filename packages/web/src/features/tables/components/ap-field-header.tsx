@@ -12,6 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useAuthorization } from '@/hooks/authorization-hooks';
+import { cn } from '@/lib/utils';
 
 import { ClientField } from '../stores/store/ap-tables-client-state';
 import { FieldHeaderContext, tablesUtils } from '../utils/utils';
@@ -20,9 +22,6 @@ import { useTableState } from './ap-table-state-provider';
 import ApFieldActionMenuItemRenderer, {
   FieldActionType,
 } from './field-action-menu-item-renderer';
-
-import { useAuthorization } from '@/hooks/authorization-hooks';
-import { cn } from '@/lib/utils';
 
 type ApFieldHeaderProps = {
   field: ClientField & { index: number };

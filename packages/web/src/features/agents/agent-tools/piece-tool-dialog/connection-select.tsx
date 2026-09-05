@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 // eslint-disable-next-line import/no-restricted-paths
 import { CreateOrEditConnectionDialog } from '@/app/connections/create-edit-connection-dialog';
 import { SearchableSelect } from '@/components/custom/searchable-select';
-
 import { appConnectionsQueries } from '@/features/connections/hooks/app-connections-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 

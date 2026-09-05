@@ -35,13 +35,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PushToGitDialog } from '@/features/project-releases/components/push-to-git-dialog';
-
-import { tablesApi } from '../api/tables-api';
-import { tablesUtils } from '../utils/utils';
-
-import { useTableState } from './ap-table-state-provider';
-import { ImportTableDialog } from './import-table-dialog';
-
 import { gitSyncHooks } from '@/features/project-releases/hooks/git-sync-hooks';
 import {
   getProjectName,
@@ -49,6 +42,12 @@ import {
 } from '@/features/projects/stores/project-collection';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { downloadFile } from '@/lib/dom-utils';
+
+import { tablesApi } from '../api/tables-api';
+import { tablesUtils } from '../utils/utils';
+
+import { useTableState } from './ap-table-state-provider';
+import { ImportTableDialog } from './import-table-dialog';
 
 interface ApTableHeaderProps {
   onBack: () => void;

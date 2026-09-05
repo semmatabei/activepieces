@@ -25,7 +25,6 @@ function buildActionRequestPayload(input: {
   return {
     type: "workflow.action.requested.v1",
     eventId: input.eventId,
-    sourceSubmissionId: input.props.source_submission_id,
     definition: {
       title: input.props.title,
       description: input.props.description ?? "",
@@ -46,7 +45,6 @@ export const requestActionPayloadUtils = {
 
 /** Props shape accepted by the Request Action piece UI (runtime dropdown values are plain strings). */
 export interface RequestActionProps {
-  source_submission_id: string;
   title: string;
   description?: string;
   assignee_type: string;

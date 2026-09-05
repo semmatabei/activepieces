@@ -40,12 +40,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { eventDestinationsCollectionUtils } from '../lib/event-destinations-collection';
 import { handlerFlowBuilder } from '../lib/handler-flow-builder';
 import { useEventLabels } from '../lib/use-event-labels';
-
-import { flagsHooks } from '@/hooks/flags-hooks';
 
 interface EventDestinationDialogProps {
   children: React.ReactNode;

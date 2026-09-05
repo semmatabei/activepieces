@@ -20,12 +20,11 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { userHooks, userMutations } from '@/hooks/user-hooks';
 
 import { DeleteAccount } from './delete-account';
 import LanguageToggle from './language-toggle';
 import ThemeToggle from './theme-toggle';
-
-import { userHooks, userMutations } from '@/hooks/user-hooks';
 
 export interface AccountSettingsDialogProps {
   open: boolean;

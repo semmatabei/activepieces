@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -14,8 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 
 const StepNavigationButtons = () => {
   const [selectedStep, flowVersion, selectStepByName] = useBuilderStateContext(

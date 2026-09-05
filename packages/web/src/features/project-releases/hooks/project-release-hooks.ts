@@ -2,10 +2,9 @@ import { DiffReleaseRequest, ProjectSyncPlan } from '@activepieces/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { internalErrorToast } from '@/components/ui/sonner';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { projectReleaseApi } from '../api/project-release-api';
-
-import { authenticationSession } from '@/lib/authentication-session';
 
 export const projectReleaseKeys = {
   all: ['project-releases'] as const,

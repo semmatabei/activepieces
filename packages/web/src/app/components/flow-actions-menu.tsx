@@ -36,21 +36,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoveToFolderDialog } from '@/features/automations/components/move-to-folder-dialog';
 import { RenameDialog } from '@/features/automations/components/rename-dialog';
+import { flowHooks, flowsApi } from '@/features/flows';
 import { ChangeOwnerDialog } from '@/features/flows/components/change-owner-dialog';
 import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { PublishedNeededTooltip } from '@/features/project-releases/components/published-tooltip';
-import { PushToGitDialog } from '@/features/project-releases/components/push-to-git-dialog';
-import { useNewWindow } from '@/lib/navigation-utils';
-
-import { ShareTemplateDialog } from '../../features/flows/components/share-template-dialog';
-
-import { flowHooks, flowsApi } from '@/features/flows';
 import { foldersHooks } from '@/features/folders';
 import { projectMembersHooks } from '@/features/members';
 import { gitSyncHooks } from '@/features/project-releases';
+import { PublishedNeededTooltip } from '@/features/project-releases/components/published-tooltip';
+import { PushToGitDialog } from '@/features/project-releases/components/push-to-git-dialog';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { useNewWindow } from '@/lib/navigation-utils';
+
+import { ShareTemplateDialog } from '../../features/flows/components/share-template-dialog';
 
 type FlowActionMenuProps = {
   flow: PopulatedFlow;

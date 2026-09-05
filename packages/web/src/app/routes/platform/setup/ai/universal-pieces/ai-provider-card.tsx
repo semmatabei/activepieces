@@ -12,10 +12,9 @@ import {
 } from '@/components/custom/item';
 import { ItemMediaImage } from '@/components/custom/item-media-image';
 import { Button } from '@/components/ui/button';
+import { AiProviderInfo } from '@/features/agents';
 
 import { UpsertAIProviderDialog } from './upsert-provider-dialog';
-
-import { AiProviderInfo } from '@/features/agents';
 
 const AIProviderCard = ({
   providerInfo,

@@ -13,8 +13,18 @@ import deepEqual from 'deep-equal';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Form } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  stepsHooks,
+  pieceSelectorUtils,
+  formUtils,
+  PieceIcon,
+  PieceStepMetadata,
+} from '@/features/pieces';
+import { projectCollectionUtils } from '@/features/projects';
+import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { ActionErrorHandlingForm } from '../piece-properties/action-error-handling';
 import { DynamicPropertiesProvider } from '../piece-properties/dynamic-properties-context';
@@ -35,17 +45,6 @@ import { RouterSettings } from './router-settings';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { useStepSettingsContext } from './step-settings-context';
 import { UpdatePieceVersionDialog } from './update-piece-version-dialog/update-piece-version-dialog';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import {
-  stepsHooks,
-  pieceSelectorUtils,
-  formUtils,
-  PieceIcon,
-  PieceStepMetadata,
-} from '@/features/pieces';
-import { projectCollectionUtils } from '@/features/projects';
-import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 const StepSettingsContainer = () => {
   const { selectedStep, pieceModel, formSchema } = useStepSettingsContext();

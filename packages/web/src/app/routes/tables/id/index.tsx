@@ -6,7 +6,6 @@ import 'react-data-grid/lib/styles.css';
 import { useNavigate } from 'react-router-dom';
 
 import { useTheme } from '@/components/providers/theme-provider';
-
 import {
   ApTableFooter,
   ApTableHeader,

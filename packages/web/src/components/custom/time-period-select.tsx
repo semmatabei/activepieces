@@ -10,10 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 import { Period, display12HourValue, setDateByType } from './time-picker-utils';
-
-import { cn } from '@/lib/utils';
 
 export interface PeriodSelectorProps {
   period: Period;

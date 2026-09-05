@@ -3,7 +3,6 @@ import { t } from 'i18next';
 
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-
 import { alertQueries } from '@/features/alerts';
 import { alertMutations } from '@/features/alerts/hooks/alert-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';

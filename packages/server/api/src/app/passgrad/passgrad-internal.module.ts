@@ -26,10 +26,14 @@ import { platformService } from '../platform/platform.service'
 import { projectService } from '../project/project-service'
 import { UserSchema } from '../user/user-entity'
 import { userRepo } from '../user/user-service'
-import { passgradCapabilityAuthService, resolvePassgradTrustedExecutionPath } from './passgrad-capability-auth.service'
+import {
+    passgradCapabilityAuthService,
+    resolvePassgradTrustedExecutionPath,
+} from './passgrad-capability-auth.service'
 import { passgradCapabilityService } from './passgrad-capability.service'
 import { passgradEmbedSessionMintService } from './passgrad-embed-session-mint.service'
 import { passgradEngineRequestSchema } from './passgrad-engine-request.schema'
+import { passgradLifecycleOutboxService } from './passgrad-lifecycle-outbox.service'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
 import { passgradResourceIdSchema } from './passgrad-resource-id'
 
@@ -130,11 +134,10 @@ export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
       await passgradCapabilityAuthService.verifyAuthorizationHeader(
           request.headers.authorization,
       )
-        const executionPath =
-      resolvePassgradTrustedExecutionPath({
-          invocationType: claims.invocationType,
-          executionPath: request.body.executionPath,
-      })
+        const executionPath = resolvePassgradTrustedExecutionPath({
+            invocationType: claims.invocationType,
+            executionPath: request.body.executionPath,
+        })
         return passgradCapabilityService.request({
             projectId: claims.projectId,
             pieceName: claims.pieceName,
@@ -147,11 +150,24 @@ export const passgradInternalModule: FastifyPluginAsyncZod = async (app) => {
                         runId: claims.flowRunId,
                         stepId: claims.stepName,
                         executionPath,
+                        sourceSubmissionId: claims.sourceSubmissionId,
                     },
                 }
                 : {}),
         })
     })
+
+    app.post(
+        '/lifecycle-outbox/:id/replay',
+        replayLifecycleOutboxRequestOptions,
+        async (request, reply) => {
+            assertGatewaySecret(request.headers['x-passgrad-provisioning-secret'])
+            await passgradLifecycleOutboxService(request.log).replayDeadLetter(
+                request.params.id,
+            )
+            return reply.code(204).send()
+        },
+    )
 }
 
 async function assertBindingProject(
@@ -319,6 +335,13 @@ const engineRequestOptions = {
     config: { security: securityAccess.public() },
     schema: {
         body: passgradEngineRequestSchema,
+    },
+}
+
+const replayLifecycleOutboxRequestOptions = {
+    config: { security: securityAccess.public() },
+    schema: {
+        params: z.object({ id: z.string().min(1) }),
     },
 }
 

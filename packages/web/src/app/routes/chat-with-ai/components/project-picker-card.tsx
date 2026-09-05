@@ -16,9 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-
-import { ProjectPickerData } from '../lib/message-parsers';
-
 import {
   ApProjectDisplay,
   getProjectName,
@@ -26,6 +23,8 @@ import {
 } from '@/features/projects';
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
+
+import { ProjectPickerData } from '../lib/message-parsers';
 
 export function ProjectPickerCard({
   picker,

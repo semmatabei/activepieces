@@ -2,16 +2,15 @@ import { ApEdition, ApFlagId } from '@activepieces/shared';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { PurchaseExtraFlowsDialog } from '@/features/billing';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { cn } from '@/lib/utils';
 
 import {
   GlobalSearchProvider,
   useGlobalSearch,
 } from '../global-search/global-search-context';
 import { ProjectDashboardSidebar } from '../sidebar/dashboard';
-
-import { PurchaseExtraFlowsDialog } from '@/features/billing';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { cn } from '@/lib/utils';
 
 export function BuilderLayout({ children }: { children: React.ReactNode }) {
   return (

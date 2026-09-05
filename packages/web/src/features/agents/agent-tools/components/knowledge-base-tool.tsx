@@ -14,15 +14,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { PROVIDER_EMBEDDING_MODELS } from '@/features/agents';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { cn } from '@/lib/utils';
 
 import { AgentKnowledgeBaseDialog } from '../knowledge-base-dialog';
 import { useKnowledgeBaseToolDialogStore } from '../stores/knowledge-base-tools';
 
 import { AddKnowledgeBaseDropdown } from './add-knowledge-base-dropdown';
-
-import { PROVIDER_EMBEDDING_MODELS } from '@/features/agents';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { cn } from '@/lib/utils';
 
 function KnowledgeBaseToolPills({
   tools,

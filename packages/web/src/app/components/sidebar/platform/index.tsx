@@ -37,15 +37,14 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
-
-import { ApSidebarItem } from '../ap-sidebar-item';
-import { SidebarUser } from '../sidebar-user';
-
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
 import { determineDefaultRoute } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
+
+import { ApSidebarItem } from '../ap-sidebar-item';
+import { SidebarUser } from '../sidebar-user';
 
 export function PlatformSidebar() {
   const { platform } = platformHooks.useCurrentPlatform();

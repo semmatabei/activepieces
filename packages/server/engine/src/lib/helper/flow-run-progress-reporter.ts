@@ -2,7 +2,23 @@ import { promisify } from 'node:util'
 import { zstdCompress as zstdCompressCallback } from 'node:zlib'
 import { setTimeout } from 'timers/promises'
 import { OutputContext } from '@activepieces/pieces-framework'
-import { DEFAULT_MCP_DATA, EngineGenericError, FileCompression, FileType, FlowActionType, GenericStepOutput, isFlowRunStateTerminal, isNil, logSerializer, RunEnvironment, StepOutputStatus, StepRunResponse, tryCatch, UpdateRunProgressRequest, UploadRunLogsRequest } from '@activepieces/shared'
+import {
+    DEFAULT_MCP_DATA,
+    EngineGenericError,
+    FileCompression,
+    FileType,
+    FlowActionType,
+    GenericStepOutput,
+    isFlowRunStateTerminal,
+    isNil,
+    logSerializer,
+    RunEnvironment,
+    StepOutputStatus,
+    StepRunResponse,
+    tryCatch,
+    UpdateRunProgressRequest,
+    UploadRunLogsRequest,
+} from '@activepieces/shared'
 import { Mutex } from 'async-mutex'
 import dayjs from 'dayjs'
 import { engineFileApi } from '../engine-file-api'
@@ -10,7 +26,6 @@ import { EngineConstants } from '../handler/context/engine-constants'
 import { FlowExecutorContext } from '../handler/context/flow-execution-context'
 import { utils } from '../utils'
 import { workerSocket } from '../worker-socket'
-
 
 const zstdCompress = promisify(zstdCompressCallback)
 const stateLock = new Mutex()
@@ -36,7 +51,8 @@ export const flowRunProgressReporter = {
                 savedStartTime = params.startTime
             }
             latestUpdateParams = params
-            if (!stepNameToUpdate || !engineConstants.isTestFlow) { // live runs are updated by backup job
+            if (!stepNameToUpdate || !engineConstants.isTestFlow) {
+                // live runs are updated by backup job
                 return
             }
             const step = flowExecutorContext.getStepOutput(stepNameToUpdate)
@@ -67,11 +83,14 @@ export const flowRunProgressReporter = {
         })
     },
     createOutputContext: (params: CreateOutputContextParams): OutputContext => {
-        const { engineConstants, flowExecutorContext, stepName, stepOutput } = params
+        const { engineConstants, flowExecutorContext, stepName, stepOutput } =
+      params
         return {
             update: async (params: { data: unknown }) => {
-                const updated = await flowExecutorContext
-                    .upsertStep(stepName, stepOutput.setOutput(params.data))
+                const updated = await flowExecutorContext.upsertStep(
+                    stepName,
+                    stepOutput.setOutput(params.data),
+                )
 
                 const stepResponse = extractStepResponse({
                     flowExecutorContext: updated,
@@ -101,7 +120,10 @@ export const flowRunProgressReporter = {
                 return
             }
             const status = flowExecutorContext.verdict.status
-            const isTerminal = isFlowRunStateTerminal({ status, ignoreInternalError: false })
+            const isTerminal = isFlowRunStateTerminal({
+                status,
+                ignoreInternalError: false,
+            })
 
             const serialized = await logSerializer.serialize({
                 executionState: {
@@ -113,7 +135,10 @@ export const flowRunProgressReporter = {
 
             const logsFileId = engineConstants.logsFileId
             if (isNil(logsFileId)) {
-                throw new EngineGenericError('LogsFileIdNotSetError', 'Logs file id is not set')
+                throw new EngineGenericError(
+                    'LogsFileIdNotSetError',
+                    'Logs file id is not set',
+                )
             }
             await engineFileApi.upload({
                 engineToken: engineConstants.engineToken,
@@ -136,13 +161,20 @@ export const flowRunProgressReporter = {
                 status,
                 streamStepProgress: engineConstants.streamStepProgress,
                 logsFileId: engineConstants.logsFileId,
-                failedStep: 'failedStep' in flowExecutorContext.verdict ? flowExecutorContext.verdict.failedStep : undefined,
+                failedStep:
+          'failedStep' in flowExecutorContext.verdict
+              ? flowExecutorContext.verdict.failedStep
+              : undefined,
                 stepNameToTest: engineConstants.stepNameToTest,
                 stepResponse,
                 startTime: savedStartTime ?? undefined,
                 finishTime: isTerminal ? dayjs().toISOString() : undefined,
                 tags: Array.from(flowExecutorContext.tags),
                 stepsCount: flowExecutorContext.stepsCount,
+                passgradWorkflowId: engineConstants.passgradWorkflowId,
+                passgradTriggerKind: engineConstants.passgradTriggerKind,
+                passgradSourceSubmissionId: engineConstants.passgradSourceSubmissionId,
+                passgradEventId: `${engineConstants.flowRunId}:lifecycle:${status}`,
             }
             await sendLogsUpdate(request)
         })
@@ -170,22 +202,32 @@ process.on('SIGINT', () => void flowRunProgressReporter.shutdown())
 
 async function runFlushLoop(signal: AbortSignal): Promise<void> {
     while (!signal.aborted) {
-        const { error: flushError } = await tryCatch(() => flowRunProgressReporter.backup())
+        const { error: flushError } = await tryCatch(() =>
+            flowRunProgressReporter.backup(),
+        )
         if (flushError) {
             console.error('[Progress] Snapshot flush failed', flushError)
         }
 
         // sleep aborted → loop will exit naturally on the next signal check
-        await tryCatch(() => setTimeout(SNAPSHOT_FLUSH_INTERVAL_MS, undefined, { signal }))
+        await tryCatch(() =>
+            setTimeout(SNAPSHOT_FLUSH_INTERVAL_MS, undefined, { signal }),
+        )
     }
 }
 
-const sendUpdateProgress = async (request: UpdateRunProgressRequest): Promise<void> => {
+const sendUpdateProgress = async (
+    request: UpdateRunProgressRequest,
+): Promise<void> => {
     const result = await utils.tryCatchAndThrowOnEngineError(() =>
         workerSocket.getWorkerClient().updateRunProgress(request),
     )
     if (result.error) {
-        throw new EngineGenericError('ProgressUpdateError', 'Failed to send updateRunProgress', result.error)
+        throw new EngineGenericError(
+            'ProgressUpdateError',
+            'Failed to send updateRunProgress',
+            result.error,
+        )
     }
 }
 
@@ -194,11 +236,17 @@ const sendLogsUpdate = async (request: UploadRunLogsRequest): Promise<void> => {
         workerSocket.getWorkerClient().uploadRunLog(request),
     )
     if (result.error) {
-        throw new EngineGenericError('ProgressUpdateError', 'Failed to send uploadRunLog', result.error)
+        throw new EngineGenericError(
+            'ProgressUpdateError',
+            'Failed to send uploadRunLog',
+            result.error,
+        )
     }
 }
 
-const extractStepResponse = (params: ExtractStepResponse): StepRunResponse | undefined => {
+const extractStepResponse = (
+    params: ExtractStepResponse,
+): StepRunResponse | undefined => {
     if (isNil(params.stepName)) {
         return undefined
     }
@@ -207,7 +255,9 @@ const extractStepResponse = (params: ExtractStepResponse): StepRunResponse | und
     if (isNil(stepOutput)) {
         return undefined
     }
-    const isSuccess = stepOutput.status === StepOutputStatus.SUCCEEDED || stepOutput.status === StepOutputStatus.PAUSED
+    const isSuccess =
+    stepOutput.status === StepOutputStatus.SUCCEEDED ||
+    stepOutput.status === StepOutputStatus.PAUSED
     return {
         runId: params.runId,
         success: isSuccess,

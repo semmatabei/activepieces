@@ -2,7 +2,6 @@ import { t } from 'i18next';
 
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { SendIcon } from '@/components/icons/send';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 

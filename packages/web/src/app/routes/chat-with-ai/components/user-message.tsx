@@ -9,13 +9,12 @@ import {
   MessageActions,
   MessageContent as PromptKitMessageContent,
 } from '@/components/prompt-kit/message';
+import { ChatUIMessage } from '@/features/chat/lib/chat-types';
+import { cn } from '@/lib/utils';
 
 import { getTextFromParts } from '../lib/message-parsers';
 
 import { CopyIconButton } from './copy-icon-button';
-
-import { ChatUIMessage } from '@/features/chat/lib/chat-types';
-import { cn } from '@/lib/utils';
 
 export const UserMessage = memo(function UserMessage({
   message,

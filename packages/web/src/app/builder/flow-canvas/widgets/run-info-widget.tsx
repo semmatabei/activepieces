@@ -8,18 +8,18 @@ import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { ArrowRight, CircleHelp, Magnet } from 'lucide-react';
 
+import { useEmbedding } from '@/components/providers/embed-provider';
 import { Button } from '@/components/ui/button';
+import { flowRunUtils } from '@/features/flow-runs';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { formatUtils } from '@/lib/format-utils';
+import { cn } from '@/lib/utils';
 
 import { EditFlowOrViewDraftButton } from '../../builder-header/flow-status/view-draft-or-edit-flow-button';
 import { useBuilderStateContext } from '../../builder-hooks';
 import { flowCanvasUtils } from '../utils/flow-canvas-utils';
 
 import LargeWidgetWrapper from './large-widget-wrapper';
-
-import { flowRunUtils } from '@/features/flow-runs';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { formatUtils } from '@/lib/format-utils';
-import { cn } from '@/lib/utils';
 
 function getStatusText({
   status,
@@ -70,6 +70,7 @@ function getStatusText({
 
 const RunInfoWidget = () => {
   const run = useBuilderStateContext((state) => state.run);
+  const { embedState } = useEmbedding();
   const { variant, Icon } = run
     ? flowRunUtils.getStatusIcon(run.status)
     : { variant: 'default' as const, Icon: CircleHelp };
@@ -142,9 +143,11 @@ const RunInfoWidget = () => {
           {run.failedStep && (
             <JumpToFailedStepButton failedStepName={run.failedStep.name} />
           )}
-          <EditFlowOrViewDraftButton
-            onCanvas={false}
-          ></EditFlowOrViewDraftButton>
+          {!embedState.hideBuilderTools && (
+            <EditFlowOrViewDraftButton
+              onCanvas={false}
+            ></EditFlowOrViewDraftButton>
+          )}
         </div>
       </div>
     </LargeWidgetWrapper>

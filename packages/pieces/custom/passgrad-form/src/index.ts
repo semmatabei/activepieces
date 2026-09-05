@@ -2,13 +2,12 @@ import { createPiece, PieceAuth } from "@activepieces/pieces-framework";
 import { newSubmission } from "./lib/triggers/new-submission";
 import { newSubmissionV2 } from "./lib/triggers/new-submission-v2";
 import { getSubmission } from "./lib/actions/get-submission";
-import { reportWorkflowStatus } from "./lib/actions/report-workflow-status";
 import { requestSubmission } from "./lib/actions/request-submission";
-import { requestApproval } from "./lib/actions/request-approval";
 import { requestApprovalV2 } from "./lib/actions/request-approval-v2";
 import { requestAction } from "./lib/actions/request-action";
 import { addInformation } from "./lib/actions/add-information";
 import { completeProcess } from "./lib/actions/complete-process";
+import { openPersuratanCase } from "./lib/actions/open-persuratan-case";
 
 export const passgradForm = createPiece({
   displayName: "Passgrad Form",
@@ -22,11 +21,10 @@ export const passgradForm = createPiece({
   actions: [
     getSubmission,
     requestSubmission,
-    requestApproval,
     requestAction,
     requestApprovalV2,
-    reportWorkflowStatus,
     addInformation,
     completeProcess,
+    openPersuratanCase,
   ],
 });

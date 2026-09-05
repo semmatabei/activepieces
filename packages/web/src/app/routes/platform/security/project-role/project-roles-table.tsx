@@ -24,12 +24,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonList } from '@/components/ui/skeleton';
+import { projectRoleMutations } from '@/features/platform-admin';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 import { ProjectRoleDialog } from './project-role-dialog';
 import { ProjectRoleUsersSheet } from './project-role-users-table';
-
-import { projectRoleMutations } from '@/features/platform-admin';
-import { platformHooks } from '@/hooks/platform-hooks';
 
 interface ProjectRolesListProps {
   projectRoles: SeekPage<ProjectRole> | undefined;

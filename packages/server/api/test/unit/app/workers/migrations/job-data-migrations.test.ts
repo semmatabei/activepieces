@@ -1,4 +1,4 @@
-import { ExecuteFlowJobData, ExecutionType, FlowTriggerType, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WebhookJobData, WorkerJobType } from '@activepieces/shared'
+import { ExecuteFlowJobData, ExecutionType, FlowTriggerType, LATEST_JOB_DATA_SCHEMA_VERSION, PollingJobData, ResumeReason, RunEnvironment, StreamStepProgress, WebhookJobData, WorkerJobType } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -23,7 +23,7 @@ const mockLog: FastifyBaseLogger = {
     level: 'info',
 } as unknown as FastifyBaseLogger
 
-const LATEST = 11
+const LATEST = LATEST_JOB_DATA_SCHEMA_VERSION
 
 function baseFlowJob(overrides: Partial<ExecuteFlowJobData> = {}): ExecuteFlowJobData {
     return {

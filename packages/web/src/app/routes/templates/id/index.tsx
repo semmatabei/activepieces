@@ -23,13 +23,12 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSidebar } from '@/components/ui/sidebar-shadcn';
 import { UseTemplateDialog } from '@/features/templates/components/use-template-dialog';
+import { authenticationSession } from '@/lib/authentication-session';
+import { formatUtils } from '@/lib/format-utils';
 import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 
 import { FlowCard } from './flow-card';
 import { PieceCard } from './piece-card';
-
-import { authenticationSession } from '@/lib/authentication-session';
-import { formatUtils } from '@/lib/format-utils';
 
 type TemplateDetailsPageProps = {
   template: Template;

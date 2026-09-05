@@ -8,6 +8,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { internalErrorToast } from '@/components/ui/sonner';
+import { platformHooks } from '@/hooks/platform-hooks';
 
 import { globalConnectionsApi } from '../api/global-connections';
 import {
@@ -15,8 +16,6 @@ import {
   ConnectionNameAlreadyExists,
   isConnectionNameUnique,
 } from '../utils/utils';
-
-import { platformHooks } from '@/hooks/platform-hooks';
 
 type UseGlobalConnectionsProps = {
   request: ListGlobalConnectionsRequestQuery;

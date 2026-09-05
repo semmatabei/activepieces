@@ -40,7 +40,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 import {
   appConnectionsMutations,
   appConnectionsQueries,

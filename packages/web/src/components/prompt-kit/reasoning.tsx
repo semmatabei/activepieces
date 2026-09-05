@@ -7,9 +7,9 @@ import React, {
   useState,
 } from 'react';
 
-import { Markdown } from './markdown';
-
 import { cn } from '@/lib/utils';
+
+import { Markdown } from './markdown';
 
 type ReasoningContextType = {
   isOpen: boolean;

@@ -1,4 +1,8 @@
-import { apVersionUtil, onCallService, UNKNOWN_VERSION } from '@activepieces/server-utils'
+import {
+    apVersionUtil,
+    onCallService,
+    UNKNOWN_VERSION,
+} from '@activepieces/server-utils'
 import {
     ApEdition,
     apId,
@@ -28,7 +32,8 @@ import { fileCompressor } from '../../file/file-compressor'
 import { fileService } from '../../file/file.service'
 import { flowService } from '../../flows/flow/flow.service'
 import { flowRunService } from '../../flows/flow-run/flow-run-service'
-import { runsMetadataQueue } from '../../flows/flow-run/flow-runs-queue'
+import { flowRunSideEffects } from '../../flows/flow-run/flow-run-side-effects'
+import { persistRunMetadataAndPassgradOutbox } from '../../flows/flow-run/flow-runs-queue'
 import { flowVersionService } from '../../flows/flow-version/flow-version.service'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { pubsub } from '../../helper/pubsub'
@@ -39,46 +44,76 @@ import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
-import { getWorkerGroupQueueName, QueueName, RunsMetadataUpsertData } from '../job'
+import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
+import { passgradSourceSubmissionUtils } from '../../webhooks/passgrad-source-submission'
+import { resolvePassgradTriggerKind } from '../../webhooks/passgrad-trigger-kind'
+import { getWorkerGroupQueueName, QueueName } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { machineService } from '../machine/machine-service'
-import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
-import { resolvePassgradTriggerKind } from '../../webhooks/passgrad-trigger-kind'
 
 const getPollQueueName = (workerGroupId?: string): string => {
-    return workerGroupId ? getWorkerGroupQueueName(workerGroupId) : QueueName.WORKER_JOBS
+    return workerGroupId
+        ? getWorkerGroupQueueName(workerGroupId)
+        : QueueName.WORKER_JOBS
 }
 
 let pagedForUnreadableAppVersion = false
 
-function pageOnceForUnreadableAppVersion(log: FastifyBaseLogger, appVersion: string): void {
+function pageOnceForUnreadableAppVersion(
+    log: FastifyBaseLogger,
+    appVersion: string,
+): void {
     if (pagedForUnreadableAppVersion) {
         return
     }
     pagedForUnreadableAppVersion = true
-    onCallService(log, system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK)).page({
-        code: 'APP_VERSION_READ_FAILED',
-        message: 'App could not read its release version from package.json (reported as 0.0.0); worker dispatch is gated and will NOT self-heal until the deployment is fixed (check cwd/packaging)',
-        params: { appVersion },
-    }).catch((pageError) => {
-        log.error({ pageError }, '[workerRpc#poll] Failed to send on-call page for unreadable app version')
-    })
+    onCallService(log, system.get(AppSystemProp.PAGE_ONCALL_WEBHOOK))
+        .page({
+            code: 'APP_VERSION_READ_FAILED',
+            message:
+        'App could not read its release version from package.json (reported as 0.0.0); worker dispatch is gated and will NOT self-heal until the deployment is fixed (check cwd/packaging)',
+            params: { appVersion },
+        })
+        .catch((pageError) => {
+            log.error(
+                { pageError },
+                '[workerRpc#poll] Failed to send on-call page for unreadable app version',
+            )
+        })
 }
 
-export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): WorkerToApiContract {
+export function createHandlers(
+    log: FastifyBaseLogger,
+    workerGroupId?: string,
+): WorkerToApiContract {
     return {
         async poll(input) {
-            log.info({ worker: { id: input.workerId }, workerGroupId }, '[workerRpc#poll] Poll request received')
+            log.info(
+                { worker: { id: input.workerId }, workerGroupId },
+                '[workerRpc#poll] Poll request received',
+            )
             await machineService(log).onConnection(input, workerGroupId)
             const workerVersion = input.workerProps.version
             const appVersion = apVersionUtil.getCurrentRelease()
-            if (!apVersionUtil.versionsAreCompatible({ versionA: workerVersion, versionB: appVersion })) {
-                const versionUnreadable = workerVersion === UNKNOWN_VERSION || appVersion === UNKNOWN_VERSION
+            if (
+                !apVersionUtil.versionsAreCompatible({
+                    versionA: workerVersion,
+                    versionB: appVersion,
+                })
+            ) {
+                const versionUnreadable =
+          workerVersion === UNKNOWN_VERSION || appVersion === UNKNOWN_VERSION
                 if (versionUnreadable) {
-                    log.error({ worker: { id: input.workerId }, workerVersion, appVersion }, '[workerRpc#poll] Withholding job — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on deploy completion, check the worker/app deployment (cwd/packaging)')
+                    log.error(
+                        { worker: { id: input.workerId }, workerVersion, appVersion },
+                        '[workerRpc#poll] Withholding job — a release version could not be read from package.json (reported as 0.0.0); this will NOT self-heal on deploy completion, check the worker/app deployment (cwd/packaging)',
+                    )
                 }
                 else {
-                    log.warn({ worker: { id: input.workerId }, workerVersion, appVersion }, '[workerRpc#poll] Withholding job — worker version does not match app; worker will idle until upgraded')
+                    log.warn(
+                        { worker: { id: input.workerId }, workerVersion, appVersion },
+                        '[workerRpc#poll] Withholding job — worker version does not match app; worker will idle until upgraded',
+                    )
                 }
                 if (appVersion === UNKNOWN_VERSION) {
                     pageOnceForUnreadableAppVersion(log, appVersion)
@@ -88,26 +123,46 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
             const pollQueueName = getPollQueueName(workerGroupId)
             const job = await jobBroker(log).poll(pollQueueName)
             if (job) {
-                log.info({ worker: { id: input.workerId }, job: { id: job.jobId, type: job.jobData.jobType } }, '[workerRpc#poll] Returning job to worker')
+                log.info(
+                    {
+                        worker: { id: input.workerId },
+                        job: { id: job.jobId, type: job.jobData.jobType },
+                    },
+                    '[workerRpc#poll] Returning job to worker',
+                )
             }
             else {
-                log.debug({ worker: { id: input.workerId } }, '[workerRpc#poll] No job available, returning null')
+                log.debug(
+                    { worker: { id: input.workerId } },
+                    '[workerRpc#poll] No job available, returning null',
+                )
             }
             return job
         },
 
         async completeJob(input) {
-            log.info({ job: { id: input.jobId }, status: input.status }, '[workerRpc#completeJob] Job completed by worker')
+            log.info(
+                { job: { id: input.jobId }, status: input.status },
+                '[workerRpc#completeJob] Job completed by worker',
+            )
             await jobBroker(log).completeJob(input)
         },
 
         async updateRunProgress(input) {
-            websocketService.to(input.flowRun.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, input)
+            websocketService
+                .to(input.flowRun.projectId)
+                .emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, input)
         },
 
         async uploadRunLog(input) {
-            const internalErrorEnabled = input.internalError?.source === RunInternalErrorSource.ENGINE || system.getEdition() !== ApEdition.CLOUD
-            if (internalErrorEnabled && !isNil(input.internalError) && !isNil(input.logsFileId)) {
+            const internalErrorEnabled =
+        input.internalError?.source === RunInternalErrorSource.ENGINE ||
+        system.getEdition() !== ApEdition.CLOUD
+            if (
+                internalErrorEnabled &&
+        !isNil(input.internalError) &&
+        !isNil(input.logsFileId)
+            ) {
                 await persistInternalErrorToLogs({
                     log,
                     projectId: input.projectId,
@@ -115,48 +170,67 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
                     internalError: input.internalError,
                 })
             }
-            const logData: RunsMetadataUpsertData = {
-                id: input.runId,
-                projectId: input.projectId,
-                status: input.status,
-                tags: input.tags,
-                logsFileId: input.logsFileId,
-                failedStep: truncateFailedStepMessage(input.failedStep),
-                startTime: input.startTime,
-                finishTime: input.finishTime,
-                stepsCount: input.stepsCount,
-                stepNameToTest: input.stepNameToTest,
-            }
-            await runsMetadataQueue(log).add(logData)
+            const savedFlowRun = await persistRunMetadataAndPassgradOutbox(
+                {
+                    ...input,
+                    failedStep: truncateFailedStepMessage(input.failedStep),
+                },
+                log,
+            )
 
-            if (input.stepResponse && input.streamStepProgress === StreamStepProgress.WEBSOCKET) {
+            if (
+                input.stepResponse &&
+        input.streamStepProgress === StreamStepProgress.WEBSOCKET
+            ) {
                 const stepData = { ...input.stepResponse, projectId: input.projectId }
                 const isTerminalStatus = isFlowRunStateTerminal({
                     status: input.status,
                     ignoreInternalError: false,
                 })
                 if (!isTerminalStatus) {
-                    websocketService.to(input.projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, stepData)
+                    websocketService
+                        .to(input.projectId)
+                        .emit(WebsocketClientEvent.TEST_STEP_PROGRESS, stepData)
                 }
                 else {
-                    websocketService.to(input.projectId).emit(WebsocketClientEvent.TEST_STEP_FINISHED, stepData)
+                    websocketService
+                        .to(input.projectId)
+                        .emit(WebsocketClientEvent.TEST_STEP_FINISHED, stepData)
                 }
+            }
+
+            if (!isNil(input.finishTime)) {
+                await flowRunSideEffects(log).onFinish(savedFlowRun)
             }
         },
 
         async sendFlowResponse(input) {
             await pubsub.publish(
                 `engine-run:sync:${input.workerHandlerId}`,
-                JSON.stringify({ requestId: input.httpRequestId, response: input.runResponse }),
+                JSON.stringify({
+                    requestId: input.httpRequestId,
+                    response: input.runResponse,
+                }),
             )
         },
 
         async updateStepProgress(input) {
-            websocketService.to(input.projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, input)
+            websocketService
+                .to(input.projectId)
+                .emit(WebsocketClientEvent.TEST_STEP_PROGRESS, input)
         },
 
         async submitPayloads(input) {
-            const { flowVersionId, projectId, payloads, httpRequestId, streamStepProgress, environment, parentRunId, failParentOnFailure } = input
+            const {
+                flowVersionId,
+                projectId,
+                payloads,
+                httpRequestId,
+                streamStepProgress,
+                environment,
+                parentRunId,
+                failParentOnFailure,
+            } = input
 
             const flowVersion = await flowVersionService(log).getOne(flowVersionId)
             if (!flowVersion) {
@@ -164,7 +238,11 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
             }
 
             const platformId = await projectService(log).getPlatformId(projectId)
-            const filterPayloads = await dedupeService.filterUniquePayloads(flowVersionId, payloads)
+            const filterPayloads = await dedupeService.filterUniquePayloads(
+                flowVersionId,
+                payloads,
+            )
+            const triggerKind = resolvePassgradTriggerKind(flowVersion)
 
             const flowRuns = await Promise.all(
                 filterPayloads.map(async (payload) => {
@@ -176,10 +254,20 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
                             logger: log,
                             projectId,
                             runEnvironment: environment,
-                            triggerKind: resolvePassgradTriggerKind(flowVersion),
+                            sourceSubmissionId: passgradSourceSubmissionUtils.resolve({
+                                payload,
+                                triggerKind,
+                            }),
+                            triggerKind,
                         })
-                    if (admission.status === 'denied' || admission.status === 'unavailable') {
-                        log.warn({ flow: { id: flowVersion.flowId }, project: { id: projectId } }, 'Passgrad admission rejected trigger payload')
+                    if (
+                        admission.status === 'denied' ||
+            admission.status === 'unavailable'
+                    ) {
+                        log.warn(
+                            { flow: { id: flowVersion.flowId }, project: { id: projectId } },
+                            'Passgrad admission rejected trigger payload',
+                        )
                         return null
                     }
                     return flowRunService(log).start({
@@ -196,21 +284,27 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
                         executeTrigger: false,
                         parentRunId,
                         failParentOnFailure,
-                        admission: admission.status === 'admitted' ? admission.admission : undefined,
+                        admission:
+              admission.status === 'admitted' ? admission.admission : undefined,
                     })
                 }),
             )
-            return flowRuns.filter((flowRun): flowRun is NonNullable<typeof flowRun> => flowRun !== null)
+            return flowRuns.filter(
+                (flowRun): flowRun is NonNullable<typeof flowRun> => flowRun !== null,
+            )
         },
 
         async savePayloads(input) {
             const { flowId, projectId, payloads } = input
             const savePayloads = payloads.map((payload) =>
-                rejectedPromiseHandler(triggerEventService(log).saveEvent({
-                    flowId,
-                    payload,
-                    projectId,
-                }), log),
+                rejectedPromiseHandler(
+                    triggerEventService(log).saveEvent({
+                        flowId,
+                        payload,
+                        projectId,
+                    }),
+                    log,
+                ),
             )
             rejectedPromiseHandler(Promise.all(savePayloads), log)
             if (payloads.length > 0) {
@@ -264,9 +358,14 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
 
         async markPieceAsUsed(input) {
             const redisKey = `usedPieces:${workerGroupId ?? 'shared'}`
-            const existing = await distributedStore.get<PiecePackage[]>(redisKey) ?? []
-            const existingKeys = new Set(existing.map((p) => `${p.pieceName}@${p.pieceVersion}`))
-            const newPieces = input.pieces.filter((p) => !existingKeys.has(`${p.pieceName}@${p.pieceVersion}`))
+            const existing =
+        (await distributedStore.get<PiecePackage[]>(redisKey)) ?? []
+            const existingKeys = new Set(
+                existing.map((p) => `${p.pieceName}@${p.pieceVersion}`),
+            )
+            const newPieces = input.pieces.filter(
+                (p) => !existingKeys.has(`${p.pieceName}@${p.pieceVersion}`),
+            )
             if (newPieces.length > 0) {
                 await distributedStore.put(redisKey, [...existing, ...newPieces])
             }
@@ -274,7 +373,10 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
 
         async disableFlow(input) {
             const { flowId, projectId } = input
-            const flow = await flowService(log).getOneOrThrow({ id: flowId, projectId })
+            const flow = await flowService(log).getOneOrThrow({
+                id: flowId,
+                projectId,
+            })
             if (flow.status === FlowStatus.DISABLED) {
                 return
             }
@@ -289,16 +391,21 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
                     request: { status: FlowStatus.DISABLED },
                 },
             })
-            log.info({ flow: { id: flowId }, project: { id: projectId } }, '[workerRpc#disableFlow] Flow disabled by worker request')
+            log.info(
+                { flow: { id: flowId }, project: { id: projectId } },
+                '[workerRpc#disableFlow] Flow disabled by worker request',
+            )
         },
 
         async sendChatEvent(input) {
             const { userId, conversationId, runId, event } = input
-            websocketService.to(userId).emit(WebsocketClientEvent.CHAT_MESSAGE_CHUNK, {
-                conversationId,
-                runId,
-                ...event,
-            })
+            websocketService
+                .to(userId)
+                .emit(WebsocketClientEvent.CHAT_MESSAGE_CHUNK, {
+                    conversationId,
+                    runId,
+                    ...event,
+                })
         },
 
         async getChatConfig(input) {
@@ -323,7 +430,12 @@ export function createHandlers(log: FastifyBaseLogger, workerGroupId?: string): 
     }
 }
 
-async function persistInternalErrorToLogs({ log, projectId, logsFileId, internalError }: PersistInternalErrorParams): Promise<void> {
+async function persistInternalErrorToLogs({
+    log,
+    projectId,
+    logsFileId,
+    internalError,
+}: PersistInternalErrorParams): Promise<void> {
     const { error } = await tryCatch(async () => {
         const existing = await fileService(log).getDataOrUndefined({
             projectId,
@@ -352,7 +464,10 @@ async function persistInternalErrorToLogs({ log, projectId, logsFileId, internal
     })
 
     if (error) {
-        log.error({ error, logsFileId, project: { id: projectId } }, '[workerRpc#uploadRunLog] Failed to persist internal error to logs file')
+        log.error(
+            { error, logsFileId, project: { id: projectId } },
+            '[workerRpc#uploadRunLog] Failed to persist internal error to logs file',
+        )
     }
 }
 

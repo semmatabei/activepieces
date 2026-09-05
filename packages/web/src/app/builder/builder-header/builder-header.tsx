@@ -16,6 +16,8 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { RightSideBarType } from '@/app/builder/types';
 import { ActiveUsersWidget } from '@/components/custom/active-users-widget';
 import EditableText from '@/components/custom/editable-text';
 import { HomeButton } from '@/components/custom/home-button';
@@ -30,24 +32,21 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-badge';
-import { useNewWindow } from '@/lib/navigation-utils';
-
-import FlowActionMenu from '../../components/flow-actions-menu';
-import { flowCanvasConsts } from '../flow-canvas/utils/consts';
-
-import { BuilderFlowStatusSection } from './flow-status';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { RightSideBarType } from '@/app/builder/types';
 import { flowHooks } from '@/features/flows';
+import { FlowCreatedByBadge } from '@/features/flows/components/flow-created-by-badge';
 import { foldersHooks } from '@/features/folders';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { useNewWindow } from '@/lib/navigation-utils';
 import { NEW_FLOW_QUERY_PARAM } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
+
+import FlowActionMenu from '../../components/flow-actions-menu';
+import { flowCanvasConsts } from '../flow-canvas/utils/consts';
+
+import { BuilderFlowStatusSection } from './flow-status';
 
 export const BuilderHeader = () => {
   const [queryParams] = useSearchParams();

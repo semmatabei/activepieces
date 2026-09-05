@@ -16,14 +16,14 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { api } from '@/lib/api';
+
 import { chatApi } from './chat-api';
 import { chatStoreSelectors, SetChatStore, ToolCallMeta } from './chat-store';
 import { useChatStoreApi } from './chat-store-context';
 import { ChatUIMessage, chatPartUtils } from './chat-types';
 import { chatUtils } from './chat-utils';
 import { useStreamingReducer } from './use-streaming-reducer';
-
-import { api } from '@/lib/api';
 
 function restoreReceiptsIntoStore({
   data,

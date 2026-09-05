@@ -12,10 +12,15 @@ import {
 } from '@/components/prompt-kit/chat-container';
 import { ScrollButton } from '@/components/prompt-kit/scroll-button';
 import { Button } from '@/components/ui/button';
+import { chatStoreSelectors } from '@/features/chat/lib/chat-store';
 import {
   ChatStoreProvider,
   useChatStoreContext,
 } from '@/features/chat/lib/chat-store-context';
+import { useAgentChat } from '@/features/chat/lib/use-chat';
+import { useCreditsState } from '@/features/chat/lib/use-credits-state';
+import { aiProviderQueries } from '@/features/platform-admin';
+import { cn } from '@/lib/utils';
 
 import { AssistantMessage } from './components/assistant-message';
 import { ChatBottomBar } from './components/chat-bottom-bar';
@@ -28,12 +33,6 @@ import { CreditsBanner } from './components/credits-banner';
 import { QuickReplies } from './components/quick-replies';
 import { UserMessage } from './components/user-message';
 import { getTextFromParts } from './lib/message-parsers';
-
-import { chatStoreSelectors } from '@/features/chat/lib/chat-store';
-import { useAgentChat } from '@/features/chat/lib/use-chat';
-import { useCreditsState } from '@/features/chat/lib/use-credits-state';
-import { aiProviderQueries } from '@/features/platform-admin';
-import { cn } from '@/lib/utils';
 
 export function AIChatBox({
   incognito,

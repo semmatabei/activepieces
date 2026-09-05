@@ -17,6 +17,7 @@ export type PassgradCapabilityInvocation = {
     actionOrTriggerName?: string
     hookType?: string
     timeoutInSeconds: number
+    sourceSubmissionId?: string | null
 }
 
 export function assertPassgradCapabilitySecret(secret = process.env[SECRET_ENV]): string {

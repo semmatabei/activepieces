@@ -2,7 +2,6 @@ import { FlowVersionTemplate } from '@activepieces/shared';
 import { Workflow } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
-
 import { PieceIconList } from '@/features/pieces';
 
 type FlowCardProps = {

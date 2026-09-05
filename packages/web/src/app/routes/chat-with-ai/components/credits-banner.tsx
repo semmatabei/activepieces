@@ -3,7 +3,6 @@ import { AlertTriangle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-
 import { CreditsWarning } from '@/features/chat/lib/chat-types';
 import { useIsPlatformAdmin } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';

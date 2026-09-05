@@ -6,14 +6,13 @@ import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
 import { UserAvatar } from '@/components/custom/user-avatar';
 import { Button } from '@/components/ui/button';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { projectMembersApi } from '../api/project-members-api';
 import { projectMembersHooks } from '../hooks/project-members-hooks';
 
 import { EditRoleDialog } from './edit-role-dialog';
-
-import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
-import { useAuthorization } from '@/hooks/authorization-hooks';
 
 type ProjectMemberCardProps = {
   member: ProjectMemberWithUser;

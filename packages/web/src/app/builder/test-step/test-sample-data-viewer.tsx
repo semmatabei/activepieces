@@ -10,8 +10,10 @@ import { Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
+import type { OutputSchema } from '@/components/custom/smart-output-viewer/types';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
@@ -21,9 +23,6 @@ import { StepDataPanelViewToggle } from '../step-data/step-data-panel-view-toggl
 
 import { AgentTestStep, isRunAgent } from './agent-test-step';
 import { TestButtonTooltip } from './test-step-tooltip';
-
-import type { OutputSchema } from '@/components/custom/smart-output-viewer/types';
-import { cn } from '@/lib/utils';
 
 type TestSampleDataViewerProps = {
   isValid: boolean;

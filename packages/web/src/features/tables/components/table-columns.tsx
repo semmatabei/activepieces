@@ -3,6 +3,9 @@ import { Plus } from 'lucide-react';
 import { ReactNode } from 'react';
 import { Column, RenderCellProps } from 'react-data-grid';
 
+import { useAuthorization } from '@/hooks/authorization-hooks';
+import { flagsHooks } from '@/hooks/flags-hooks';
+
 import { ClientRecordData } from '../stores/store/ap-tables-client-state';
 import { Row } from '../types/types';
 
@@ -11,9 +14,6 @@ import { useTableState } from './ap-table-state-provider';
 import { EditableCell } from './editable-cell';
 import { NewFieldPopup } from './new-field-popup';
 import { SelectCell, SelectHeaderCell } from './select-column';
-
-import { useAuthorization } from '@/hooks/authorization-hooks';
-import { flagsHooks } from '@/hooks/flags-hooks';
 
 export function useTableColumns(createEmptyRecord: () => void) {
   const [fields, setSelectedAgentRunId] = useTableState((state) => [

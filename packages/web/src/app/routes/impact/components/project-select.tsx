@@ -15,7 +15,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
-
 import { cn } from '@/lib/utils';
 
 const ITEM_HEIGHT = 36;

@@ -22,7 +22,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 import { oauthAppsMutations, oauthAppsQueries } from '@/features/connections';
 
 type ConfigurePieceOAuth2DialogProps = {

@@ -3,10 +3,9 @@ import { t } from 'i18next';
 import { X } from 'lucide-react';
 
 import { Input, InputProps } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 import { SelectUtilButton } from './select-util-button';
-
-import { cn } from '@/lib/utils';
 
 function ClearableInput({
   onClear,

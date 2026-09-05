@@ -1,5 +1,4 @@
 import { Skeleton } from '@/components/ui/skeleton';
-
 import { cn } from '@/lib/utils';
 
 const StepOutputSkeleton = ({ className }: { className?: string }) => {

@@ -1,13 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
-
-function parseIdList(value: string | undefined): string[] {
-  return (value ?? "")
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
-}
+import { buildApprovalRequestPayload } from "./request-approval-payload";
 
 const priority = Property.StaticDropdown({
   displayName: "Priority",
@@ -29,10 +23,6 @@ export const requestApprovalV2 = createAction({
   description:
     "Pause the flow until assigned Passgrad approvers reach the minimum approvals or reject the source submission.",
   props: {
-    source_submission_id: Property.ShortText({
-      displayName: "Source Submission ID",
-      required: true,
-    }),
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),
     approver_type: Property.StaticDropdown({
@@ -88,9 +78,9 @@ export const requestApprovalV2 = createAction({
       defaultValue: 1,
     }),
     priority,
-    due_at: Property.ShortText({
-      displayName: "Due At",
-      description: "Optional ISO 8601 due date for the Approval task.",
+    due_in_hours: Property.Number({
+      displayName: "Due In (Hours)",
+      description: "Optional SLA measured from the source submission time.",
       required: false,
     }),
   },
@@ -100,37 +90,13 @@ export const requestApprovalV2 = createAction({
     }
 
     const waitpoint = await context.run.createWaitpoint({ type: "WEBHOOK", version: "V1" });
-    const approver =
-      context.propsValue.approver_type === "groups"
-        ? { type: "groups", groupIds: parseIdList(context.propsValue.approver_group_ids) }
-        : { type: "users", userIds: parseIdList(context.propsValue.approver_user_ids) };
-
     await context.passgrad.request({
       operation: "workflow.open-approval-request",
-      payload: {
-        type: "workflow.approval.requested.v2",
+      payload: buildApprovalRequestPayload({
+        props: context.propsValue,
         eventId: randomUUID(),
-        definition: {
-          sourceSubmissionId: context.propsValue.source_submission_id,
-          title: context.propsValue.title,
-          description: context.propsValue.description ?? "",
-          approver,
-          minimumApprovals: context.propsValue.minimum_approvals ?? 1,
-          rejectionPolicy: "any_rejection",
-          comment: {
-            enabled: context.propsValue.comment_enabled ?? true,
-            required: context.propsValue.comment_required ?? false,
-          },
-          attachment: {
-            enabled: context.propsValue.attachments_enabled ?? true,
-            required: context.propsValue.attachments_required ?? false,
-            maxFiles: context.propsValue.max_files ?? 1,
-          },
-          priority: context.propsValue.priority ?? "normal",
-          dueAt: context.propsValue.due_at ?? null,
-        },
         resumeUrl: waitpoint.buildResumeUrl({ queryParams: {} }),
-      },
+      }),
     });
 
     context.run.waitForWaitpoint(waitpoint.id);

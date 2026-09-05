@@ -2,7 +2,6 @@ import { ApFlagId, PieceSyncMode } from '@activepieces/shared';
 import { RefreshCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-
 import { platformPiecesMutations } from '@/features/platform-admin';
 import { flagsHooks } from '@/hooks/flags-hooks';
 

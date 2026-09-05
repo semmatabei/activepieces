@@ -1,7 +1,6 @@
 import { VariantProps } from 'class-variance-authority';
 
 import { Button, buttonVariants } from '@/components/ui/button';
-
 import { cn } from '@/lib/utils';
 
 export type PromptSuggestionProps = {

@@ -4,6 +4,7 @@ import { t } from 'i18next';
 import { TrashIcon } from 'lucide-react';
 import { forwardRef, useRef, useState } from 'react';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import {
   MarkdownTools,
   ToolWrapper,
@@ -15,8 +16,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { cn } from '@/lib/utils';
 
 export const NoteTools = ({ editor, currentColor, id }: NoteToolsProps) => {

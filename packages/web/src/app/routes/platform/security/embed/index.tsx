@@ -18,19 +18,18 @@ import LockedFeatureGuard from '@/app/components/locked-feature-guard';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SkeletonList } from '@/components/ui/skeleton';
-
-import { Stepper, StepKind, StepDef } from './stepper';
-import { AllowedDomainsStep } from './steps/allowed-domains-step';
-import { DnsStep } from './steps/dns-step';
-import { HostnameStep } from './steps/hostname-step';
-import { SigningKeysStep } from './steps/signing-keys-step';
-
 import {
   embedSubdomainQueries,
   signingKeyQueries,
 } from '@/features/platform-admin';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
+
+import { Stepper, StepKind, StepDef } from './stepper';
+import { AllowedDomainsStep } from './steps/allowed-domains-step';
+import { DnsStep } from './steps/dns-step';
+import { HostnameStep } from './steps/hostname-step';
+import { SigningKeysStep } from './steps/signing-keys-step';
 
 const EmbedPage = () => {
   const { platform } = platformHooks.useCurrentPlatform();

@@ -9,7 +9,6 @@ import {
   CarouselPrevious,
   useCarousel,
 } from '@/components/ui/carousel';
-
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 type CategoryFilterCarouselProps = {

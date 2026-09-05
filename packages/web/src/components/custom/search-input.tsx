@@ -3,10 +3,9 @@ import { Search, X } from 'lucide-react';
 import * as React from 'react';
 
 import { Input, inputClass } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 import { SelectUtilButton } from './select-util-button';
-
-import { cn } from '@/lib/utils';
 
 export type SearchInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,

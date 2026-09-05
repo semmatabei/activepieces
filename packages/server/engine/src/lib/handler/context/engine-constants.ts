@@ -31,6 +31,9 @@ type EngineConstantsParams = {
     stepNames: string[]
     passgradCapabilities?: Record<string, string>
     passgradCapability?: string
+    passgradWorkflowId?: string
+    passgradTriggerKind?: string
+    passgradSourceSubmissionId?: string | null
 }
 
 const DEFAULT_RETRY_CONSTANTS: RetryConstants = {
@@ -71,6 +74,9 @@ export class EngineConstants {
     public readonly stepNames: string[] = []
     public readonly passgradCapabilities: Record<string, string>
     public readonly passgradCapability?: string
+    public readonly passgradWorkflowId?: string
+    public readonly passgradTriggerKind?: string
+    public readonly passgradSourceSubmissionId?: string | null
     private project: Project | null = null
 
     public get isRunningApTests(): boolean {
@@ -119,6 +125,9 @@ export class EngineConstants {
         this.stepNames = params.stepNames
         this.passgradCapabilities = params.passgradCapabilities ?? {}
         this.passgradCapability = params.passgradCapability
+        this.passgradWorkflowId = params.passgradWorkflowId
+        this.passgradTriggerKind = params.passgradTriggerKind
+        this.passgradSourceSubmissionId = params.passgradSourceSubmissionId
     }
   
     public static fromExecuteFlowInput(input: ResolvedExecuteFlowOperation): EngineConstants {
@@ -144,6 +153,9 @@ export class EngineConstants {
             platformId: input.platformId,
             stepNames: flowStructureUtil.getAllSteps(input.flowVersion.trigger).map((step) => step.name),
             passgradCapabilities: input.passgradCapabilities,
+            passgradWorkflowId: input.passgradWorkflowId,
+            passgradTriggerKind: input.passgradTriggerKind,
+            passgradSourceSubmissionId: input.passgradSourceSubmissionId,
         })
     }
 

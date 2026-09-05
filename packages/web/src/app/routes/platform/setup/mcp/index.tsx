@@ -7,10 +7,9 @@ import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clip
 import { CollapsibleJson } from '@/components/custom/collapsible-json';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { platformMcpHooks } from './platform-mcp-hooks';
-
-import { flagsHooks } from '@/hooks/flags-hooks';
 
 export default function PlatformMcpPage() {
   const { data: mcpServer, isLoading } =

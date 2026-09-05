@@ -13,7 +13,6 @@ import {
   SortableDragHandle,
   SortableItem,
 } from '@/components/ui/sortable';
-
 import { cn } from '@/lib/utils';
 
 type ArrayInputProps = {

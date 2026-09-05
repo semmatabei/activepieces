@@ -2,12 +2,11 @@ import { isNil, isObject } from '@activepieces/shared';
 import { t } from 'i18next';
 
 import { Badge } from '@/components/ui/badge';
+import { formatUtils } from '@/lib/format-utils';
+import { pathUtils } from '@/lib/path-utils';
 
 import { schemaUtils } from './resolve-schema';
 import { OutputSchemaField, FieldFormat } from './types';
-
-import { formatUtils } from '@/lib/format-utils';
-import { pathUtils } from '@/lib/path-utils';
 
 const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
 

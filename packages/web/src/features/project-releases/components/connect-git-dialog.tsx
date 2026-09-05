@@ -33,13 +33,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { INTERNAL_ERROR_MESSAGE } from '@/components/ui/sonner';
 import { Textarea } from '@/components/ui/textarea';
-
-import { gitSyncApi } from '../api/git-sync-api';
-import { gitSyncHooks } from '../hooks/git-sync-hooks';
-
 import { platformHooks } from '@/hooks/platform-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { gitSyncApi } from '../api/git-sync-api';
+import { gitSyncHooks } from '../hooks/git-sync-hooks';
 
 type ConnectGitProps = {
   open?: boolean;

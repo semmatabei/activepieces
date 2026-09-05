@@ -12,9 +12,6 @@ import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { DataTable } from '@/components/custom/data-table';
 import { DataTableInputPopover } from '@/components/custom/data-table/data-table-input-popover';
 import { UserRoundPlusIcon } from '@/components/icons/user-round-plus';
-
-import { membersTableColumns, MemberRowData } from './columns';
-
 import {
   InviteUserDialog,
   projectMembersHooks,
@@ -23,6 +20,8 @@ import {
 import { platformUserHooks } from '@/features/platform-admin/hooks/platform-user-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { membersTableColumns, MemberRowData } from './columns';
 
 export const MembersSettings = () => {
   const {

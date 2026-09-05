@@ -8,13 +8,12 @@ import { VariableDialog } from '@/app/variables/variable-dialog';
 import { SearchInput } from '@/components/custom/search-input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-import { useBuilderStateContext } from '../builder-hooks';
-
 import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
+
+import { useBuilderStateContext } from '../builder-hooks';
 
 const VariablesTab = () => {
   const insertMention = useBuilderStateContext((state) => state.insertMention);

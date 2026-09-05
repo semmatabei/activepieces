@@ -3,14 +3,13 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useMemo } from 'react';
 
 import { TextShimmer } from '@/components/ui/text-shimmer';
-import { PieceIcon } from '@/features/pieces/components/piece-icon';
-
 import {
   AnyToolPart,
   ThinkingStep,
   chatPartUtils,
 } from '@/features/chat/lib/chat-types';
 import { chatUtils } from '@/features/chat/lib/chat-utils';
+import { PieceIcon } from '@/features/pieces/components/piece-icon';
 import { piecesHooks } from '@/features/pieces/hooks/pieces-hooks';
 
 export function ToolShimmerPills({

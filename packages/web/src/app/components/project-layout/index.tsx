@@ -8,6 +8,10 @@ import { CompassIcon } from '@/components/icons/compass';
 import { TrophyIcon } from '@/components/icons/trophy';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { PurchaseExtraFlowsDialog } from '@/features/billing';
+import { projectHooks } from '@/features/projects';
+import { flagsHooks } from '@/hooks/flags-hooks';
+import { cn } from '@/lib/utils';
 
 import { authenticationSession } from '../../../lib/authentication-session';
 import {
@@ -17,11 +21,6 @@ import {
 import { ProjectDashboardSidebar } from '../sidebar/dashboard';
 
 import { ProjectDashboardLayoutHeader } from './project-dashboard-layout-header';
-
-import { PurchaseExtraFlowsDialog } from '@/features/billing';
-import { projectHooks } from '@/features/projects';
-import { flagsHooks } from '@/hooks/flags-hooks';
-import { cn } from '@/lib/utils';
 
 export type ProjectDashboardLayoutHeaderTab = {
   to: string;

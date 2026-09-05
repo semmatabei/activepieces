@@ -1,13 +1,12 @@
 import { PageTitle } from '@/app/components/page-title';
+import { VerifyEmail } from '@/features/authentication';
+import { AcceptInvitation } from '@/features/members';
 
 import { ChangePasswordPage } from './change-password';
 import { CreatePlatformPage } from './create-platform';
 import { ResetPasswordPage } from './forget-password';
 import { SignInPage } from './sign-in';
 import { SignUpPage } from './sign-up';
-
-import { VerifyEmail } from '@/features/authentication';
-import { AcceptInvitation } from '@/features/members';
 
 export const authRoutes = [
   {

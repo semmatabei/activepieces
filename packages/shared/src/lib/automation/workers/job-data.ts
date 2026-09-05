@@ -9,7 +9,7 @@ import { FlowVersion } from '../flows/flow-version'
 import { FlowTriggerType } from '../flows/triggers/trigger'
 import { PiecePackage } from '../pieces/piece'
 
-export const LATEST_JOB_DATA_SCHEMA_VERSION = 11
+export const LATEST_JOB_DATA_SCHEMA_VERSION = 12
 
 export const InlineJobPayload = z.object({
     type: z.literal('inline'),
@@ -23,7 +23,14 @@ export const RefJobPayload = z.object({
 
 export const JobPayload = z.discriminatedUnion('type', [InlineJobPayload, RefJobPayload])
 
-export const WorkflowAdmission = z.object({
+export const PassgradRunContext = z.object({
+    sourceSubmissionId: z.string().nullable(),
+    workflowId: z.string(),
+    triggerKind: z.string(),
+})
+export type PassgradRunContext = z.infer<typeof PassgradRunContext>
+
+export const WorkflowAdmission = PassgradRunContext.extend({
     invocationId: z.string(),
     token: z.string(),
 })
@@ -136,6 +143,7 @@ const ExecuteFlowJobDataCommon = z.object({
     stepNameToTest: z.string().optional(),
     sampleData: z.record(z.string(), z.unknown()).optional(),
     logsFileId: z.string(),
+    passgradContext: PassgradRunContext.optional(),
 })
 
 export const BeginExecuteFlowJobData = ExecuteFlowJobDataCommon.extend({

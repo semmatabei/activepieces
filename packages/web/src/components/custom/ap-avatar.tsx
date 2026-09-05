@@ -7,11 +7,10 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from '@/components/ui/hover-card';
-
-import { UserAvatar } from './user-avatar';
-
 import { userHooks } from '@/hooks/user-hooks';
 import { cn } from '@/lib/utils';
+
+import { UserAvatar } from './user-avatar';
 
 interface ApAvatarProps {
   id: string | null;

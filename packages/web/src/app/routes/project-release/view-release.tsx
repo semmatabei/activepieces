@@ -17,11 +17,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { ApplyButton } from './apply-plan';
-
 import { projectReleaseQueries } from '@/features/project-releases';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { ApplyButton } from './apply-plan';
 
 const getReleaseSummaryType = (type: ProjectReleaseType) => {
   switch (type) {

@@ -17,20 +17,19 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import { authenticationApi } from '@/api/authentication-api';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRedirectAfterLogin } from '@/lib/navigation-utils';
-
-import { CheckEmailNote } from './check-email-note';
-
-import { authenticationApi } from '@/api/authentication-api';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { HttpError, api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
+import { useRedirectAfterLogin } from '@/lib/navigation-utils';
+
+import { CheckEmailNote } from './check-email-note';
 
 const SignInSchema = z.object({
   email: z.string().regex(formatUtils.emailRegex, t('Email is invalid')),

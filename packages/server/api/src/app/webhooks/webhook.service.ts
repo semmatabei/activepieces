@@ -14,6 +14,7 @@ import { engineResponseWatcher } from '../workers/engine-response-watcher'
 import { jobQueue, JobType } from '../workers/job-queue/job-queue'
 import { payloadOffloader } from '../workers/payload-offloader'
 import { passgradAdmissionService } from './passgrad-admission-service'
+import { passgradSourceSubmissionUtils } from './passgrad-source-submission'
 import { resolvePassgradTriggerKind } from './passgrad-trigger-kind'
 import { webhookHandshake } from './webhook-handshake'
 
@@ -110,8 +111,9 @@ export const webhookService = {
             ? RunEnvironment.PRODUCTION
             : RunEnvironment.TESTING
 
+        const resolvedPayload = payload ?? await data(flow.projectId)
         const response = await webhookHandshake.handleHandshakeRequest({
-            payload: (payload ?? await data(flow.projectId)) as TriggerPayload,
+            payload: resolvedPayload as TriggerPayload,
             handshakeConfiguration: flowExecutionResult.handshakeConfiguration ?? null,
             flowId: flow.id,
             flowVersionId: flowVersionIdToRun,
@@ -133,13 +135,18 @@ export const webhookService = {
         }
 
         const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })
+        const triggerKind = flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook'
         const admissionResult = await passgradAdmissionService.admit({
             flowId: flow.id,
             invocationId: webhookRequestId,
             logger: pinoLogger,
             projectId: flow.projectId,
             runEnvironment,
-            triggerKind: flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook',
+            sourceSubmissionId: passgradSourceSubmissionUtils.resolve({
+                payload: resolvedPayload,
+                triggerKind,
+            }),
+            triggerKind,
         })
         if (admissionResult.status === 'denied') {
             return {
@@ -161,8 +168,6 @@ export const webhookService = {
         }
 
         pinoLogger.info('Adding webhook job to queue')
-
-        const resolvedPayload = payload ?? await data(flow.projectId)
 
         const payloadSize = payloadOffloader.getPayloadSizeInBytes(resolvedPayload)
         if (payloadSize > MAX_PAYLOAD_SIZE_BYTES) {

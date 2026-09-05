@@ -5,10 +5,9 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PieceStepMetadataWithSuggestions } from '@/features/pieces/types';
 
 import { usePieceToolsDialogStore } from '../../stores/pieces-tools';
-
-import { PieceStepMetadataWithSuggestions } from '@/features/pieces/types';
 
 interface PiecesContentProps {
   isPiecesLoading: boolean;

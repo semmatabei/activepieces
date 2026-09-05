@@ -11,11 +11,10 @@ import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { internalErrorToast } from '@/components/ui/sonner';
-
-import { alertsApi } from '../api/alerts-api';
-
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { alertsApi } from '../api/alerts-api';
 
 export const alertMutations = {
   useCreateAlert: (params?: CreateAlertParams) => {

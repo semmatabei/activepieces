@@ -24,6 +24,7 @@ import { domainHelper } from '../../helper/domain-helper'
 import { rejectedPromiseHandler } from '../../helper/promise-handler'
 import { projectService } from '../../project/project-service'
 import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
+import { passgradSourceSubmissionUtils } from '../../webhooks/passgrad-source-submission'
 import { resolvePassgradTriggerKind } from '../../webhooks/passgrad-trigger-kind'
 import { WebhookFlowVersionToRun, webhookService } from '../../webhooks/webhook.service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
@@ -139,13 +140,15 @@ export const appEventRoutingController: FastifyPluginAsyncZod = async (
                 )
                 const runEnvironment = isSimulating ? RunEnvironment.TESTING : RunEnvironment.PRODUCTION
                 const flowVersion = await flowVersionRepo().findOneBy({ id: flowVersionIdToRun })
+                const triggerKind = flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook'
                 const admissionResult = await passgradAdmissionService.admit({
                     flowId: flow.id,
                     invocationId: requestId,
                     logger: request.log,
                     projectId: listener.projectId,
                     runEnvironment,
-                    triggerKind: flowVersion ? resolvePassgradTriggerKind(flowVersion) : 'webhook',
+                    sourceSubmissionId: passgradSourceSubmissionUtils.resolve({ payload, triggerKind }),
+                    triggerKind,
                 })
                 if (admissionResult.status === 'denied' || admissionResult.status === 'unavailable') {
                     request.log.warn({ flow: { id: flow.id }, project: { id: listener.projectId } }, 'Passgrad admission rejected app webhook')

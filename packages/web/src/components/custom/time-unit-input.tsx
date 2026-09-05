@@ -2,6 +2,7 @@ import { isNil } from '@activepieces/shared';
 import React, { useRef } from 'react';
 
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 import { AutoComplete } from './autocomplete';
 import {
@@ -11,8 +12,6 @@ import {
   getDateByType,
   setDateByType,
 } from './time-picker-utils';
-
-import { cn } from '@/lib/utils';
 
 export interface TimeUnitPickerInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {

@@ -6,10 +6,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
-import { secretManagersApi } from '../api/secret-managers-api';
-
 import { platformHooks } from '@/hooks/platform-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+
+import { secretManagersApi } from '../api/secret-managers-api';
 
 export const secretManagersHooks = {
   useListSecretManagerConnections: ({

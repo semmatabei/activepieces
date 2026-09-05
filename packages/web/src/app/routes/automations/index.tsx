@@ -3,6 +3,7 @@ import { t } from 'i18next';
 import { useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { recordAccess } from '@/app/components/global-search/access-history';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { AutomationsEmptyState } from '@/features/automations/components/automations-empty-state';
 import { AutomationsFilters as AutomationsFiltersComponent } from '@/features/automations/components/automations-filters';
@@ -14,10 +15,6 @@ import { CreateFolderDialog } from '@/features/automations/components/create-fol
 import { CreateInFolderKind } from '@/features/automations/components/create-new-menu';
 import { MoveToFolderDialog } from '@/features/automations/components/move-to-folder-dialog';
 import { RenameDialog } from '@/features/automations/components/rename-dialog';
-import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
-import { ImportTableDialog } from '@/features/tables/components/import-table-dialog';
-
-import { recordAccess } from '@/app/components/global-search/access-history';
 import { useAutomationsData } from '@/features/automations/hooks/use-automations-data';
 import { useAutomationsDialogs } from '@/features/automations/hooks/use-automations-dialogs';
 import { useAutomationsFilters } from '@/features/automations/hooks/use-automations-filters';
@@ -29,9 +26,11 @@ import {
 import { usePinnedItems } from '@/features/automations/hooks/use-pinned-items';
 import { TreeItem } from '@/features/automations/lib/types';
 import { appConnectionsQueries } from '@/features/connections';
+import { ImportFlowDialog } from '@/features/flows/components/import-flow-dialog';
 import { projectMembersHooks } from '@/features/members';
 import { piecesHooks } from '@/features/pieces';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
+import { ImportTableDialog } from '@/features/tables/components/import-table-dialog';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 

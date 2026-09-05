@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { platformApi } from '@/api/platforms-api';
 import { TagInput } from '@/components/custom/tag-input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,12 +20,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { internalErrorToast } from '@/components/ui/sonner';
-
-import { StepShell } from '../stepper';
-
-import { platformApi } from '@/api/platforms-api';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { platformHooks } from '@/hooks/platform-hooks';
+
+import { StepShell } from '../stepper';
 
 const isValidOrigin = (value: string): boolean =>
   allowedEmbedOriginSchema.safeParse(value).success;

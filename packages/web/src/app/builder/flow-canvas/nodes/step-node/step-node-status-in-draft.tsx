@@ -15,14 +15,14 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
+import { pieceSelectorUtils } from '@/features/pieces';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasUtils } from '../../utils/flow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
 
-import { StepStatusIcon, flowRunUtils } from '@/features/flow-runs';
-import { pieceSelectorUtils } from '@/features/pieces';
 type DraftStepStatus =
   | 'invalid'
   | 'testing'

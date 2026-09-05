@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/chart';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-
 import { formatUtils } from '@/lib/format-utils';
 
 const SERIES: Array<{ status: FlowRunStatus; label: string; color: string }> = [

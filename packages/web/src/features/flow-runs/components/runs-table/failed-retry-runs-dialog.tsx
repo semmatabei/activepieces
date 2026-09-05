@@ -14,12 +14,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useNewWindow } from '@/lib/navigation-utils';
-
 import { flowRunUtils } from '@/features/flow-runs/utils/flow-run-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
+import { useNewWindow } from '@/lib/navigation-utils';
 import { cn } from '@/lib/utils';
 
 type FailedRetryRunsDialogProps = {

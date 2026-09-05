@@ -23,39 +23,81 @@ import { flowCache } from '../../cache/flow/flow-cache'
 import { system, WorkerSystemProp } from '../../config/configs'
 import { workerSettings } from '../../config/worker-settings'
 import { mintPassgradCapability } from '../passgrad-capability'
-import { FireAndForgetJobResult, JobContext, JobHandler, JobResultKind } from '../types'
+import {
+    FireAndForgetJobResult,
+    JobContext,
+    JobHandler,
+    JobResultKind,
+} from '../types'
 import { provisionFlowPieces } from '../utils/flow-helpers'
 
-export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResult> = {
+export const executeFlowJob: JobHandler<
+ExecuteFlowJobData,
+FireAndForgetJobResult
+> = {
     jobType: WorkerJobType.EXECUTE_FLOW,
-    async execute(ctx: JobContext, data: ExecuteFlowJobData): Promise<FireAndForgetJobResult> {
+    async execute(
+        ctx: JobContext,
+        data: ExecuteFlowJobData,
+    ): Promise<FireAndForgetJobResult> {
         const timeoutInSeconds = workerSettings.getSettings().FLOW_TIMEOUT_SECONDS
 
-        const flowVersion = await flowCache(ctx.log, ctx.apiClient).getVersion({ flowVersionId: data.flowVersionId })
+        const flowVersion = await flowCache(ctx.log, ctx.apiClient).getVersion({
+            flowVersionId: data.flowVersionId,
+        })
         if (isNil(flowVersion)) {
-            ctx.log.info({ flowVersion: { id: data.flowVersionId } }, 'Flow version not found, skipping')
+            ctx.log.info(
+                { flowVersion: { id: data.flowVersionId } },
+                'Flow version not found, skipping',
+            )
             await reportFlowStatus(ctx, data, FlowRunStatus.FAILED)
-            return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.INTERNAL_ERROR }
+            return {
+                kind: JobResultKind.FIRE_AND_FORGET,
+                status: EngineResponseStatus.INTERNAL_ERROR,
+            }
         }
 
-        const { data: provisioned, error: provisionError } = await tryCatch(() => provisionFlowPieces({ flowVersion, platformId: data.platformId, flowId: data.flowId, projectId: data.projectId, log: ctx.log, apiClient: ctx.apiClient }))
+        const { data: provisioned, error: provisionError } = await tryCatch(() =>
+            provisionFlowPieces({
+                flowVersion,
+                platformId: data.platformId,
+                flowId: data.flowId,
+                projectId: data.projectId,
+                log: ctx.log,
+                apiClient: ctx.apiClient,
+            }),
+        )
         if (provisionError) {
-            await reportFlowStatus(ctx, data, FlowRunStatus.INTERNAL_ERROR, toInternalError(RunInternalErrorSource.WORKER, provisionError))
+            await reportFlowStatus(
+                ctx,
+                data,
+                FlowRunStatus.INTERNAL_ERROR,
+                toInternalError(RunInternalErrorSource.WORKER, provisionError),
+            )
             throw provisionError
         }
         if (!provisioned) {
             await reportFlowStatus(ctx, data, FlowRunStatus.FAILED)
-            return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.INTERNAL_ERROR }
+            return {
+                kind: JobResultKind.FIRE_AND_FORGET,
+                status: EngineResponseStatus.INTERNAL_ERROR,
+            }
         }
 
         if (data.executionType === ExecutionType.RESUME && isNil(data.logsFileId)) {
-            throw new ActivepiecesError({
-                code: ErrorCode.RESUME_LOGS_FILE_MISSING,
-                params: { runId: data.runId },
-            }, 'logsFileId is missing for RESUME operation')
+            throw new ActivepiecesError(
+                {
+                    code: ErrorCode.RESUME_LOGS_FILE_MISSING,
+                    params: { runId: data.runId },
+                },
+                'logsFileId is missing for RESUME operation',
+            )
         }
 
-        const sandbox = ctx.sandboxManager.acquire({ log: ctx.log, apiClient: ctx.apiClient })
+        const sandbox = ctx.sandboxManager.acquire({
+            log: ctx.log,
+            apiClient: ctx.apiClient,
+        })
         try {
             await sandbox.start({
                 flowVersionId: flowVersion.id,
@@ -63,7 +105,12 @@ export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResu
                 mounts: [],
             })
 
-            const operation = buildFlowOperation(ctx, data, flowVersion, timeoutInSeconds)
+            const operation = buildFlowOperation(
+                ctx,
+                data,
+                flowVersion,
+                timeoutInSeconds,
+            )
             const result = await sandbox.execute(
                 EngineOperationType.EXECUTE_FLOW,
                 operation,
@@ -72,37 +119,68 @@ export const executeFlowJob: JobHandler<ExecuteFlowJobData, FireAndForgetJobResu
 
             if (result.status === EngineResponseStatus.LOG_SIZE_EXCEEDED) {
                 await reportFlowStatus(ctx, data, FlowRunStatus.LOG_SIZE_EXCEEDED)
-                return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.LOG_SIZE_EXCEEDED, logs: result.logs }
+                return {
+                    kind: JobResultKind.FIRE_AND_FORGET,
+                    status: EngineResponseStatus.LOG_SIZE_EXCEEDED,
+                    logs: result.logs,
+                }
             }
 
             if (result.status === EngineResponseStatus.INTERNAL_ERROR) {
                 await reportFlowStatus(ctx, data, FlowRunStatus.INTERNAL_ERROR, {
                     source: RunInternalErrorSource.ENGINE,
-                    message: result.error ?? 'Engine reported an internal error without details',
+                    message:
+            result.error ?? 'Engine reported an internal error without details',
                     occurredAt: new Date().toISOString(),
                 })
-                return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.INTERNAL_ERROR, logs: result.logs }
+                return {
+                    kind: JobResultKind.FIRE_AND_FORGET,
+                    status: EngineResponseStatus.INTERNAL_ERROR,
+                    logs: result.logs,
+                }
             }
 
-            return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: result.logs }
+            return {
+                kind: JobResultKind.FIRE_AND_FORGET,
+                status: EngineResponseStatus.OK,
+                logs: result.logs,
+            }
         }
         catch (e) {
             await ctx.sandboxManager.invalidate(ctx.log)
             if (e instanceof ActivepiecesError) {
                 if (e.error.code === ErrorCode.SANDBOX_EXECUTION_TIMEOUT) {
                     await reportFlowStatus(ctx, data, FlowRunStatus.TIMEOUT)
-                    return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.TIMEOUT }
+                    return {
+                        kind: JobResultKind.FIRE_AND_FORGET,
+                        status: EngineResponseStatus.TIMEOUT,
+                    }
                 }
                 if (e.error.code === ErrorCode.SANDBOX_MEMORY_ISSUE) {
-                    await reportFlowStatus(ctx, data, FlowRunStatus.MEMORY_LIMIT_EXCEEDED)
-                    return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.MEMORY_ISSUE }
+                    await reportFlowStatus(
+                        ctx,
+                        data,
+                        FlowRunStatus.MEMORY_LIMIT_EXCEEDED,
+                    )
+                    return {
+                        kind: JobResultKind.FIRE_AND_FORGET,
+                        status: EngineResponseStatus.MEMORY_ISSUE,
+                    }
                 }
                 if (e.error.code === ErrorCode.SANDBOX_LOG_SIZE_EXCEEDED) {
                     await reportFlowStatus(ctx, data, FlowRunStatus.LOG_SIZE_EXCEEDED)
-                    return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.LOG_SIZE_EXCEEDED }
+                    return {
+                        kind: JobResultKind.FIRE_AND_FORGET,
+                        status: EngineResponseStatus.LOG_SIZE_EXCEEDED,
+                    }
                 }
             }
-            await reportFlowStatus(ctx, data, FlowRunStatus.INTERNAL_ERROR, toInternalError(RunInternalErrorSource.WORKER, e))
+            await reportFlowStatus(
+                ctx,
+                data,
+                FlowRunStatus.INTERNAL_ERROR,
+                toInternalError(RunInternalErrorSource.WORKER, e),
+            )
             throw e
         }
         finally {
@@ -132,9 +210,30 @@ function buildFlowOperation(
         engineToken: ctx.engineToken,
         internalApiUrl: ctx.internalApiUrl,
         publicApiUrl: ctx.publicApiUrl,
-        passgradCapabilities: Object.fromEntries(flowStructureUtil.getAllSteps(flowVersion.trigger)
-            .filter((step) => PASSGRAD_PIECE_NAMES.includes(step.settings?.pieceName as never))
-            .map((step) => [step.name, mintPassgradCapability({ projectId: data.projectId, pieceName: step.settings.pieceName, invocationType: 'execution', invocationId: `${data.runId}:${step.name}`, flowRunId: data.runId, flowVersionId: flowVersion.id, stepName: step.name, timeoutInSeconds })])),
+        passgradCapabilities: Object.fromEntries(
+            flowStructureUtil
+                .getAllSteps(flowVersion.trigger)
+                .filter((step) =>
+                    PASSGRAD_PIECE_NAMES.includes(step.settings?.pieceName as never),
+                )
+                .map((step) => [
+                    step.name,
+                    mintPassgradCapability({
+                        projectId: data.projectId,
+                        pieceName: step.settings.pieceName,
+                        invocationType: 'execution',
+                        invocationId: `${data.runId}:${step.name}`,
+                        flowRunId: data.runId,
+                        flowVersionId: flowVersion.id,
+                        stepName: step.name,
+                        sourceSubmissionId: data.passgradContext?.sourceSubmissionId,
+                        timeoutInSeconds,
+                    }),
+                ]),
+        ),
+        passgradWorkflowId: data.passgradContext?.workflowId,
+        passgradTriggerKind: data.passgradContext?.triggerKind,
+        passgradSourceSubmissionId: data.passgradContext?.sourceSubmissionId,
     }
 
     if (data.executionType === ExecutionType.RESUME) {
@@ -155,9 +254,13 @@ function buildFlowOperation(
     }
 }
 
-function toInternalError(source: RunInternalErrorSource, error: unknown): RunInternalError {
+function toInternalError(
+    source: RunInternalErrorSource,
+    error: unknown,
+): RunInternalError {
     const isApError = error instanceof ActivepiecesError
-    const base = error instanceof Error
+    const base =
+    error instanceof Error
         ? [error.name, error.message, error.stack].filter(Boolean).join('\n')
         : inspect(error, { depth: 1 })
     return {
@@ -182,14 +285,29 @@ async function reportFlowStatus(
         finishTime: new Date().toISOString(),
         logsFileId: data.logsFileId,
         internalError,
+        passgradWorkflowId: data.passgradContext?.workflowId,
+        passgradTriggerKind: data.passgradContext?.triggerKind,
+        passgradSourceSubmissionId: data.passgradContext?.sourceSubmissionId,
+        passgradEventId: `${data.runId}:lifecycle:${status}`,
     })
 
     if (status === FlowRunStatus.INTERNAL_ERROR && isDedicatedWorker()) {
-        onCallService(ctx.log, workerSettings.getSettings().PAGE_ONCALL_WEBHOOK).page({
-            code: ErrorCode.ENGINE_OPERATION_FAILURE,
-            message: `Flow run ${data.runId} ended with INTERNAL_ERROR`,
-            params: { runId: data.runId, flowId: data.flowId, projectId: data.projectId },
-        }).catch((e) => ctx.log.error({ flowRun: { id: data.runId }, error: inspect(e) }, 'Failed to send on-call page for INTERNAL_ERROR'))
+        onCallService(ctx.log, workerSettings.getSettings().PAGE_ONCALL_WEBHOOK)
+            .page({
+                code: ErrorCode.ENGINE_OPERATION_FAILURE,
+                message: `Flow run ${data.runId} ended with INTERNAL_ERROR`,
+                params: {
+                    runId: data.runId,
+                    flowId: data.flowId,
+                    projectId: data.projectId,
+                },
+            })
+            .catch((e) =>
+                ctx.log.error(
+                    { flowRun: { id: data.runId }, error: inspect(e) },
+                    'Failed to send on-call page for INTERNAL_ERROR',
+                ),
+            )
     }
 }
 

@@ -2,10 +2,9 @@ import { t } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 
 import { ZapIcon, ZapIconHandle } from '@/components/icons/zap';
+import { cn } from '@/lib/utils';
 
 import { passwordRules } from '../utils/password-validation-utils';
-
-import { cn } from '@/lib/utils';
 
 // Color per step: 1/5 = red, 2/5 = orange, 3/5 = yellow, 4/5 = violet, 5/5 = purple
 const STEP_COLORS = ['#ef4444', '#f97316', '#eab308', '#c084fc', '#a855f7'];

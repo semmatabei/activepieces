@@ -17,11 +17,10 @@ import {
 import { StatusIconWithText } from '@/components/custom/status-icon-with-text';
 import { ArrowUpIcon } from '@/components/icons/arrow-up';
 import { Button } from '@/components/ui/button';
+import { formatUtils } from '@/lib/format-utils';
 
 import { ActivateLicenseDialog } from './activate-license-dialog';
 import { FeatureStatus } from './features-status';
-
-import { formatUtils } from '@/lib/format-utils';
 
 export const LicenseKey = ({
   platform,

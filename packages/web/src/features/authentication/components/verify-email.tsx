@@ -10,11 +10,10 @@ import { LoadingSpinner } from '@/components/custom/spinner';
 import { useTelemetry } from '@/components/providers/telemetry-provider';
 import { Card } from '@/components/ui/card';
 import { internalErrorToast } from '@/components/ui/sonner';
-
-import { authMutations } from '../hooks/auth-hooks';
-
 import { usePartnerStack } from '@/hooks/use-partner-stack';
 import { api } from '@/lib/api';
+
+import { authMutations } from '../hooks/auth-hooks';
 
 const VerifyEmail = () => {
   const [isExpired, setIsExpired] = useState(false);

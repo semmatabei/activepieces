@@ -12,6 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { flowCanvasConsts } from '../../utils/consts';
@@ -19,8 +20,6 @@ import { ApNoteNode } from '../../utils/types';
 
 import { NoteFooter } from './note-footer';
 import { NoteTools } from './note-tools';
-
-import { cn } from '@/lib/utils';
 
 const ApNoteCanvasNode = (props: NodeProps & Omit<ApNoteNode, 'position'>) => {
   const [draggedNote, resizeNote, note, readonly] = useBuilderStateContext(

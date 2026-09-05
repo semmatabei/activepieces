@@ -5,13 +5,12 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import {
   ErrorExplanationContext,
   explanationPromptUtils,
 } from './explanation-prompt';
-
-import { cn } from '@/lib/utils';
 
 type CopyAiPromptButtonProps = {
   error: FriendlyPieceError;

@@ -18,11 +18,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { AddAlertEmailForm } from './add-alert-email-form';
-
 import { alertMutations, alertQueries } from '@/features/alerts';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+
+import { AddAlertEmailForm } from './add-alert-email-form';
 
 export const TeamProjectAlerts = () => {
   const { checkAccess } = useAuthorization();

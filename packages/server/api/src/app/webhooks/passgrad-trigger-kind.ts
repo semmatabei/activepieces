@@ -10,15 +10,18 @@ export type PassgradTriggerKind =
 
 export function resolvePassgradTriggerKind(flowVersion: FlowVersion): PassgradTriggerKind {
     const trigger = flowVersion.trigger
-    if (trigger.type !== FlowTriggerType.PIECE) {
+  if (trigger.type !== FlowTriggerType.PIECE) {
         return 'webhook'
-    }
+  }
 
     const { pieceName, triggerName } = trigger.settings
     if (pieceName === '@activepieces/piece-schedule') {
         return 'schedule'
     }
-    if (pieceName === '@activepieces/piece-passgrad-form' && triggerName === 'new_submission') {
+    if (
+        pieceName === '@activepieces/piece-passgrad-form' &&
+        (triggerName === 'new_submission' || triggerName === 'new_submission_v2')
+    ) {
         return 'form_submission'
     }
     if (pieceName !== '@activepieces/piece-passgrad-table') {

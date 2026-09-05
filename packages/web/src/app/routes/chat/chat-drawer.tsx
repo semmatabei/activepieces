@@ -6,6 +6,8 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { useRef } from 'react';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { ChatDrawerSource } from '@/app/builder/types';
 import { useSocket } from '@/components/providers/socket-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,9 +18,6 @@ import {
 } from '@/components/ui/drawer';
 
 import { FlowChat } from './flow-chat';
-
-import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { ChatDrawerSource } from '@/app/builder/types';
 
 export const ChatDrawer = () => {
   const [

@@ -23,7 +23,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { localesMap } from '@/lib/locale-utils';
 import { cn } from '@/lib/utils';

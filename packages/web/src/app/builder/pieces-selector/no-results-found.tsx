@@ -4,7 +4,6 @@ import { SearchX } from 'lucide-react';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Button } from '@/components/ui/button';
-
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 const NoResultsFound = () => {
