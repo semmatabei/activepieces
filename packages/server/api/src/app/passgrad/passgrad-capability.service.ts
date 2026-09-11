@@ -298,6 +298,18 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                 ),
                 callback: true,
             }
+        case 'workflow.wait-for-persuratan-case-resolution':
+            assertNoEnclosingLoop(params)
+            return {
+                method: 'POST',
+                path: '/callbacks/activepieces/v1/persuratan-case-resolution-wait',
+                payload: trustedPersuratanCallbackPayload(
+                    params,
+                    persuratanCaseResolutionWaitPayloadSchema,
+                    16 * 1024,
+                ),
+                callback: true,
+            }
         default:
             throw capabilityError('Passgrad operation is not registered')
     }
@@ -364,6 +376,12 @@ const persuratanCaseOpenPayloadSchema = z.object({
         letterTypeFieldId: passgradResourceIdSchema,
         noteFieldId: passgradResourceIdSchema,
     }).strict(),
+}).strict()
+const persuratanCaseResolutionWaitPayloadSchema = z.object({
+    type: z.literal('workflow.persuratan.case.resolution.wait.v1'),
+    eventId: boundedIdSchema,
+    caseId: passgradResourceIdSchema,
+    resumeUrl: z.string().url().max(8192),
 }).strict()
 const recordPayloadIdSchema = z.object({ recordId: boundedIdSchema }).strict()
 const getRecordsByIdsPayloadSchema = z

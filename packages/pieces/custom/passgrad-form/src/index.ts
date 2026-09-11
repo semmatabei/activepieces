@@ -8,6 +8,7 @@ import { requestAction } from "./lib/actions/request-action";
 import { addInformation } from "./lib/actions/add-information";
 import { completeProcess } from "./lib/actions/complete-process";
 import { openPersuratanCase } from "./lib/actions/open-persuratan-case";
+import { waitForPersuratanCaseResolution } from "./lib/actions/wait-for-persuratan-case-resolution";
 
 export const passgradForm = createPiece({
   displayName: "Passgrad Form",
@@ -26,5 +27,6 @@ export const passgradForm = createPiece({
     addInformation,
     completeProcess,
     openPersuratanCase,
+    waitForPersuratanCaseResolution,
   ],
 });
