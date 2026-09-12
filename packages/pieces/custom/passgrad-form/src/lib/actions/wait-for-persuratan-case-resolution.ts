@@ -39,9 +39,7 @@ export const waitForPersuratanCaseResolution = createAction({
       throw new Error("Case ID is required");
     }
     const waitpoint = await context.run.createWaitpoint({ type: "WEBHOOK", version: "V1" });
-    const eventId = `persuratan-resolution:${createHash("sha256")
-      .update(`${context.run.id}:${context.step.name}`)
-      .digest("hex")}`;
+    const eventId = `persuratan-resolution:${createHash("sha256").update(`${context.run.id}:${context.step.name}`).digest("hex")}`;
     const response = await context.passgrad.request<{
       data: { status: "waiting"; waiterId: string } | { status: "resolved"; output: unknown };
     }>({

@@ -12,21 +12,11 @@ import { waitForPersuratanCaseResolution } from "./lib/actions/wait-for-persurat
 
 export const passgradForm = createPiece({
   displayName: "Passgrad Form",
-  description:
-    "Collect structured data via Passgrad forms. Trigger flows on new submissions, retrieve submissions, or pause a flow for an assigned member.",
+  description: "Collect structured data via Passgrad forms. Trigger flows on new submissions, retrieve submissions, or pause a flow for an assigned member.",
   logoUrl: "https://asset-stg.pub-passgrad.com/pieces/passgrad-form.svg",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],
   auth: PieceAuth.None(),
   triggers: [newSubmissionV2, newSubmission],
-  actions: [
-    getSubmission,
-    requestSubmission,
-    requestAction,
-    requestApprovalV2,
-    addInformation,
-    completeProcess,
-    openPersuratanCase,
-    waitForPersuratanCaseResolution,
-  ],
+  actions: [getSubmission, requestSubmission, requestAction, requestApprovalV2, addInformation, completeProcess, openPersuratanCase, waitForPersuratanCaseResolution],
 });
