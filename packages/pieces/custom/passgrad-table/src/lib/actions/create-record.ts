@@ -4,8 +4,7 @@ import { tableIdProperty, recordFieldsProperty, passgradRequest } from "../commo
 export const createRecord = createAction({
   name: "create_record",
   displayName: "Create Record",
-  description:
-    "Insert a new record into the selected Passgrad table. Replay-safe within workflow runs: retrying the same occurrence with the same fields returns the original record instead of creating a duplicate.",
+  description: "Insert a new record into the selected Passgrad table. Replay-safe within workflow runs: retrying the same occurrence with the same fields returns the original record instead of creating a duplicate.",
   props: {
     table_id: tableIdProperty,
     fields: recordFieldsProperty,

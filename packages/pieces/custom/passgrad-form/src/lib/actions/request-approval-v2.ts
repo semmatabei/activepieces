@@ -20,8 +20,7 @@ const priority = Property.StaticDropdown({
 export const requestApprovalV2 = createAction({
   name: "request_approval_v2",
   displayName: "Request Approval",
-  description:
-    "Pause the flow until assigned Passgrad approvers reach the minimum approvals or reject the source submission.",
+  description: "Pause the flow until assigned Passgrad approvers reach the minimum approvals or reject the source submission.",
   props: {
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),

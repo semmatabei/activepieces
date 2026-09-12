@@ -2,12 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
-import {
-  formFieldProperty,
-  formIdProperty,
-  passgradRequest,
-  moderatorTargetProperty,
-} from "../common";
+import { formFieldProperty, formIdProperty, passgradRequest, moderatorTargetProperty } from "../common";
 
 const sourceParty = Property.StaticDropdown({
   displayName: "Source party",
@@ -34,34 +29,23 @@ const moderatorType = Property.StaticDropdown({
   },
 });
 
-const mappingKeys = [
-  "letter_number_field_id",
-  "letter_date_field_id",
-  "letter_title_field_id",
-  "letter_description_field_id",
-  "letter_attachment_field_id",
-  "sender_field_id",
-  "recipient_field_id",
-  "letter_type_field_id",
-  "note_field_id",
-];
+const mappingKeys = ["letter_number_field_id", "letter_date_field_id", "letter_title_field_id", "letter_description_field_id", "letter_attachment_field_id", "sender_field_id", "recipient_field_id", "letter_type_field_id", "note_field_id"];
+
+const precedingMappingKeys = (propertyKey: string) => mappingKeys.slice(0, mappingKeys.indexOf(propertyKey));
 
 const field = (propertyKey: string, displayName: string, types: readonly string[]) =>
   formFieldProperty(displayName, types, {
-    excludeKeys: mappingKeys,
+    excludeKeys: precedingMappingKeys(propertyKey),
     propertyKey,
     requireSingle: true,
   });
 
 const senderField = formFieldProperty("Sender field", ["person", "text"], {
-  excludeKeys: mappingKeys.filter((key) => key !== "sender_field_id"),
+  excludeKeys: precedingMappingKeys("sender_field_id"),
   propertyKey: "sender_field_id",
   requireSingle: true,
   refreshers: ["source_party"],
-  compatible: (candidate, propsValue) =>
-    propsValue.source_party === "internal"
-      ? candidate.type === "person"
-      : candidate.type === "text",
+  compatible: (candidate, propsValue) => (propsValue.source_party === "internal" ? candidate.type === "person" : candidate.type === "text"),
 });
 
 export const openPersuratanCase = createAction({
@@ -71,24 +55,14 @@ export const openPersuratanCase = createAction({
   props: {
     source_form_id: formIdProperty,
     source_party: sourceParty,
-    letter_number_field_id: field("letter_number_field_id", "Letter number field", ["text"]),
+    letter_number_field_id: field("letter_number_field_id", "Letter number field", ["text", "formula"]),
     letter_date_field_id: field("letter_date_field_id", "Letter date field", ["date"]),
     letter_title_field_id: field("letter_title_field_id", "Letter title field", ["text"]),
-    letter_description_field_id: field("letter_description_field_id", "Letter description field", [
-      "text",
-      "textarea",
-    ]),
-    letter_attachment_field_id: field(
-      "letter_attachment_field_id",
-      "Formal-letter attachment field",
-      ["attachment"],
-    ),
+    letter_description_field_id: field("letter_description_field_id", "Letter description field", ["text", "textarea"]),
+    letter_attachment_field_id: field("letter_attachment_field_id", "Formal-letter attachment field", ["attachment"]),
     sender_field_id: senderField,
     recipient_field_id: field("recipient_field_id", "Recipient field", ["person"]),
-    letter_type_field_id: field("letter_type_field_id", "Letter type field", [
-      "single_select",
-      "multi_select",
-    ]),
+    letter_type_field_id: field("letter_type_field_id", "Letter type field", ["single_select", "multi_select"]),
     note_field_id: field("note_field_id", "Note field", ["text", "textarea"]),
     moderator_type: moderatorType,
     moderator_target_id: moderatorTargetProperty,
@@ -131,14 +105,8 @@ export const openPersuratanCase = createAction({
           letterNumberFieldId: required(props.letter_number_field_id, "Letter number field"),
           letterDateFieldId: required(props.letter_date_field_id, "Letter date field"),
           letterTitleFieldId: required(props.letter_title_field_id, "Letter title field"),
-          letterDescriptionFieldId: required(
-            props.letter_description_field_id,
-            "Letter description field",
-          ),
-          letterAttachmentFieldId: required(
-            props.letter_attachment_field_id,
-            "Letter attachment field",
-          ),
+          letterDescriptionFieldId: required(props.letter_description_field_id, "Letter description field"),
+          letterAttachmentFieldId: required(props.letter_attachment_field_id, "Letter attachment field"),
           senderFieldId: required(props.sender_field_id, "Sender field"),
           recipientFieldId: required(props.recipient_field_id, "Recipient field"),
           letterTypeFieldId: required(props.letter_type_field_id, "Letter type field"),

@@ -95,17 +95,10 @@ export const moderatorTargetProperty = dropdownFromList<{ id: string; label: str
   refreshers: ["moderator_type", "source_form_id"],
   guard: (propsValue) => {
     const moderatorType = propsValue["moderator_type"];
-    if (
-      moderatorType !== "fixed_user" &&
-      moderatorType !== "fixed_group" &&
-      moderatorType !== "submission_person_field"
-    ) {
+    if (moderatorType !== "fixed_user" && moderatorType !== "fixed_group" && moderatorType !== "submission_person_field") {
       return "Select a moderator mode first";
     }
-    if (
-      moderatorType === "submission_person_field" &&
-      (typeof propsValue["source_form_id"] !== "string" || !propsValue["source_form_id"])
-    ) {
+    if (moderatorType === "submission_person_field" && (typeof propsValue["source_form_id"] !== "string" || !propsValue["source_form_id"])) {
       return "Select a source Form first";
     }
     return undefined;
@@ -141,14 +134,8 @@ export const moderatorTargetProperty = dropdownFromList<{ id: string; label: str
       }[];
     }>({ operation: "form.list" });
     const sourceFormId = propsValue["source_form_id"] as string;
-    const fields =
-      response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
-    return fields
-      .filter(
-        (field) =>
-          field.visible !== false && field.type === "person" && field.config?.multiple !== true,
-      )
-      .map((field) => ({ id: field.id, label: field.label }));
+    const fields = response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
+    return fields.filter((field) => field.visible !== false && field.type === "person" && field.config?.multiple !== true).map((field) => ({ id: field.id, label: field.label }));
   },
   mapOption: (target) => ({ label: target.label, value: target.id }),
   emptyPlaceholder: "No compatible moderator targets available",
@@ -176,10 +163,7 @@ export function formFieldProperty(
     displayName,
     description: "Field from selected Passgrad form",
     refreshers: ["source_form_id", ...(options.refreshers ?? []), ...(options.excludeKeys ?? [])],
-    guard: (propsValue) =>
-      typeof propsValue["source_form_id"] === "string" && propsValue["source_form_id"]
-        ? undefined
-        : "Select a source Form first",
+    guard: (propsValue) => (typeof propsValue["source_form_id"] === "string" && propsValue["source_form_id"] ? undefined : "Select a source Form first"),
     fetch: async (propsValue, context) => {
       const sourceFormId = propsValue["source_form_id"] as string;
       const response = await context.passgrad.request<{
@@ -196,8 +180,7 @@ export function formFieldProperty(
           };
         }[];
       }>({ operation: "form.list" });
-      const fields =
-        response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
+      const fields = response.data?.find((form) => form.id === sourceFormId)?.draftDefinition?.fields ?? [];
       const selectedIds = new Set(
         (options.excludeKeys ?? [])
           .filter((key) => key !== options.propertyKey)

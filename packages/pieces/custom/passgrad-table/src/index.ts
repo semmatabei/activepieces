@@ -9,9 +9,7 @@ import { getRecordsByIds } from "./lib/actions/get-records-by-ids";
 
 export const passgradTable = createPiece({
   displayName: "Passgrad Table",
-  description:
-    "Trigger flows on record changes in Passgrad tables, or manage table records from flows. " +
-    "New records, updates, and deletions can all start or continue automations.",
+  description: "Trigger flows on record changes in Passgrad tables, or manage table records from flows. " + "New records, updates, and deletions can all start or continue automations.",
   logoUrl: "https://asset-stg.pub-passgrad.com/pieces/passgrad-table.svg",
   minimumSupportedRelease: "0.30.0",
   authors: ["Passgrad"],

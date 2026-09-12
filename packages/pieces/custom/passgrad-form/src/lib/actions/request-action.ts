@@ -21,8 +21,7 @@ const priority = Property.StaticDropdown({
 export const requestAction = createAction({
   name: "request_action",
   displayName: "Request Action",
-  description:
-    "Pause the flow until the assigned Passgrad member completes an Action task on the source submission.",
+  description: "Pause the flow until the assigned Passgrad member completes an Action task on the source submission.",
   props: {
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),

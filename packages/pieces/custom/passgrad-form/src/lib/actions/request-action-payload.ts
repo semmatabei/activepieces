@@ -10,18 +10,10 @@ function parseIdList(value: string | undefined): string[] {
  * `priority` and `dueAt` keys are always present: the Passgrad contract
  * validates fixed objects strictly and rejects omitted required keys.
  */
-function buildActionRequestPayload(input: {
-  props: RequestActionProps;
-  eventId: string;
-  resumeUrl: string;
-}) {
+function buildActionRequestPayload(input: { props: RequestActionProps; eventId: string; resumeUrl: string }) {
   const assigneeType = input.props.assignee_type;
   const assignee =
-    assigneeType === "users"
-      ? { type: "users", userIds: parseIdList(input.props.assignee_user_ids) }
-      : assigneeType === "groups"
-        ? { type: "groups", groupIds: parseIdList(input.props.assignee_group_ids) }
-        : { type: "source_submitter" };
+    assigneeType === "users" ? { type: "users", userIds: parseIdList(input.props.assignee_user_ids) } : assigneeType === "groups" ? { type: "groups", groupIds: parseIdList(input.props.assignee_group_ids) } : { type: "source_submitter" };
   return {
     type: "workflow.action.requested.v1",
     eventId: input.eventId,

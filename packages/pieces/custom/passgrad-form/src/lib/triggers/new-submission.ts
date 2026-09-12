@@ -16,8 +16,7 @@ const sampleData = {
 export const newSubmission = createTrigger({
   name: "new_submission",
   displayName: "New Submission (Legacy V1)",
-  description:
-    "Legacy reference-only trigger retained for published workflows. New workflows should use New Submission.",
+  description: "Legacy reference-only trigger retained for published workflows. New workflows should use New Submission.",
   type: TriggerStrategy.WEBHOOK,
   props: {
     form_id: formIdProperty,

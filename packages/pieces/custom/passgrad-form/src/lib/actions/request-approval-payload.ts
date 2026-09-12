@@ -14,19 +14,8 @@ export interface ApprovalRequestPayloadProps {
   due_in_hours?: number;
 }
 
-export function buildApprovalRequestPayload({
-  props,
-  eventId,
-  resumeUrl,
-}: {
-  props: ApprovalRequestPayloadProps;
-  eventId: string;
-  resumeUrl: string;
-}) {
-  const approver =
-    props.approver_type === "groups"
-      ? { type: "groups" as const, groupIds: parseIdList(props.approver_group_ids) }
-      : { type: "users" as const, userIds: parseIdList(props.approver_user_ids) };
+export function buildApprovalRequestPayload({ props, eventId, resumeUrl }: { props: ApprovalRequestPayloadProps; eventId: string; resumeUrl: string }) {
+  const approver = props.approver_type === "groups" ? { type: "groups" as const, groupIds: parseIdList(props.approver_group_ids) } : { type: "users" as const, userIds: parseIdList(props.approver_user_ids) };
 
   return {
     type: "workflow.approval.requested.v2" as const,
