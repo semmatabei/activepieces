@@ -1,7 +1,7 @@
 import type { PassgradRequest, PropertyContext } from "@activepieces/pieces-framework";
 import { Property } from "@activepieces/pieces-framework";
 
-import { classifyFieldType } from "./field-type";
+import { classifyFieldType, isRecordInputField } from "./field-type";
 
 type PassgradContext = Pick<PropertyContext, "passgrad">;
 
@@ -45,6 +45,7 @@ export const recordFieldsProperty = Property.DynamicProperties<true>({
       }>({ operation: "table.get-fields", resourceId: table_id });
       const fields: Record<string, ReturnType<typeof propertyForFieldType>> = {};
       for (const field of response.data ?? []) {
+        if (!isRecordInputField(field.type)) continue;
         fields[field.id] = propertyForFieldType(field.type, field.name);
       }
       return fields;

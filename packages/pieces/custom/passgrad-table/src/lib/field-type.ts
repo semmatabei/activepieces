@@ -2,6 +2,10 @@
 
 export type FieldPropertyType = "NUMBER" | "SHORT_TEXT";
 
+export function isRecordInputField(type: string): boolean {
+  return type !== "formula" && type !== "autonumber";
+}
+
 export function classifyFieldType(type: string): FieldPropertyType {
   if (type === "number" || type === "currency") {
     return "NUMBER";
