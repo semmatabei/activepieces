@@ -23,10 +23,15 @@ RUN apt-get update && \
         curl \
         ca-certificates \
         iptables \
-        libcap-dev && \
+        libcap-dev \
+        redis-server && \
     yarn config set python /usr/bin/python3 && \
     sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen en_US.UTF-8
+
+# redis-memory-server postinstall: use system redis binary instead of downloading
+# (download.redis.io is unreachable from the Railway builder)
+ENV REDISMS_SYSTEM_BINARY=/usr/bin/redis-server
 
 RUN export ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
