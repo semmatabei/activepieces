@@ -23,6 +23,7 @@ import {
     PassgradLifecycleOutboxEntity,
     PassgradLifecycleOutboxStatus,
 } from '../../passgrad/passgrad-lifecycle-outbox.entity'
+import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
 import {
     QueueName,
     redisMetadataKey,
@@ -252,7 +253,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
 
 export async function persistRunMetadataAndPassgradOutbox(
     input: UploadRunLogsRequest,
-    _log: FastifyBaseLogger,
+    log: FastifyBaseLogger,
 ): Promise<FlowRun> {
     const runMetadata: RunsMetadataUpsertData = {
         id: input.runId,
@@ -328,6 +329,11 @@ export async function persistRunMetadataAndPassgradOutbox(
         }
         return flowRunRepo(entityManager).findOneByOrFail({ id: input.runId })
     })
+
+    // Committed: let Passgrad hear about it now instead of on the next one-minute tick.
+    if (outboxPayload) {
+        passgradLifecycleOutboxService(log).dispatchSoon()
+    }
 
     return savedFlowRun
 }
