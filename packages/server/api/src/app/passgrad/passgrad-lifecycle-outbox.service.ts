@@ -29,7 +29,7 @@ async function drain(log: FastifyBaseLogger): Promise<void> {
         drainRequestedAgain = true
         return activeDrain
     }
-    activeDrain = (async () => {
+    activeDrain = (async (): Promise<void> => {
         try {
             do {
                 drainRequestedAgain = false
