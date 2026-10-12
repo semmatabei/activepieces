@@ -218,6 +218,26 @@ export function evaluateConditions(conditionGroups: BranchCondition[][]): boolea
                     andGroup = andGroup && firstValue == secondValue
                     break
                 }
+                case BranchOperator.NUMBER_IS_NOT_EQUAL_TO: {
+                    const firstValue = parseStringToNumber(castedCondition.firstValue)
+                    const secondValue = parseStringToNumber(castedCondition.secondValue)
+                    // A value that is not a number is not "different from" anything, so it fails here
+                    // rather than passing just because the text differs from the number.
+                    andGroup = andGroup && typeof firstValue === 'number' && typeof secondValue === 'number' && firstValue !== secondValue
+                    break
+                }
+                case BranchOperator.NUMBER_IS_GREATER_THAN_OR_EQUAL_TO: {
+                    const firstValue = parseStringToNumber(castedCondition.firstValue)
+                    const secondValue = parseStringToNumber(castedCondition.secondValue)
+                    andGroup = andGroup && firstValue >= secondValue
+                    break
+                }
+                case BranchOperator.NUMBER_IS_LESS_THAN_OR_EQUAL_TO: {
+                    const firstValue = parseStringToNumber(castedCondition.firstValue)
+                    const secondValue = parseStringToNumber(castedCondition.secondValue)
+                    andGroup = andGroup && firstValue <= secondValue
+                    break
+                }
                 case BranchOperator.BOOLEAN_IS_TRUE:
                     andGroup = andGroup && !!castedCondition.firstValue
                     break
