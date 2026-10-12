@@ -122,6 +122,9 @@ export enum BranchOperator {
     NUMBER_IS_GREATER_THAN = 'NUMBER_IS_GREATER_THAN',
     NUMBER_IS_LESS_THAN = 'NUMBER_IS_LESS_THAN',
     NUMBER_IS_EQUAL_TO = 'NUMBER_IS_EQUAL_TO',
+    NUMBER_IS_NOT_EQUAL_TO = 'NUMBER_IS_NOT_EQUAL_TO',
+    NUMBER_IS_GREATER_THAN_OR_EQUAL_TO = 'NUMBER_IS_GREATER_THAN_OR_EQUAL_TO',
+    NUMBER_IS_LESS_THAN_OR_EQUAL_TO = 'NUMBER_IS_LESS_THAN_OR_EQUAL_TO',
     BOOLEAN_IS_TRUE = 'BOOLEAN_IS_TRUE',
     BOOLEAN_IS_FALSE = 'BOOLEAN_IS_FALSE',
     DATE_IS_BEFORE = 'DATE_IS_BEFORE',
@@ -174,6 +177,9 @@ const BranchOperatorNumberLiterals = [
     z.literal(BranchOperator.NUMBER_IS_GREATER_THAN),
     z.literal(BranchOperator.NUMBER_IS_LESS_THAN),
     z.literal(BranchOperator.NUMBER_IS_EQUAL_TO),
+    z.literal(BranchOperator.NUMBER_IS_NOT_EQUAL_TO),
+    z.literal(BranchOperator.NUMBER_IS_GREATER_THAN_OR_EQUAL_TO),
+    z.literal(BranchOperator.NUMBER_IS_LESS_THAN_OR_EQUAL_TO),
 ] as const
 
 const BranchOperatorDateLiterals = [

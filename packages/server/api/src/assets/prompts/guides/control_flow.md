@@ -27,6 +27,7 @@ TEXT_EXACTLY_MATCHES       TEXT_DOES_NOT_EXACTLY_MATCH
 TEXT_START_WITH            TEXT_DOES_NOT_START_WITH
 TEXT_ENDS_WITH             TEXT_DOES_NOT_END_WITH
 NUMBER_IS_GREATER_THAN     NUMBER_IS_LESS_THAN     NUMBER_IS_EQUAL_TO
+NUMBER_IS_GREATER_THAN_OR_EQUAL_TO     NUMBER_IS_LESS_THAN_OR_EQUAL_TO     NUMBER_IS_NOT_EQUAL_TO
 BOOLEAN_IS_TRUE            BOOLEAN_IS_FALSE
 DATE_IS_BEFORE             DATE_IS_EQUAL           DATE_IS_AFTER
 LIST_CONTAINS              LIST_DOES_NOT_CONTAIN
@@ -34,7 +35,7 @@ LIST_IS_EMPTY              LIST_IS_NOT_EMPTY
 EXISTS                     DOES_NOT_EXIST
 ```
 
-Watch the exact spelling: it's `TEXT_START_WITH` (not `..._STARTS_WITH`), and there is **no** `NUMBER_IS_NOT_EQUAL_TO` (use `NUMBER_IS_GREATER_THAN`/`NUMBER_IS_LESS_THAN`, or negate with the fallback branch). Within a branch, conditions combine as AND inside a group and OR across groups — verify anything non-trivial with `ap_validate_flow`. Order branches most-specific first; lean on `Otherwise` as the safety net.
+Watch the exact spelling: it's `TEXT_START_WITH` (not `..._STARTS_WITH`), and for "not equal" on numbers use `NUMBER_IS_NOT_EQUAL_TO`. Within a branch, conditions combine as AND inside a group and OR across groups — verify anything non-trivial with `ap_validate_flow`. Order branches most-specific first; lean on `Otherwise` as the safety net.
 
 ## Loops (`LOOP_ON_ITEMS`)
 
