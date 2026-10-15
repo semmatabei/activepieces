@@ -6,6 +6,7 @@ const { requestMock, transactionMock, repositoryMock } = vi.hoisted(() => ({
     repositoryMock: {
         createQueryBuilder: vi.fn(),
         update: vi.fn(),
+        delete: vi.fn(),
     },
 }))
 
@@ -91,6 +92,16 @@ describe('passgrad lifecycle outbox dispatcher', () => {
             status: 'PENDING',
             lastError: expect.objectContaining({ message: 'temporary Passgrad outage', attempt: 2 }),
         }))
+    })
+
+    it('forgets the events of a run so a retried run can report the same statuses again', async () => {
+        const remove = vi.fn()
+        transactionMock.mockImplementation(async (operation: (manager: unknown) => Promise<unknown>) =>
+            operation({ getRepository: () => ({ ...repositoryMock, delete: remove }) }))
+
+        await passgradLifecycleOutboxService({ info: vi.fn(), error: vi.fn() } as never).forgetRun('run-3')
+
+        expect(remove).toHaveBeenCalledWith({ flowRunId: 'run-3' })
     })
 
     function eventNamed(index: number) {

@@ -477,6 +477,16 @@ const workflowRunPayloadSchema = z
         apEventSequence: z.number().int().nonnegative().optional(),
         apRunId: boundedIdSchema,
         eventId: boundedIdSchema,
+        failedStep: z
+            .object({
+                displayName: z.string().max(255),
+                message: z.string().max(2000).optional(),
+                name: z.string().max(255),
+                permanent: z.boolean().optional(),
+            })
+            .strict()
+            .nullable()
+            .optional(),
         finishedAt: z.string().datetime().nullable(),
         safeFailureSummary: z.string().max(2000).nullable(),
         result: z.record(z.string(), z.unknown()).nullable(),
