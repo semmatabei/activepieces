@@ -32,6 +32,7 @@ import {
 import type { ToolSet } from 'ai'
 import dayjs from 'dayjs'
 import {
+    applyDeclaredRetry,
     continueIfFailureHandler,
     runWithExponentialBackoff,
 } from '../helper/error-handling'
@@ -58,9 +59,19 @@ export const pieceExecutor: BaseExecutor<PieceAction> = {
         if (executionState.isCompleted({ stepName: action.name })) {
             return executionState
         }
+        const declaredRetry = await pieceLoader
+            .getPieceAndActionOrThrow({
+                pieceName: action.settings.pieceName,
+                pieceVersion: action.settings.pieceVersion,
+                actionName: action.settings.actionName ?? '',
+                devPieces: constants.devPieces,
+            })
+            .then(({ pieceAction }) => pieceAction.errorHandlingOptions?.retryOnFailure)
+            // A piece or action that cannot be loaded fails in executeAction, with its own message.
+            .catch(() => undefined)
         const resultExecution = await runWithExponentialBackoff(
             executionState,
-            action,
+            applyDeclaredRetry(action, declaredRetry),
             constants,
             executeAction,
         )
@@ -300,11 +311,20 @@ const executeAction: ActionHandler<PieceAction> = async ({
                 name: action.name,
                 displayName: action.displayName,
                 message: utils.formatError(executionStateError),
+                ...(isPermanentError(executionStateError) ? { permanent: true } : {}),
             },
         })
     }
 
     return executionStateResult
+}
+
+/**
+ * A piece (or the Passgrad capability) can mark an error it throws as one that trying again cannot
+ * fix by setting `permanent: true` on it.
+ */
+function isPermanentError(error: unknown): boolean {
+    return typeof error === 'object' && error !== null && (error as { permanent?: unknown }).permanent === true
 }
 
 function getResponse(hookResponse: HookResponse): RespondResponse | undefined {

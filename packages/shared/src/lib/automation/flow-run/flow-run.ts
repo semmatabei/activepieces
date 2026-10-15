@@ -48,6 +48,11 @@ export const FailedStep = z.object({
     name: z.string(),
     displayName: z.string(),
     message: z.string().optional(),
+    /**
+     * The step failed in a way trying again cannot fix (a rejected request, an invalid value).
+     * The engine does not retry such a step even when retry on failure is on.
+     */
+    permanent: z.boolean().optional(),
 })
 export type FailedStep = z.infer<typeof FailedStep>
 
