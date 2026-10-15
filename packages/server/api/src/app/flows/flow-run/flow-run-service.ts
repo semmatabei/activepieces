@@ -38,6 +38,7 @@ import {
 } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
+import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
 import {
     ArrayContains,
     In,
@@ -213,6 +214,7 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
                     })
                     : undefined
 
+                await passgradLifecycleOutboxService(log).forgetRun(oldFlowRun.id)
                 await flowRunRepo().update(
                     {
                         id: oldFlowRun.id,

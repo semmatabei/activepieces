@@ -97,6 +97,18 @@ export const passgradLifecycleOutboxService = (log: FastifyBaseLogger) => ({
             log.error({ error }, 'Passgrad lifecycle projection drain failed')
         })
     },
+    /**
+     * Forgets the lifecycle events recorded for a run. A run retried from its failed step reports
+     * the same statuses again with the same event ids, and an id already delivered is never sent a
+     * second time, so Passgrad would never hear that the retry ran.
+     */
+    async forgetRun(flowRunId: string): Promise<void> {
+        await transaction(async (entityManager) => {
+            await entityManager
+                .getRepository(PassgradLifecycleOutboxEntity)
+                .delete({ flowRunId })
+        })
+    },
     async replayDeadLetter(id: string): Promise<void> {
         await transaction(async (entityManager) => {
             const repository = entityManager.getRepository(

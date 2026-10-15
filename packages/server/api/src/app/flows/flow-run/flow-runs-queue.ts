@@ -367,6 +367,7 @@ function buildPassgradProjectionPayload(
         apRunId: input.runId,
         eventId: input.passgradEventId,
         apEventSequence: getPassgradEventSequence(input.status),
+        failedStep: toPassgradFailedStep(input.failedStep),
         finishedAt: input.finishTime ?? null,
         safeFailureSummary: input.internalError?.message ?? null,
         result: null,
@@ -376,6 +377,23 @@ function buildPassgradProjectionPayload(
         triggerKind: input.passgradTriggerKind,
         type: 'workflow.run.projection.v1',
         workflowId: input.passgradWorkflowId,
+    }
+}
+
+/** The step a run failed at, bounded to what Passgrad accepts; null when it did not fail at one. */
+function toPassgradFailedStep(
+    failedStep: UploadRunLogsRequest['failedStep'],
+): Record<string, unknown> | null {
+    if (isNil(failedStep)) {
+        return null
+    }
+    return {
+        name: failedStep.name.slice(0, 255),
+        displayName: failedStep.displayName.slice(0, 255),
+        ...(isNil(failedStep.message)
+            ? {}
+            : { message: failedStep.message.slice(0, 2000) }),
+        ...(failedStep.permanent === true ? { permanent: true } : {}),
     }
 }
 
