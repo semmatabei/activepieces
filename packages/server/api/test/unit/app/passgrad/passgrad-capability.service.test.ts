@@ -733,6 +733,28 @@ describe('passgradCapabilityService', () => {
         })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
     })
 
+    it('forwards an action request that allows skipping and has a due time in hours', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { data: {} } })
+        const payload = { ...actionRequestPayload, dueInHours: 48, allowSkip: true }
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'workflow.open-action-request',
+            payload,
+            execution: {
+                runId: 'run-1',
+                stepId: 'step-1',
+                executionPath: [] as readonly [string, number][],
+                sourceSubmissionId: submissionResourceId,
+            },
+        })
+
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+            data: expect.objectContaining({ allowSkip: true, dueInHours: 48 }),
+        }))
+    })
+
     it('does not forward upstream error payloads into capability context', async () => {
         vi.mocked(safeHttp.axios.request).mockRejectedValue({
             isAxiosError: true,
