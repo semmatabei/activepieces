@@ -36,6 +36,24 @@ describe('Passgrad capability context', () => {
         )
     })
 
+    it.each([
+        [400, true],
+        [403, true],
+        [422, true],
+        [408, false],
+        [429, false],
+        [500, false],
+        [503, false],
+    ])('marks a refused request with status %i as permanent: %s', async (status, permanent) => {
+        vi.spyOn(global, 'fetch').mockResolvedValue(new Response('{}', { status }))
+        const capability = createPassgradCapability({
+            apiUrl: 'http://activepieces.internal/',
+            credential: 'opaque-capability-token',
+        })
+
+        await expect(capability.request({ operation: 'form.list' })).rejects.toMatchObject({ status, permanent })
+    })
+
     it('sends the trusted engine path after piece-authored fields and drops illicit path properties', async () => {
         const fetchSpy = vi
             .spyOn(global, 'fetch')

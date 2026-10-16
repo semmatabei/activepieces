@@ -1,6 +1,6 @@
 import { FlowRunStatus } from '@activepieces/shared'
 import { FlowExecutorContext } from '../../src/lib/handler/context/flow-execution-context'
-import { runWithExponentialBackoff } from '../../src/lib/helper/error-handling'
+import { applyDeclaredRetry, runWithExponentialBackoff } from '../../src/lib/helper/error-handling'
 import { buildCodeAction, generateMockEngineConstants } from '../handler/test-helper'
 
 describe('runWithExponentialBackoff', () => {
@@ -63,6 +63,25 @@ describe('runWithExponentialBackoff', () => {
         expect(requestFunction).toHaveBeenCalledWith({ action, executionState, constants })
     })
 
+    it('should not retry when the failure is marked permanent, even though retry is enabled', async () => {
+        const resultExecutionState = FlowExecutorContext.empty().setVerdict({
+            status: FlowRunStatus.FAILED,
+            failedStep: {
+                name: 'runtime',
+                displayName: 'runtime',
+                message: 'Passgrad capability request failed with status 422',
+                permanent: true,
+            },
+        })
+
+        requestFunction.mockResolvedValue(resultExecutionState)
+
+        const output = await runWithExponentialBackoff(executionState, action, constants, requestFunction)
+
+        expect(output).toEqual(resultExecutionState)
+        expect(requestFunction).toHaveBeenCalledTimes(1)
+    })
+
     it('should not retry and return resultExecutionState when verdict is FAILED but retry is disabled', async () => {
         const resultExecutionState = FlowExecutorContext.empty().setVerdict({
             status: FlowRunStatus.FAILED,
@@ -97,4 +116,29 @@ describe('runWithExponentialBackoff', () => {
 
     })
 
+})
+describe('applyDeclaredRetry', () => {
+    const buildAction = (retry: boolean) => buildCodeAction({
+        name: 'runtime',
+        input: {},
+        errorHandlingOptions: {
+            continueOnFailure: { value: false },
+            retryOnFailure: { value: retry },
+        },
+    })
+
+    it('uses the piece default when the switch is hidden, whatever the step stored', () => {
+        const action = buildAction(false)
+        const applied = applyDeclaredRetry(action, { hide: true, defaultValue: true })
+        expect(applied.settings.errorHandlingOptions?.retryOnFailure?.value).toBe(true)
+        expect(applied.settings.errorHandlingOptions?.continueOnFailure?.value).toBe(false)
+        expect(action.settings.errorHandlingOptions?.retryOnFailure?.value).toBe(false)
+    })
+
+    it('leaves the step alone when the switch is visible or nothing is declared', () => {
+        const action = buildAction(true)
+        expect(applyDeclaredRetry(action, { hide: false, defaultValue: false })).toBe(action)
+        expect(applyDeclaredRetry(action, { hide: true })).toBe(action)
+        expect(applyDeclaredRetry(action, undefined)).toBe(action)
+    })
 })

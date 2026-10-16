@@ -25,6 +25,29 @@ export async function runWithExponentialBackoff<T extends CodeAction | PieceActi
     return resultExecutionState
 }
 
+/**
+ * What a piece action declares for retry on failure. A hidden switch is not the builder's to set:
+ * the piece decides, so its default applies to every step of that action, including steps saved
+ * before the piece declared one.
+ */
+export type DeclaredRetryOption = { hide?: boolean, defaultValue?: boolean } | undefined
+
+export function applyDeclaredRetry<T extends CodeAction | PieceAction>(action: T, declared: DeclaredRetryOption): T {
+    if (isNil(declared) || declared.hide !== true || typeof declared.defaultValue !== 'boolean') {
+        return action
+    }
+    return {
+        ...action,
+        settings: {
+            ...action.settings,
+            errorHandlingOptions: {
+                ...action.settings.errorHandlingOptions,
+                retryOnFailure: { value: declared.defaultValue },
+            },
+        },
+    }
+}
+
 export async function continueIfFailureHandler(
     executionState: FlowExecutorContext,
     action: CodeAction | PieceAction,
@@ -46,7 +69,12 @@ export async function continueIfFailureHandler(
 
 
 const executionFailedWithRetryableError = (flowExecutorContext: FlowExecutorContext): boolean => {
-    return flowExecutorContext.verdict.status === FlowRunStatus.FAILED
+    const verdict = flowExecutorContext.verdict
+    if (verdict.status !== FlowRunStatus.FAILED) {
+        return false
+    }
+    // A failure marked permanent (a rejected request, an invalid value) is not worth repeating.
+    return verdict.failedStep?.permanent !== true
 }
 
 type Request<T extends CodeAction | PieceAction> = {
