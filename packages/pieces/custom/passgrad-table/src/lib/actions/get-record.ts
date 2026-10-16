@@ -5,6 +5,12 @@ export const getRecord = createAction({
   name: "get_record",
   displayName: "Get Record",
   description: "Retrieve a specific record from the selected Passgrad table.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     table_id: tableIdProperty,
     record_id: Property.ShortText({
