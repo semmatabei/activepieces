@@ -23,6 +23,11 @@ export const requestSubmission = createAction({
   name: "request_submission",
   displayName: "Request submission",
   description: "Pause the flow until an assigned Passgrad member submits a published Form.",
+  // Waits for a person. Not repeated, and not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: false },
+  },
   props: {
     form_id: formIdProperty,
     actor_user_id: actorUserIdProperty,

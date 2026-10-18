@@ -1,5 +1,5 @@
 import { apVersionUtil } from '@activepieces/server-utils'
-import { groupBy, PieceSyncMode, PieceType, tryCatch } from '@activepieces/shared'
+import { groupBy, isNil, PieceSyncMode, PieceType, tryCatch } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
@@ -11,6 +11,7 @@ import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { pieceCache } from './metadata/piece-cache'
 import { PieceMetadataSchema } from './metadata/piece-metadata-entity'
 import { pieceMetadataService, pieceRepos } from './metadata/piece-metadata-service'
+import { allowlistMatchedNoPieces, canonicalPieceName, filterPiecesByName, passgradAllowlistFromEnv } from './metadata/utils/passgrad-piece-allowlist'
 
 const CLOUD_API_URL = 'https://cloud.activepieces.com/api/v1/pieces'
 const syncMode = system.get<PieceSyncMode>(AppSystemProp.PIECES_SYNC_MODE)
@@ -34,12 +35,17 @@ export const pieceSyncService = (log: FastifyBaseLogger) => ({
         })
     },
     async sync({ publishCacheRefresh }: { publishCacheRefresh: boolean }): Promise<void> {
-        if (syncMode !== PieceSyncMode.OFFICIAL_AUTO) {
+        if (syncMode === PieceSyncMode.NONE) {
             log.info('Piece sync service is disabled')
             return
         }
+        const allowlist = syncMode === PieceSyncMode.PASSGRAD ? passgradAllowlistFromEnv() : null
+        if (syncMode === PieceSyncMode.PASSGRAD && isNil(allowlist)) {
+            log.error({ prop: AppSystemProp.PASSGRAD_PIECES }, 'Passgrad piece sync has no allowlist; skipping so the official catalog is not deleted')
+            return
+        }
         try {
-            log.info('Starting piece synchronization')
+            log.info({ syncMode, allowlistSize: allowlist?.length }, 'Starting piece synchronization')
             const startTime = performance.now()
             const [dbPieces, cloudPieces] = await Promise.all([pieceRepos().find({
                 select: {
@@ -49,8 +55,14 @@ export const pieceSyncService = (log: FastifyBaseLogger) => ({
                 },
             }), listCloudPieces()])
             log.info({ dbCount: dbPieces.length, cloudCount: cloudPieces.length }, 'Fetched pieces from DB and Cloud')
-            const added = await installNewPieces(cloudPieces, dbPieces, log, publishCacheRefresh)
-            const deleted = await deletePiecesIfNotOnCloud(dbPieces, cloudPieces, log)
+            const targetedPieces = filterPiecesByName(cloudPieces, allowlist)
+            logAllowlistNamesMissingFromRegistry(allowlist, targetedPieces, log)
+            if (allowlistMatchedNoPieces(allowlist, targetedPieces)) {
+                log.error({ prop: AppSystemProp.PASSGRAD_PIECES }, 'No allowlisted piece matches the registry; skipping synchronization so the official catalog is not deleted')
+                return
+            }
+            const added = await installNewPieces(targetedPieces, dbPieces, log, publishCacheRefresh)
+            const deleted = await deletePiecesIfNotOnCloud(dbPieces, targetedPieces, log)
 
             log.info({
                 added,
@@ -64,11 +76,32 @@ export const pieceSyncService = (log: FastifyBaseLogger) => ({
     },
 })
 
+const DELETE_BATCH_SIZE = 500
+
 async function deletePiecesIfNotOnCloud(dbPieces: PieceMetadataOnly[], cloudPieces: PieceRegistryResponse[], log: FastifyBaseLogger): Promise<number> {
     const cloudMap = new Map<string, true>(cloudPieces.map(cloudPiece => [`${cloudPiece.name}:${cloudPiece.version}`, true]))
     const piecesToDelete = dbPieces.filter(piece => piece.pieceType === PieceType.OFFICIAL && !cloudMap.has(`${piece.name}:${piece.version}`))
-    await pieceMetadataService(log).bulkDelete(piecesToDelete.map(piece => ({ name: piece.name, version: piece.version })))
+    if (piecesToDelete.length > 0) {
+        log.info({ count: piecesToDelete.length }, 'Removing official pieces that are not in the registry list')
+    }
+    // A curated catalog can lose thousands of rows on its first sync, and each row is one
+    // DELETE. Batch them so the connection pool is not asked for every row at once.
+    for (let start = 0; start < piecesToDelete.length; start += DELETE_BATCH_SIZE) {
+        const batch = piecesToDelete.slice(start, start + DELETE_BATCH_SIZE)
+        await pieceMetadataService(log).bulkDelete(batch.map(piece => ({ name: piece.name, version: piece.version })))
+    }
     return piecesToDelete.length
+}
+
+function logAllowlistNamesMissingFromRegistry(allowlist: string[] | null, registryPieces: PieceRegistryResponse[], log: FastifyBaseLogger): void {
+    if (isNil(allowlist)) {
+        return
+    }
+    const registryNames = new Set(registryPieces.map(piece => piece.name))
+    const unknownNames = allowlist.filter(name => !registryNames.has(canonicalPieceName(name)))
+    if (unknownNames.length > 0) {
+        log.warn({ unknownNames }, 'Allowlisted pieces are not published to the piece registry')
+    }
 }
 
 async function installNewPieces(cloudPieces: PieceRegistryResponse[], dbPieces: PieceMetadataOnly[], log: FastifyBaseLogger, _publishCacheRefresh: boolean): Promise<number> {

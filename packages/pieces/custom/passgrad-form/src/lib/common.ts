@@ -138,7 +138,7 @@ export const moderatorTargetProperty = dropdownFromList<{ id: string; label: str
     return fields.filter((field) => field.visible !== false && field.type === "person" && field.config?.multiple !== true).map((field) => ({ id: field.id, label: field.label }));
   },
   mapOption: (target) => ({ label: target.label, value: target.id }),
-  emptyPlaceholder: "No compatible moderator targets available",
+  emptyPlaceholder: "No compatible moderator targets. Person fields must allow only one person.",
   errorPlaceholder: "Unable to load moderator targets",
 });
 
@@ -197,11 +197,19 @@ export function formFieldProperty(
       );
     },
     mapOption: (field) => ({ label: field.label, value: field.id }),
-    emptyPlaceholder: "No compatible form fields available",
+    emptyPlaceholder: "No compatible fields. Person and attachment fields must allow only one value.",
     errorPlaceholder: "Unable to load form fields",
   });
 }
 
 export function passgradRequest<T>(context: PassgradContext, request: PassgradRequest) {
   return context.passgrad.request<T>(request);
+}
+
+/**
+ * An error trying again cannot fix, such as a value that is missing or invalid. The engine reads
+ * `permanent` and fails the step at once instead of retrying it.
+ */
+export function permanentError(message: string): Error {
+  return Object.assign(new Error(message), { permanent: true as const });
 }

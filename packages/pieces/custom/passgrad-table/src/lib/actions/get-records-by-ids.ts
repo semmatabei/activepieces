@@ -5,6 +5,12 @@ export const getRecordsByIds = createAction({
   name: "get_records_by_ids",
   displayName: "Get Records by IDs",
   description: "Retrieve an ordered snapshot of up to 100 records from one Passgrad table.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     table_id: tableIdProperty,
     record_ids: Property.Json({
