@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
-import { buildApprovalRequestPayload } from "./request-approval-payload";
+import { buildApprovalRequestPayload, buildRejectedCompletion, isRejectedResume, rejectionMode } from "./request-approval-payload";
 
 const priority = Property.StaticDropdown({
   displayName: "Priority",
@@ -20,7 +20,12 @@ const priority = Property.StaticDropdown({
 export const requestApprovalV2 = createAction({
   name: "request_approval_v2",
   displayName: "Request Approval",
-  description: "Pause the flow until assigned Passgrad approvers reach the minimum approvals or reject the source submission.",
+  description: "Pause the flow until assigned Passgrad approvers reach the minimum approvals or reject the source submission. A rejection ends the process unless the step is set to continue.",
+  // Waits for a person. Not repeated, and not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: false },
+  },
   props: {
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),
@@ -76,6 +81,19 @@ export const requestApprovalV2 = createAction({
       required: false,
       defaultValue: 1,
     }),
+    on_rejection: Property.StaticDropdown({
+      displayName: "When Rejected",
+      description: "End the process as rejected, or continue to the next step and branch on the result yourself.",
+      required: false,
+      defaultValue: "end",
+      options: {
+        disabled: false,
+        options: [
+          { label: "End the process as rejected", value: "end" },
+          { label: "Continue to the next step", value: "continue" },
+        ],
+      },
+    }),
     priority,
     due_in_hours: Property.Number({
       displayName: "Due In (Hours)",
@@ -85,7 +103,17 @@ export const requestApprovalV2 = createAction({
   },
   async run(context) {
     if ("resumePayload" in context && context.resumePayload) {
-      return context.resumePayload.body;
+      const body = context.resumePayload.body;
+      // An approval that was not obtained ends the process, so nothing after it runs on the
+      // strength of an approval that does not exist. "Continue" leaves branching to the flow.
+      if (rejectionMode(context.propsValue.on_rejection) === "end" && isRejectedResume(body)) {
+        await context.passgrad.request({
+          operation: "workflow.complete-process",
+          payload: buildRejectedCompletion({ title: context.propsValue.title, body, eventId: randomUUID() }),
+        });
+        context.run.stop({ response: { status: 200, body: body as never } });
+      }
+      return body;
     }
 
     const waitpoint = await context.run.createWaitpoint({ type: "WEBHOOK", version: "V1" });

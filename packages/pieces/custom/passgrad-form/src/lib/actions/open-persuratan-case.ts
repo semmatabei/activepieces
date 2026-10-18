@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { createAction, Property } from "@activepieces/pieces-framework";
 
-import { formFieldProperty, formIdProperty, passgradRequest, moderatorTargetProperty } from "../common";
+import { formFieldProperty, formIdProperty, passgradRequest, moderatorTargetProperty, permanentError } from "../common";
 
 const sourceParty = Property.StaticDropdown({
   displayName: "Source party",
@@ -52,6 +52,12 @@ export const openPersuratanCase = createAction({
   name: "open_persuratan_case",
   displayName: "Open Persuratan Case",
   description: "Open one replay-safe Persuratan case from a Form submission.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     source_form_id: formIdProperty,
     source_party: sourceParty,
@@ -70,7 +76,7 @@ export const openPersuratanCase = createAction({
   async run(context) {
     const props = context.propsValue;
     const required = (value: unknown, name: string): string => {
-      if (typeof value !== "string" || value.trim() === "") throw new Error(`${name} is required`);
+      if (typeof value !== "string" || value.trim() === "") throw permanentError(`${name} is required`);
       return value;
     };
     const moderator = (() => {
@@ -91,7 +97,7 @@ export const openPersuratanCase = createAction({
             fieldId: required(props.moderator_target_id, "Moderator field"),
           };
         default:
-          throw new Error("Moderator selection is invalid");
+          throw permanentError("Moderator selection is invalid");
       }
     })();
     const response = await passgradRequest<{ data: unknown }>(context, {

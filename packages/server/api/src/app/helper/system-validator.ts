@@ -81,6 +81,7 @@ const systemPropValidators: {
     [AppSystemProp.PASSGRAD_ADMISSION_URL]: urlValidator,
     [AppSystemProp.PASSGRAD_ADMISSION_SECRET]: stringValidator,
     [AppSystemProp.PASSGRAD_ALLOWED_ORIGINS]: stringValidator,
+    [AppSystemProp.PASSGRAD_PIECES]: stringValidator,
     [AppSystemProp.PASSGRAD_PLATFORM_ID]: stringValidator,
     [AppSystemProp.PASSGRAD_PROVISIONING_SECRET]: stringValidator,
     [AppSystemProp.PASSGRAD_API_URL]: urlValidator,

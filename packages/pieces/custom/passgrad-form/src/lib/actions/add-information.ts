@@ -6,6 +6,12 @@ export const addInformation = createAction({
   name: "add_information",
   displayName: "Add Information",
   description: "Append an immutable information tab to the source submission.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     title: Property.ShortText({ displayName: "Title", required: true }),
     description: Property.LongText({ displayName: "Description", required: false }),

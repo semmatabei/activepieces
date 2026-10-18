@@ -6,6 +6,12 @@ export const completeProcess = createAction({
   name: "complete_process",
   displayName: "Complete Process",
   description: "Record the business resolution for the source submission process.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     resolution: Property.StaticDropdown({
       displayName: "Resolution",
@@ -16,6 +22,7 @@ export const completeProcess = createAction({
           { label: "Approved", value: "approved" },
           { label: "Rejected", value: "rejected" },
           { label: "Cancelled", value: "cancelled" },
+          { label: "Not carried out", value: "not_completed" },
         ],
       },
     }),
