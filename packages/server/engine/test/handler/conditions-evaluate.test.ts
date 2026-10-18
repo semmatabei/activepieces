@@ -360,4 +360,56 @@ describe('Branch evaluateConditions', () => {
             expect(evaluateConditions([[condition]])).toEqual(expected)
         })
     })
+
+    describe('NUMBER_IS_NOT_EQUAL_TO, NUMBER_IS_GREATER_THAN_OR_EQUAL_TO, NUMBER_IS_LESS_THAN_OR_EQUAL_TO', () => {
+        const evaluate = (operator: BranchOperator, firstValue: unknown, secondValue: unknown) => {
+            const condition: BranchCondition = {
+                firstValue: firstValue as string,
+                secondValue: secondValue as string,
+                operator,
+            } as BranchCondition
+            return evaluateConditions([[condition]])
+        }
+
+        test.each([
+            ['5', '5', true],
+            ['6', '5', true],
+            ['4', '5', false],
+            [1000000, '1000000', true],
+        ])('>= with %p and %p is %p', (first, second, expected) => {
+            expect(evaluate(BranchOperator.NUMBER_IS_GREATER_THAN_OR_EQUAL_TO, first, second)).toEqual(expected)
+        })
+
+        test.each([
+            ['5', '5', true],
+            ['4', '5', true],
+            ['6', '5', false],
+        ])('<= with %p and %p is %p', (first, second, expected) => {
+            expect(evaluate(BranchOperator.NUMBER_IS_LESS_THAN_OR_EQUAL_TO, first, second)).toEqual(expected)
+        })
+
+        test.each([
+            ['5', '5', false],
+            ['6', '5', true],
+            ['5.0', '5', false],
+            ['abc', '5', false],
+            [undefined, '5', false],
+        ])('!= with %p and %p is %p', (first, second, expected) => {
+            expect(evaluate(BranchOperator.NUMBER_IS_NOT_EQUAL_TO, first, second)).toEqual(expected)
+        })
+
+        test('works inside AND / OR groups', () => {
+            const atLeastFive: BranchCondition = {
+                firstValue: '7',
+                secondValue: '5',
+                operator: BranchOperator.NUMBER_IS_GREATER_THAN_OR_EQUAL_TO,
+            } as BranchCondition
+            const notTen: BranchCondition = {
+                firstValue: '7',
+                secondValue: '10',
+                operator: BranchOperator.NUMBER_IS_NOT_EQUAL_TO,
+            } as BranchCondition
+            expect(evaluateConditions([[atLeastFive, notTen]])).toEqual(true)
+        })
+    })
 })

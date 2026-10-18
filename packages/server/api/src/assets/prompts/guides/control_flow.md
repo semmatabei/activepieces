@@ -35,7 +35,7 @@ LIST_IS_EMPTY              LIST_IS_NOT_EMPTY
 EXISTS                     DOES_NOT_EXIST
 ```
 
-Watch the exact spelling: it's `TEXT_START_WITH` (not `..._STARTS_WITH`). Numbers compare with `NUMBER_IS_GREATER_THAN`, `NUMBER_IS_LESS_THAN`, `NUMBER_IS_EQUAL_TO`, `NUMBER_IS_NOT_EQUAL_TO`, `NUMBER_IS_GREATER_THAN_OR_EQUAL_TO` and `NUMBER_IS_LESS_THAN_OR_EQUAL_TO` (a value that is not a number compares as text, so pair these with a number field). Within a branch, conditions combine as AND inside a group and OR across groups — verify anything non-trivial with `ap_validate_flow`. Order branches most-specific first; lean on `Otherwise` as the safety net.
+Watch the exact spelling: it's `TEXT_START_WITH` (not `..._STARTS_WITH`). For numeric not-equal, both values must parse as numbers. Within a branch, conditions combine as AND inside a group and OR across groups — verify anything non-trivial with `ap_validate_flow`. Order branches most-specific first; lean on `Otherwise` as the safety net.
 
 ## Loops (`LOOP_ON_ITEMS`)
 
