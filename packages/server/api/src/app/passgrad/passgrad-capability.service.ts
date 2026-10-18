@@ -557,7 +557,7 @@ const completeProcessPayloadSchema = z
     .object({
         type: z.literal('workflow.process.completed.v1'),
         eventId: boundedIdSchema,
-        resolution: z.enum(['approved', 'rejected', 'cancelled']),
+        resolution: z.enum(['approved', 'rejected', 'cancelled', 'not_completed']),
         summary: z.string().max(2000),
         data: z.record(z.string(), z.unknown()),
     })
@@ -624,6 +624,10 @@ const actionRequestPayloadSchema = z
             })
             .strict(),
         ...optionalTaskScheduleShape,
+        // Hours after the source submission, resolved by Passgrad when the task is created.
+        dueInHours: z.number().int().min(1).max(8760).optional(),
+        // Whether the assignee may say the task could not be completed (with a reason).
+        allowSkip: z.boolean().optional(),
         resumeUrl: z.string().url().max(8192),
     })
     .strict()
