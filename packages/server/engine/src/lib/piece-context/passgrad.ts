@@ -3,6 +3,22 @@ import {
     PassgradRequest,
 } from '@activepieces/pieces-framework'
 
+/**
+ * A request Passgrad refused. A 4xx other than a timeout or rate limit says the request itself is
+ * wrong, so repeating it cannot succeed: the engine marks the step failure as permanent.
+ */
+export class PassgradRequestError extends Error {
+    readonly status: number
+    readonly permanent: boolean
+
+    constructor(status: number) {
+        super(`Passgrad capability request failed with status ${status}`)
+        this.name = 'PassgradRequestError'
+        this.status = status
+        this.permanent = status >= 400 && status < 500 && ![408, 425, 429].includes(status)
+    }
+}
+
 export function createPassgradCapability(
     params: CreatePassgradCapabilityParams,
 ): PassgradCapability {
@@ -33,9 +49,7 @@ export function createPassgradCapability(
                 body: JSON.stringify(body),
             })
             if (!response.ok) {
-                throw new Error(
-                    `Passgrad capability request failed with status ${response.status}`,
-                )
+                throw new PassgradRequestError(response.status)
             }
             return response.json() as Promise<T>
         },
