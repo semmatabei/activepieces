@@ -709,6 +709,30 @@ describe('passgradCapabilityService', () => {
         })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
     })
 
+    it('forwards the step a run failed at, and rejects unknown fields inside it', async () => {
+        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+        const failedRun = {
+            ...workflowRunPayload,
+            status: 'failed' as const,
+            failedStep: { name: 'step_2', displayName: 'Create record', message: 'status 422', permanent: true },
+        }
+
+        await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.project-workflow-run',
+            payload: failedRun,
+        })
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({ data: failedRun }))
+
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.project-workflow-run',
+            payload: { ...failedRun, failedStep: { ...failedRun.failedStep, secret: 'x' } },
+        })).rejects.toMatchObject({ error: { code: 'AUTHORIZATION' } })
+    })
+
     it('does not forward upstream error payloads into capability context', async () => {
         vi.mocked(safeHttp.axios.request).mockRejectedValue({
             isAxiosError: true,
