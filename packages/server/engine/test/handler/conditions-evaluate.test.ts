@@ -180,6 +180,57 @@ describe('Branch evaluateConditions', () => {
         })
     })
 
+    describe('NUMBER_IS_NOT_EQUAL_TO', () => {
+        test.each([
+            { expected: true, firstValue: '1', secondValue: '2' },
+            { expected: true, firstValue: '1.5', secondValue: '2' },
+            { expected: false, firstValue: '2', secondValue: '2' },
+            { expected: false, firstValue: '2', secondValue: '2.0' },
+        ])('should return $expected for $firstValue not equal to $secondValue', ({ expected, firstValue, secondValue }) => {
+            const condition: BranchCondition = {
+                firstValue,
+                secondValue,
+                operator: BranchOperator.NUMBER_IS_NOT_EQUAL_TO,
+            }
+
+            expect(evaluateConditions([[condition]])).toEqual(expected)
+        })
+    })
+
+    describe('NUMBER_IS_GREATER_THAN_OR_EQUAL_TO', () => {
+        test.each([
+            { expected: true, firstValue: '2', secondValue: '1' },
+            { expected: true, firstValue: '2', secondValue: '2' },
+            { expected: true, firstValue: '2.0', secondValue: '2' },
+            { expected: false, firstValue: '1', secondValue: '2' },
+        ])('should return $expected for $firstValue greater than or equal to $secondValue', ({ expected, firstValue, secondValue }) => {
+            const condition: BranchCondition = {
+                firstValue,
+                secondValue,
+                operator: BranchOperator.NUMBER_IS_GREATER_THAN_OR_EQUAL_TO,
+            }
+
+            expect(evaluateConditions([[condition]])).toEqual(expected)
+        })
+    })
+
+    describe('NUMBER_IS_LESS_THAN_OR_EQUAL_TO', () => {
+        test.each([
+            { expected: true, firstValue: '1', secondValue: '2' },
+            { expected: true, firstValue: '2', secondValue: '2' },
+            { expected: true, firstValue: '2', secondValue: '2.0' },
+            { expected: false, firstValue: '2', secondValue: '1' },
+        ])('should return $expected for $firstValue less than or equal to $secondValue', ({ expected, firstValue, secondValue }) => {
+            const condition: BranchCondition = {
+                firstValue,
+                secondValue,
+                operator: BranchOperator.NUMBER_IS_LESS_THAN_OR_EQUAL_TO,
+            }
+
+            expect(evaluateConditions([[condition]])).toEqual(expected)
+        })
+    })
+
     describe('LIST_IS_EMPTY', () => {
         test.each([
             [],

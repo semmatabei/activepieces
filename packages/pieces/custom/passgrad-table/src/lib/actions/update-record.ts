@@ -5,6 +5,12 @@ export const updateRecord = createAction({
   name: "update_record",
   displayName: "Update Record",
   description: "Update an existing record in the selected Passgrad table.",
+  // Safe to repeat (read-only, or replay-safe by occurrence): a transient failure is retried by the
+  // engine, a permanent one (a refused request) is not. Not the builder's to set, so no switch.
+  errorHandlingOptions: {
+    continueOnFailure: { hide: true, defaultValue: false },
+    retryOnFailure: { hide: true, defaultValue: true },
+  },
   props: {
     table_id: tableIdProperty,
     record_id: Property.ShortText({
