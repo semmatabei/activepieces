@@ -1,7 +1,7 @@
 ---
 # Releases the Activepieces runtime that Passgrad uses in production.
 #
-# Trigger is a `release-<version>` tag. Tags are cut from `feature/worktable`, the branch
+# Trigger is a `release-<major>.<minor>.<patch>` tag. Tags are cut from `feature/worktable`, the branch
 # Passgrad syncs its pieces into, so the tag names exactly what shipped.
 #
 # A successful upload is not completion. The runtime job proves the app serves
@@ -12,7 +12,7 @@ name: Passgrad release
 on:
   push:
     tags:
-      - "release-*"
+      - "release-[0-9]*"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -42,6 +42,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # The trigger glob cannot express semver; this rejects anything that only
+      # looks like a release (release-notes, release-1, release-1.2).
+      - name: Validate the release tag
+        if: github.ref_type == 'tag'
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$GITHUB_REF_NAME" | grep -qE '^release-[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Release tags must look like release-<major>.<minor>.<patch>, optionally with a pre-release suffix; got '$GITHUB_REF_NAME'."
+            exit 1
+          fi
 
       # The same assertions the Passgrad deploy runner makes, so a branch that
       # would ship an Activepieces without the Passgrad gateway or lifecycle
