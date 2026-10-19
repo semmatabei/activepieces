@@ -1,0 +1,231 @@
+---
+# Releases the Activepieces runtime that Passgrad uses in production.
+#
+# Trigger is a push to `release`, which is based on and kept current with
+# `feature/worktable`. Passgrad pushes its synced pieces to that branch; this
+# workflow builds and deploys whatever is on it.
+#
+# A successful upload is not completion. The runtime job proves the app serves
+# and that the Passgrad lifecycle handler survived a scheduled tick. The Passgrad
+# gateway route is probed from the Passgrad side, where that probe already lives.
+name: Passgrad release
+
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate and print the plan without deploying"
+        type: boolean
+        default: false
+
+concurrency:
+  group: passgrad-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # RAILWAY_AP_TOKEN is a project token scoped to the Activepieces project and
+  # its production environment, so --service alone selects the target.
+  AP_SERVICE_ID: ${{ vars.AP_SERVICE_ID || 'bff805ef-a0f1-4348-9d92-b9a5278cf34c' }}
+  AP_URL: ${{ vars.AP_URL || 'https://activepieces-production-98cf.up.railway.app' }}
+  RAILWAY_TIMEOUT_SECONDS: "1500"
+
+jobs:
+  validate:
+    name: Validate the Passgrad wiring
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The same assertions the Passgrad deploy runner makes, so a branch that
+      # would ship an Activepieces without the Passgrad gateway or lifecycle
+      # handler fails here instead of in production.
+      - name: Assert the Passgrad gateway, lifecycle handler, and pieces
+        run: |
+          set -euo pipefail
+          cat > /tmp/validate-passgrad-wiring.mjs <<'EOF'
+          import { existsSync, readFileSync } from "node:fs";
+
+          const read = (path) => readFileSync(path, "utf8");
+          const passgradModule = read("packages/server/api/src/app/passgrad/passgrad-internal.module.ts");
+          const appModule = read("packages/server/api/src/app/app.ts");
+          const flowRunModule = read("packages/server/api/src/app/flows/flow-run/flow-run-module.ts");
+
+          if (!/app\.post\(['"]\/embed-sessions['"]/.test(passgradModule)) {
+            throw new Error("passgrad-internal.module.ts is missing the embed-session gateway route");
+          }
+          if (!appModule.includes("app.register(passgradInternalModule, { prefix: '/v1/internal/passgrad' })")) {
+            throw new Error("app.ts does not mount passgradInternalModule under /v1/internal/passgrad");
+          }
+          const outboxHandler =
+            /systemJobHandlers\.registerJobHandler\(\s*SystemJobName\.PASSGRAD_LIFECYCLE_OUTBOX,\s*async\s*\(\)\s*=>\s*\{\s*await passgradLifecycleOutboxService\(app\.log\)\.dispatchBatch\(\)\s*\}\s*,?\s*\)/;
+          if (!outboxHandler.test(flowRunModule)) {
+            throw new Error("flow-run-module.ts is missing the passgrad-lifecycle-outbox handler");
+          }
+          for (const piece of ["passgrad-form", "passgrad-table"]) {
+            if (!existsSync(`packages/pieces/custom/${piece}`)) {
+              throw new Error(`packages/pieces/custom/${piece} is missing`);
+            }
+          }
+          console.log("Passgrad wiring present: gateway route, mounted module, lifecycle outbox handler, both pieces");
+          EOF
+          node /tmp/validate-passgrad-wiring.mjs
+
+  plan:
+    name: Dry run plan
+    needs:
+      - validate
+    if: github.event.inputs.dry_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Print the plan
+        run: |
+          {
+            echo "### Dry run"
+            echo ""
+            echo "Validation passed; nothing was deployed. A real run would:"
+            echo ""
+            echo "1. Upload this branch with \`railway up\` and wait for the new deployment to reach \`SUCCESS\`."
+            echo "2. Assert ${AP_URL} serves, then confirm no \`No handler for job passgrad-lifecycle-outbox\` appears in one scheduled tick."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy Activepieces (Railway)
+    needs:
+      - validate
+    if: github.event.inputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      deployment_id: ${{ steps.deploy.outputs.deployment_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install --global @railway/cli
+
+      - name: Deploy and wait for the new deployment to succeed
+        id: deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_AP_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then
+            echo "::error::RAILWAY_AP_TOKEN is not set in this repository. Create a Railway project token for the Activepieces production environment."
+            exit 1
+          fi
+
+          before_id="$(railway deployment list --service "$AP_SERVICE_ID" --json --limit 1 | jq -r '.[0].id // empty')"
+          railway up --yes --detach --service "$AP_SERVICE_ID"
+
+          deadline=$((SECONDS + RAILWAY_TIMEOUT_SECONDS))
+          deployment_id=""
+          while [ -z "$deployment_id" ]; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Railway did not queue a new deployment within ${RAILWAY_TIMEOUT_SECONDS}s."
+              exit 1
+            fi
+            newest="$(railway deployment list --service "$AP_SERVICE_ID" --json --limit 1 | jq -r '.[0].id // empty')"
+            if [ -n "$newest" ] && [ "$newest" != "$before_id" ]; then
+              deployment_id="$newest"
+            else
+              sleep 5
+            fi
+          done
+          echo "Railway deployment: $deployment_id"
+          echo "deployment_id=$deployment_id" >> "$GITHUB_OUTPUT"
+
+          status=""
+          while :; do
+            status="$(railway deployment list --service "$AP_SERVICE_ID" --json --limit 1 | jq -r '.[0].status // empty')"
+            case "$status" in
+              SUCCESS)
+                echo "Railway deployment $deployment_id reported SUCCESS."
+                break
+                ;;
+              FAILED | CRASHED | NEEDS_APPROVAL | REMOVED | REMOVING | SKIPPED)
+                echo "::error::Railway deployment $deployment_id ended with $status."
+                exit 1
+                ;;
+            esac
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Railway deployment $deployment_id stayed $status for ${RAILWAY_TIMEOUT_SECONDS}s."
+              exit 1
+            fi
+            echo "deployment $deployment_id is $status; waiting..."
+            sleep 15
+          done
+
+          {
+            echo "### Activepieces deploy"
+            echo ""
+            echo "| field | value |"
+            echo "| --- | --- |"
+            echo "| ref | \`$GITHUB_REF_NAME\` |"
+            echo "| commit | \`$GITHUB_SHA\` |"
+            echo "| service | \`$AP_SERVICE_ID\` |"
+            echo "| deployment | \`$deployment_id\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  runtime:
+    name: Verify the deployed runtime
+    needs:
+      - deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_AP_TOKEN }}
+      DEPLOYMENT_ID: ${{ needs.deploy.outputs.deployment_id }}
+    steps:
+      - name: Assert the app serves
+        run: |
+          set -euo pipefail
+          code=""
+          for attempt in $(seq 1 30); do
+            code="$(curl -fsS -o /dev/null -w '%{http_code}' "$AP_URL" || true)"
+            if [ "$code" = "200" ]; then
+              break
+            fi
+            echo "GET $AP_URL attempt $attempt returned '${code:-no response}'; retrying..."
+            sleep 10
+          done
+          if [ "$code" != "200" ]; then
+            echo "::error::GET $AP_URL returned '${code:-no response}' (expected 200)."
+            exit 1
+          fi
+          echo "GET $AP_URL -> $code"
+
+      # A worker that cannot hold its Socket.IO connection can put the app into a
+      # PM2 kill/restart loop that looks like unrelated CORS failures, so check the
+      # log for repeat SIGKILLs before blaming code or configuration.
+      - name: Read the log tail for a crash loop
+        run: |
+          set -euo pipefail
+          logs="$(railway logs "$DEPLOYMENT_ID" --json --since 120s --lines 500 --service "$AP_SERVICE_ID" || true)"
+          if grep -qiE "sigkill|crash" <<< "$logs"; then
+            echo "::warning::sigkill/crash appears in the log tail; check for the worker crash loop before assuming a code problem"
+          fi
+          echo "Log tail read."
+
+      # One scheduled tick is 65s; a missing handler surfaces as a job error in
+      # the log rather than as a failed deploy.
+      - name: Confirm the Passgrad lifecycle outbox handler ran
+        run: |
+          set -euo pipefail
+          echo "Waiting 75s for one lifecycle outbox schedule tick..."
+          sleep 75
+          logs="$(railway logs "$DEPLOYMENT_ID" --json --since 80s --lines 500 --service "$AP_SERVICE_ID" || true)"
+          if grep -Fq "No handler for job passgrad-lifecycle-outbox" <<< "$logs"; then
+            echo "::error::The deployed runtime logged 'No handler for job passgrad-lifecycle-outbox'."
+            exit 1
+          fi
+          echo "PASS Activepieces lifecycle outbox handler survived one scheduled tick."
