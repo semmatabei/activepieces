@@ -1,9 +1,8 @@
 ---
 # Releases the Activepieces runtime that Passgrad uses in production.
 #
-# Trigger is a push to `release`, which is based on and kept current with
-# `feature/worktable`. Passgrad pushes its synced pieces to that branch; this
-# workflow builds and deploys whatever is on it.
+# Trigger is a `v*` tag. Tags are cut from `feature/worktable`, the branch
+# Passgrad syncs its pieces into, so the tag names exactly what shipped.
 #
 # A successful upload is not completion. The runtime job proves the app serves
 # and that the Passgrad lifecycle handler survived a scheduled tick. The Passgrad
@@ -12,8 +11,8 @@ name: Passgrad release
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       dry_run:
