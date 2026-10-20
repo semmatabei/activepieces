@@ -54,6 +54,32 @@ describe('Passgrad capability context', () => {
         await expect(capability.request({ operation: 'form.list' })).rejects.toMatchObject({ status, permanent })
     })
 
+    it('adds the reason the capability API gave to the failure message', async () => {
+        vi.spyOn(global, 'fetch').mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    code: 'VALIDATION',
+                    params: {
+                        message:
+                            'Passgrad refused the request (422): expectedVersion: expected number, received undefined',
+                    },
+                }),
+                { status: 422 },
+            ),
+        )
+        const capability = createPassgradCapability({
+            apiUrl: 'http://activepieces.internal/',
+            credential: 'opaque-capability-token',
+        })
+
+        await expect(capability.request({ operation: 'form.list' })).rejects.toMatchObject({
+            message:
+                'Passgrad capability request failed with status 422: Passgrad refused the request (422): expectedVersion: expected number, received undefined',
+            status: 422,
+            permanent: true,
+        })
+    })
+
     it('sends the trusted engine path after piece-authored fields and drops illicit path properties', async () => {
         const fetchSpy = vi
             .spyOn(global, 'fetch')

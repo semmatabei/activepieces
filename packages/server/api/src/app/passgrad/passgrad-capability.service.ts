@@ -10,6 +10,7 @@ import { AxiosRequestConfig, isAxiosError, Method } from 'axios'
 import { z } from 'zod'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { capabilityFailure } from './passgrad-error-mapping'
 import { passgradProjectBindingService } from './passgrad-project-binding.service'
 import { passgradResourceIdSchema } from './passgrad-resource-id'
 
@@ -88,17 +89,8 @@ export const passgradCapabilityService = {
         }
         catch (error) {
             if (isAxiosError(error)) {
-                if ((error.response?.status ?? 500) >= 500) {
-                    throw new ActivepiecesError({
-                        code: ErrorCode.GENERIC_ERROR,
-                        params: {
-                            message: `Passgrad capability request failed with status ${
-                                error.response?.status ?? 500
-                            }`,
-                        },
-                    })
-                }
-                throw capabilityError('Passgrad capability request failed')
+                const failure = capabilityFailure(error.response?.status ?? 500, error.response?.data)
+                throw new ActivepiecesError({ code: failure.code, params: { message: failure.message } })
             }
             throw error
         }
