@@ -42,7 +42,38 @@ export const passgradCapabilityService = {
             throw capabilityError('Passgrad API URL is not configured')
         }
         const route = buildRoute(params)
+        const headers = {
+            ...trustedExecutionHeaders(params.execution),
+            'x-passgrad-binding-credential-id': binding.credentialId,
+            'x-passgrad-binding-project-id': params.projectId,
+            'x-passgrad-binding-secret': binding.callbackSecret,
+            ...(route.callback
+                ? {
+                    'x-passgrad-callback-credential-id': binding.credentialId,
+                    'x-passgrad-callback-secret': binding.callbackSecret,
+                    'x-passgrad-project-id': params.projectId,
+                }
+                : {}),
+        }
         try {
+            // Passgrad refuses record updates without the current row version, and the
+            // piece has no version input. Read the row first so the write stays
+            // optimistic instead of blind.
+            if (params.operation === 'table.update-record') {
+                const current = await safeHttp.axios.request({
+                    method: 'GET',
+                    url: `${apiUrl.replace(/\/$/, '')}/tenants/${encodeURIComponent(
+                        binding.tenantId,
+                    )}${route.path}`,
+                    headers,
+                } satisfies AxiosRequestConfig)
+                const version = (current.data as { data?: { version?: unknown } } | undefined)
+                    ?.data?.version
+                if (typeof version !== 'number') {
+                    throw capabilityError('Passgrad table record version is unavailable')
+                }
+                route.payload = { ...(route.payload as object), expectedVersion: version }
+            }
             const response = await safeHttp.axios.request({
                 method: route.method,
                 url: route.callback
@@ -50,19 +81,7 @@ export const passgradCapabilityService = {
                     : `${apiUrl.replace(/\/$/, '')}/tenants/${encodeURIComponent(
                         binding.tenantId,
                     )}${route.path}`,
-                headers: {
-                    ...trustedExecutionHeaders(params.execution),
-                    'x-passgrad-binding-credential-id': binding.credentialId,
-                    'x-passgrad-binding-project-id': params.projectId,
-                    'x-passgrad-binding-secret': binding.callbackSecret,
-                    ...(route.callback
-                        ? {
-                            'x-passgrad-callback-credential-id': binding.credentialId,
-                            'x-passgrad-callback-secret': binding.callbackSecret,
-                            'x-passgrad-project-id': params.projectId,
-                        }
-                        : {}),
-                },
+                headers,
                 data: route.payload,
             } satisfies AxiosRequestConfig)
             return response.data === '' ? { acknowledged: true } : response.data
@@ -146,7 +165,7 @@ function buildRoute(params: PassgradCapabilityRequest): PassgradRoute {
                             'recordId',
                         ),
                     )}`,
-                { values: parseUpdateRecordPayload(params.payload).values },
+                { set: parseUpdateRecordPayload(params.payload).values },
             )
         case 'table.create-trigger':
             return resourceRoute(
