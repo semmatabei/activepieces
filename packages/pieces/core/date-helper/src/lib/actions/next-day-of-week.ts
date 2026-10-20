@@ -78,14 +78,15 @@ export const nextDayofWeek = createAction({
   },
   async run(context) {    
     await propsValidation.validateZod(context.propsValue, {
-      time: z.string().regex(/^\d\d:\d\d$/),
+      // The field is optional, so an untouched or cleared value must not fail validation.
+      time: z.string().regex(/^\d\d:\d\d$/).optional().or(z.literal('')),
     });
 
     const timeFormat = getCorrectedFormat(context.propsValue.timeFormat);
     const timeZone = context.propsValue.timeZone as string;
     const dayIndex = context.propsValue.weekday as number;
     const currentTime = context.propsValue.currentTime as boolean;
-    let time = context.propsValue.time as string;
+    let time = (context.propsValue.time as string | undefined)?.trim() || '00:00';
 
     let nextOccurrence = apDayjs().tz(timeZone);
 

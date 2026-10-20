@@ -90,7 +90,8 @@ export const nextDayofYear = createAction({
   async run(context) {
     await propsValidation.validateZod(context.propsValue, {
       day: z.number().min(1).max(31),
-      time: z.string().regex(/^\d\d:\d\d$/),
+      // The field is optional, so an untouched or cleared value must not fail validation.
+      time: z.string().regex(/^\d\d:\d\d$/).optional().or(z.literal('')),
     });
 
     const timeFormat = getCorrectedFormat(context.propsValue.timeFormat);
@@ -98,7 +99,7 @@ export const nextDayofYear = createAction({
     const currentTime = context.propsValue.currentTime as boolean;
     const month = context.propsValue.month as number;
     const day = context.propsValue.day as number;
-    let time = context.propsValue.time as string;
+    let time = (context.propsValue.time as string | undefined)?.trim() || '00:00';
 
     let nextOccurrence = apDayjs().tz(timeZone);
 

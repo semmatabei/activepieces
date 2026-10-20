@@ -58,13 +58,14 @@ export const lastDayOfPreviousMonthAction = createAction({
   },
   async run(context) {
     await propsValidation.validateZod(context.propsValue, {
-      time: z.string().regex(/^\d\d:\d\d$/),
+      // The field is optional, so an untouched or cleared value must not fail validation.
+      time: z.string().regex(/^\d\d:\d\d$/).optional().or(z.literal('')),
     });
 
     const outputTimeFormat = getCorrectedFormat(context.propsValue.timeFormat);
     const selectedTimeZone = context.propsValue.timeZone as string;
     const useCurrentTime = context.propsValue.currentTime as boolean;
-    let providedTime = context.propsValue.time as string;
+    let providedTime = (context.propsValue.time as string | undefined)?.trim() || '00:00';
 
     const baseDateTime = apDayjs().tz(selectedTimeZone);
 
