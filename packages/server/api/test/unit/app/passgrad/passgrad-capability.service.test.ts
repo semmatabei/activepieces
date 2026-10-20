@@ -455,7 +455,12 @@ describe('passgradCapabilityService', () => {
     })
 
     it('maps every allowed operation to a fixed Passgrad route', async () => {
-        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
+        vi.mocked(safeHttp.axios.request).mockImplementation(async (config) => {
+            if (config.method === 'GET' && String(config.url).includes('/records/record-1')) {
+                return { data: { data: { version: 7 } } }
+            }
+            return { data: {} }
+        })
         const cases = [
             {
                 pieceName: '@activepieces/piece-passgrad-form',
@@ -605,13 +610,20 @@ describe('passgradCapabilityService', () => {
             })
         }
 
-        expect(safeHttp.axios.request).toHaveBeenCalledTimes(cases.length)
-        cases.forEach((testCase, index) => {
-            expect(safeHttp.axios.request).toHaveBeenNthCalledWith(index + 1, expect.objectContaining({
+        // Every case issues one request, except table.update-record which reads the
+        // current record version first so the PATCH stays optimistic.
+        expect(safeHttp.axios.request).toHaveBeenCalledTimes(cases.length + 1)
+        cases.forEach((testCase) => {
+            expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
                 method: testCase.expectedMethod,
                 url: testCase.expectedUrl,
             }))
         })
+        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+            method: 'PATCH',
+            url: 'https://api.passgrad.test/v1/tenants/tenant-from-binding/tables/table-1/records/record-1',
+            data: { set: { title: 'safe' }, expectedVersion: 7 },
+        }))
     })
 
     it('rejects every Table-only operation from the Form piece', async () => {
