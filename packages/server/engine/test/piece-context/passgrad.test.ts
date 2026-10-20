@@ -54,6 +54,22 @@ describe('Passgrad capability context', () => {
         await expect(capability.request({ operation: 'form.list' })).rejects.toMatchObject({ status, permanent })
     })
 
+    it('adds the reason the server gave to the failure message', async () => {
+        vi.spyOn(global, 'fetch').mockResolvedValue(
+            new Response(JSON.stringify({ code: 'AUTHORIZATION', params: { message: 'Passgrad refused the request with status 422 (validation_failed)' } }), { status: 403 }),
+        )
+        const capability = createPassgradCapability({
+            apiUrl: 'http://activepieces.internal/',
+            credential: 'opaque-capability-token',
+        })
+
+        await expect(capability.request({ operation: 'form.list' })).rejects.toMatchObject({
+            message: 'Passgrad capability request failed with status 403: Passgrad refused the request with status 422 (validation_failed)',
+            status: 403,
+            permanent: true,
+        })
+    })
+
     it('sends the trusted engine path after piece-authored fields and drops illicit path properties', async () => {
         const fetchSpy = vi
             .spyOn(global, 'fetch')

@@ -11,8 +11,12 @@ export class PassgradRequestError extends Error {
     readonly status: number
     readonly permanent: boolean
 
-    constructor(status: number) {
-        super(`Passgrad capability request failed with status ${status}`)
+    constructor(status: number, detail?: string) {
+        super(
+            `Passgrad capability request failed with status ${status}${
+                detail ? `: ${detail}` : ''
+            }`,
+        )
         this.name = 'PassgradRequestError'
         this.status = status
         this.permanent = status >= 400 && status < 500 && ![408, 425, 429].includes(status)
@@ -49,10 +53,34 @@ export function createPassgradCapability(
                 body: JSON.stringify(body),
             })
             if (!response.ok) {
-                throw new PassgradRequestError(response.status)
+                throw new PassgradRequestError(
+                    response.status,
+                    await readRefusalDetail(response),
+                )
             }
             return response.json() as Promise<T>
         },
+    }
+}
+
+/** The reason the server gave, when it sent one: its error body is {code, params: {message}}. */
+async function readRefusalDetail(response: Response): Promise<string | undefined> {
+    try {
+        const body: unknown = await response.json()
+        if (typeof body !== 'object' || body === null || !('params' in body)) {
+            return undefined
+        }
+        const params = (body as { params: unknown }).params
+        if (typeof params !== 'object' || params === null || !('message' in params)) {
+            return undefined
+        }
+        const message = (params as { message: unknown }).message
+        return typeof message === 'string' && message.length > 0
+            ? message.slice(0, 200)
+            : undefined
+    }
+    catch {
+        return undefined
     }
 }
 

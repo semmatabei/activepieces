@@ -79,7 +79,9 @@ export const passgradCapabilityService = {
                         },
                     })
                 }
-                throw capabilityError('Passgrad capability request failed')
+                throw capabilityError(
+                    describeRefusal(error.response?.status, error.response?.data),
+                )
             }
             throw error
         }
@@ -346,6 +348,30 @@ function trustedExecutionHeaders(
             executionPath: execution.executionPath,
         }),
     }
+}
+
+/**
+ * Names the status and error code Passgrad answered with, so a step failure says why the request
+ * was refused. Only the machine code is forwarded; Passgrad's free-text message can be long and is
+ * not meant for flow authors.
+ */
+function describeRefusal(status: number | undefined, body: unknown): string {
+    const code = readPassgradErrorCode(body)
+    return `Passgrad refused the request${isNil(status) ? '' : ` with status ${status}`}${
+        isNil(code) ? '' : ` (${code})`
+    }`
+}
+
+function readPassgradErrorCode(body: unknown): string | undefined {
+    if (typeof body !== 'object' || body === null || !('error' in body)) {
+        return undefined
+    }
+    const inner = (body as { error: unknown }).error
+    if (typeof inner !== 'object' || inner === null || !('code' in inner)) {
+        return undefined
+    }
+    const code = (inner as { code: unknown }).code
+    return typeof code === 'string' && /^[a-z0-9_.-]{1,64}$/i.test(code) ? code : undefined
 }
 
 function capabilityError(message: string): ActivepiecesError {

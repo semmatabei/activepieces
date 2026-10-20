@@ -773,6 +773,45 @@ describe('passgradCapabilityService', () => {
         })
     })
 
+    it('names the status and error code of a refused 4xx request, but never its message', async () => {
+        vi.mocked(safeHttp.axios.request).mockRejectedValue({
+            isAxiosError: true,
+            response: {
+                status: 422,
+                data: { error: { code: 'validation_failed', message: 'server-only-secret' } },
+            },
+        })
+
+        const error = await passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.list',
+        }).catch((thrown: unknown) => thrown)
+
+        expect(error).toMatchObject({
+            error: {
+                code: 'AUTHORIZATION',
+                params: { message: 'Passgrad refused the request with status 422 (validation_failed)' },
+            },
+        })
+        expect(JSON.stringify(error)).not.toContain('server-only-secret')
+    })
+
+    it('falls back to the status alone when the refusal has no usable error code', async () => {
+        vi.mocked(safeHttp.axios.request).mockRejectedValue({
+            isAxiosError: true,
+            response: { status: 404, data: { error: { code: 'not a code!' } } },
+        })
+
+        await expect(passgradCapabilityService.request({
+            projectId: 'engine-project',
+            pieceName: '@activepieces/piece-passgrad-form',
+            operation: 'form.list',
+        })).rejects.toMatchObject({
+            error: { params: { message: 'Passgrad refused the request with status 404' } },
+        })
+    })
+
     it('appends trusted execution headers only when execution context is provided', async () => {
         vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: {} })
 
