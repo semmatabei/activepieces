@@ -1,14 +1,11 @@
 import { ErrorCode, isNil } from '@activepieces/shared'
 
 /**
- * Passgrad answers failures with `{ error: { code, message } }`. Only the message is reused; it is
- * a user-facing sentence, and everything else in the body is dropped so nothing internal leaks.
+ * Passgrad answers failures with `{ error: { code, message } }`. Only that message is reused: it is
+ * a user-facing sentence. Raw bodies (HTML error pages, gateway text) and every other field are
+ * dropped so nothing internal leaks.
  */
 export function passgradResponseMessage(data: unknown): string | undefined {
-    if (typeof data === 'string') {
-        const trimmed = data.trim()
-        return trimmed.length > 0 && trimmed.length <= 512 ? trimmed : undefined
-    }
     if (isNil(data) || typeof data !== 'object') return undefined
     const error = (data as { error?: unknown }).error
     if (isNil(error) || typeof error !== 'object') return undefined
@@ -50,11 +47,10 @@ export type CapabilityFailure = {
 export function capabilityFailure(status: number, data: unknown): CapabilityFailure {
     const apiMessage = passgradResponseMessage(data)
     if (status >= 500) {
+        // A 5xx body can be an internal error or a gateway page, so keep the generic wording.
         return {
             code: ErrorCode.GENERIC_ERROR,
-            message: apiMessage
-                ? `Passgrad capability request failed with status ${status}: ${apiMessage}`
-                : `Passgrad capability request failed with status ${status}`,
+            message: `Passgrad capability request failed with status ${status}`,
         }
     }
     return {

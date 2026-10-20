@@ -28,15 +28,16 @@ describe('Passgrad capability error mapping', () => {
         )
     })
 
-    it('keeps 5xx as a service failure', () => {
+    it('keeps 5xx as a generic service failure without forwarding its body', () => {
         const failure = capabilityFailure(503, { error: { message: 'engine unavailable' } })
         expect(failure.code).toBe('GENERIC_ERROR')
-        expect(failure.message).toBe('Passgrad capability request failed with status 503: engine unavailable')
+        expect(failure.message).toBe('Passgrad capability request failed with status 503')
     })
 
     it('falls back when the body carries no usable message', () => {
         expect(passgradResponseMessage({ error: {} })).toBeUndefined()
-        expect(passgradResponseMessage('<html>bad gateway</html>')).toBe('<html>bad gateway</html>')
+        expect(passgradResponseMessage('<html>bad gateway</html>')).toBeUndefined()
+        expect(passgradResponseMessage('plain gateway text')).toBeUndefined()
         expect(passgradResponseMessage(undefined)).toBeUndefined()
         expect(capabilityFailure(404, null).message).toBe('Passgrad refused the request with status 404')
     })
