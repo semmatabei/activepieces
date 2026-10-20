@@ -22,7 +22,12 @@ export const extractText = createAction({
   },
   async run(context) {
     const file = context.propsValue.file;
-    const pdf = await getDocumentProxy(new Uint8Array(file.data.buffer));
+    // `file.data` is a Node Buffer, whose `.buffer` is a pooled ArrayBuffer shared with other
+    // allocations. Passing that buffer to pdf.js makes it hand a non-transferable buffer to its
+    // worker, which fails with DataCloneError (and would include unrelated bytes anyway). Copy the
+    // view so pdf.js owns exactly this document's bytes.
+    const bytes = new Uint8Array(file.data);
+    const pdf = await getDocumentProxy(bytes);
     const { text } = await pdfExtractText(pdf, { mergePages: true });
     return text;
   },
