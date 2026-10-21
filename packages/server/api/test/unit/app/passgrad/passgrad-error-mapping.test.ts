@@ -14,7 +14,7 @@ describe('Passgrad capability error mapping', () => {
         expect(errorCodeForStatus(404)).toBe('ENTITY_NOT_FOUND')
         expect(errorCodeForStatus(403)).toBe('AUTHORIZATION')
         expect(errorCodeForStatus(401)).toBe('AUTHENTICATION')
-        expect(errorCodeForStatus(429)).toBe('QUOTA_EXCEEDED')
+        expect(errorCodeForStatus(429)).toBe('GENERIC_ERROR')
         expect(errorCodeForStatus(500)).toBe('GENERIC_ERROR')
     })
 

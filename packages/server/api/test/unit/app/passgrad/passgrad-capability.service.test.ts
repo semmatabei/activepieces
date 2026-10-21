@@ -651,7 +651,9 @@ describe('passgradCapabilityService', () => {
     })
 
     it('sends only the fixed record payload shape', async () => {
-        vi.mocked(safeHttp.axios.request).mockResolvedValue({ data: { record: { id: 'record-1' } } })
+        vi.mocked(safeHttp.axios.request)
+            .mockResolvedValueOnce({ data: { data: { id: 'record-1', version: 3 } } })
+            .mockResolvedValueOnce({ data: { record: { id: 'record-1' } } })
 
         await passgradCapabilityService.request({
             projectId: 'engine-project',
@@ -661,9 +663,11 @@ describe('passgradCapabilityService', () => {
             payload: { recordId: 'record-1', values: { title: 'safe' } },
         })
 
-        expect(safeHttp.axios.request).toHaveBeenCalledWith(expect.objectContaining({
+        // The row is read first so the write can quote its current version.
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(1, expect.objectContaining({ method: 'GET' }))
+        expect(safeHttp.axios.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
             method: 'PATCH',
-            data: { values: { title: 'safe' } },
+            data: { set: { title: 'safe' }, expectedVersion: 3 },
         }))
     })
 
