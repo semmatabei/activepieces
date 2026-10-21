@@ -1,0 +1,51 @@
+---
+# Runs the RBAC unit tests that pin the Passgrad platform service-principal
+# contract. The upstream `main` CI job is gated to `activepieces/activepieces`,
+# so pull requests in this fork previously got no test signal at all.
+#
+# Scope is deliberately the project-role directory: `test/unit` as a whole still
+# has pre-existing failures (native sqlite bindings, stale chat imports), so it
+# cannot gate a merge yet. Widen this workflow once `npm run test-unit` is green.
+name: Passgrad RBAC unit tests
+
+on:
+  pull_request:
+    branches:
+      - feature/worktable
+  push:
+    branches:
+      - feature/worktable
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: passgrad-rbac-unit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-unit:
+    name: Run RBAC unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run RBAC unit tests
+        working-directory: packages/server/api
+        run: npm run test-rbac

@@ -132,6 +132,7 @@
     "lint": "eslint 'src/**/*.ts'",
     "test": "npm run test-ce && npm run test-ee && npm run test-cloud",
     "test-unit": "vitest run test/unit --bail 1 --passWithNoTests=false",
+    "test-rbac": "vitest run test/unit/app/ee/authentication/project-role --bail 1 --passWithNoTests=false",
     "test-ce-command": "vitest run test/integration/ce --bail 1 --passWithNoTests=false",
     "test-ee-command": "vitest run test/integration/ee --bail 1 --passWithNoTests=false",
     "test-cloud-command": "vitest run test/integration/cloud --bail 1 --passWithNoTests=false",
