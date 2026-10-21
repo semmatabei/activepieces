@@ -17,9 +17,18 @@ export function passgradResponseMessage(data: unknown): string | undefined {
 
 /**
  * Keeps Passgrad's classification instead of collapsing every refusal into AUTHORIZATION: a 422 is
- * a validation problem, a 404 a missing record, a 403 a real permission problem.
+ * a validation problem, a 404 a missing record, a 403 a real permission problem. Only codes whose
+ * params are just a message are used: QUOTA_EXCEEDED needs a platform usage metric, which a Passgrad
+ * 429 (a rate limit) does not have, so it stays a generic failure.
  */
-export function errorCodeForStatus(status: number): ErrorCode {
+export type CapabilityErrorCode =
+    | ErrorCode.VALIDATION
+    | ErrorCode.AUTHENTICATION
+    | ErrorCode.AUTHORIZATION
+    | ErrorCode.ENTITY_NOT_FOUND
+    | ErrorCode.GENERIC_ERROR
+
+export function errorCodeForStatus(status: number): CapabilityErrorCode {
     switch (status) {
         case 400:
         case 409:
@@ -31,15 +40,13 @@ export function errorCodeForStatus(status: number): ErrorCode {
             return ErrorCode.AUTHORIZATION
         case 404:
             return ErrorCode.ENTITY_NOT_FOUND
-        case 429:
-            return ErrorCode.QUOTA_EXCEEDED
         default:
             return ErrorCode.GENERIC_ERROR
     }
 }
 
 export type CapabilityFailure = {
-    code: ErrorCode
+    code: CapabilityErrorCode
     message: string
 }
 
