@@ -103,6 +103,19 @@ describe('extractText', () => {
     expect(typeof result).toBe('string');
     expect((result as string).length).toBeGreaterThan(0);
   });
+
+  test('should extract text from a small inline PDF that shares the Buffer pool', async () => {
+    const { extractText } = await import('../src/lib/actions/extract-text');
+    const pdfBuffer = await createTestPdf(1, ['Inline PDF text']);
+    // The reported case: a one-page inline file is small enough that Node allocates
+    // it inside the shared 64 KiB pool, so transferring pdfBuffer.buffer fails.
+    expect(pdfBuffer.buffer.byteLength).toBeGreaterThan(pdfBuffer.byteLength);
+    const ctx = createMockContext({ file: makeFileProperty(pdfBuffer) });
+
+    const result = await extractText.run(ctx as any);
+
+    expect(result).toContain('Inline PDF text');
+  });
 });
 
 describe('pdfPageCount', () => {
