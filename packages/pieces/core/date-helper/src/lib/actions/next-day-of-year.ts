@@ -108,8 +108,19 @@ export const nextDayofYear = createAction({
     }
     const [hours, minutes] = time.split(':').map(Number);
 
-    if (month < 1 || month > 12 || day < 1 || day > 31) {
-      throw new Error(`Invalid input \nmonth: ${month} \nday: ${day}`);
+    if (
+      month < 1 ||
+      month > 12 ||
+      day < 1 ||
+      day > 31 ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      throw new Error(
+        `Invalid input \nmonth: ${month} \nday: ${day} \nhours: ${hours} \nminutes: ${minutes}`
+      );
     }
 
     const currentYear = nextOccurrence.year();
