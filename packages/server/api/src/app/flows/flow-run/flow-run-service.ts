@@ -15,6 +15,7 @@ import {
     FlowRunId,
     FlowRunStatus,
     FlowRunWithRetryError,
+    FlowStatus,
     FlowVersionId,
     isFlowRunStateTerminal,
     isNil,
@@ -179,6 +180,20 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
             { flowRun: { id: flowRunId }, flow: { id: oldFlowRun.flowId }, strategy },
             'Flow run retry initiated',
         )
+
+        const retriedFlow = await flowService(log).getOneOrThrow({
+            id: oldFlowRun.flowId,
+            projectId,
+        })
+        if (retriedFlow.status !== FlowStatus.ENABLED) {
+            throw new ActivepiecesError({
+                code: ErrorCode.FLOW_RUN_RETRY_FLOW_DISABLED,
+                params: {
+                    flowRunId: oldFlowRun.id,
+                    flowId: oldFlowRun.flowId,
+                },
+            })
+        }
 
         const retentionDays = system.getNumberOrThrow(
             AppSystemProp.EXECUTION_DATA_RETENTION_DAYS,
