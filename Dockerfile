@@ -76,7 +76,9 @@ COPY . .
 # Build frontend, engine, server API, and worker
 RUN npx turbo run build --filter=web --filter=@activepieces/engine --filter=api --filter=worker \
     --filter=@activepieces/piece-passgrad-form --filter=@activepieces/piece-passgrad-table \
-    --filter=@activepieces/piece-date-helper --filter=@activepieces/piece-pdf
+    --filter=@activepieces/piece-date-helper --filter=@activepieces/piece-pdf \
+    --filter=@activepieces/piece-schedule \
+    --filter=@activepieces/piece-schedule
 
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
 # symbolicate production stack traces in Sentry/BetterStack error tracking. Upload
@@ -98,10 +100,11 @@ FROM base AS run
 WORKDIR /usr/src/app
 
 # Dev pieces are loaded from the image's packages/pieces dist folders instead of the
-# registry catalog. Date Helper and PDF are official pieces: their flows still resolve
-# @activepieces/piece-* metadata, but execution runs the fork build that carries the
-# BUG-022 / BUG-026 fixes rather than the older npm artifact.
-ENV AP_DEV_PIECES=passgrad-form,passgrad-table,date-helper,pdf
+# registry catalog. Date Helper, PDF and Schedule are official pieces: their flows still
+# resolve @activepieces/piece-* metadata, but execution runs the fork build — the
+# BUG-022 / BUG-026 fixes, and the cron-based every_x_minutes the engine understands
+# (registry 0.1.18+ sends intervalMs, which this engine does not support).
+ENV AP_DEV_PIECES=passgrad-form,passgrad-table,date-helper,pdf,schedule
 
 # Copy static configuration files first (better layer caching)
 COPY --from=build /usr/src/app/packages/server/api/src/assets/default.cf /usr/local/etc/isolate
