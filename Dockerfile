@@ -74,10 +74,11 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build frontend, engine, server API, and worker
-RUN npx turbo run build --filter=web --filter=@activepieces/engine --filter=api --filter=worker \
+# Two tasks at a time: the Railway builder runs out of memory when web, api and the
+# pieces all compile in parallel on a cold cache.
+RUN npx turbo run build --concurrency=2 --filter=web --filter=@activepieces/engine --filter=api --filter=worker \
     --filter=@activepieces/piece-passgrad-form --filter=@activepieces/piece-passgrad-table \
     --filter=@activepieces/piece-date-helper --filter=@activepieces/piece-pdf \
-    --filter=@activepieces/piece-schedule \
     --filter=@activepieces/piece-schedule
 
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
