@@ -32,6 +32,7 @@ export type ApErrorParams =
     | FlowOperationErrorParams
     | FlowOperationInProgressErrorParams
     | FlowRunRetryOutsideRetentionErrorParams
+    | FlowRunRetryFlowDisabledErrorParams
     | InvalidApiKeyParams
     | InvalidAppConnectionParams
     | InvalidBearerTokenParams
