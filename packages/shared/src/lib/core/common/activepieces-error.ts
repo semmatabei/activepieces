@@ -187,6 +187,15 @@ ErrorCode.FLOW_RUN_RETRY_OUTSIDE_RETENTION,
 }
 >
 
+/** Retrying is refused up front when the flow cannot run at all, instead of being queued and dropped. */
+export type FlowRunRetryFlowDisabledErrorParams = BaseErrorParams<
+ErrorCode.FLOW_RUN_RETRY_FLOW_DISABLED,
+{
+    flowRunId: FlowRunId
+    flowId: string
+}
+>
+
 export type InvalidCredentialsErrorParams = BaseErrorParams<
 ErrorCode.INVALID_CREDENTIALS,
 null
@@ -522,6 +531,7 @@ export enum ErrorCode {
     FLOW_OPERATION_INVALID = 'FLOW_OPERATION_INVALID',
     FLOW_OPERATION_IN_PROGRESS = 'FLOW_OPERATION_IN_PROGRESS',
     FLOW_RUN_RETRY_OUTSIDE_RETENTION = 'FLOW_RUN_RETRY_OUTSIDE_RETENTION',
+    FLOW_RUN_RETRY_FLOW_DISABLED = 'FLOW_RUN_RETRY_FLOW_DISABLED',
     INVALID_API_KEY = 'INVALID_API_KEY',
     INVALID_APP_CONNECTION = 'INVALID_APP_CONNECTION',
     INVALID_BEARER_TOKEN = 'INVALID_BEARER_TOKEN',

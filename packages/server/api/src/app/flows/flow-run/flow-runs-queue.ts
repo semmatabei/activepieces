@@ -9,6 +9,7 @@ import {
 } from '@activepieces/shared'
 import { Queue, Worker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
+import { EntityManager } from 'typeorm'
 import { transaction } from '../../core/db/transaction'
 import {
     distributedLock,
@@ -24,6 +25,7 @@ import {
     PassgradLifecycleOutboxStatus,
 } from '../../passgrad/passgrad-lifecycle-outbox.entity'
 import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
+import { FileEntity } from '../../file/file.entity'
 import {
     QueueName,
     redisMetadataKey,
@@ -279,10 +281,13 @@ export async function persistRunMetadataAndPassgradOutbox(
                 `Flow run ${input.runId} not found while persisting worker metadata`,
             )
         }
+        const logsFileId = isNil(runMetadata.logsFileId)
+            ? undefined
+            : await resolveExistingLogsFileId(entityManager, runMetadata.logsFileId)
         await flowRunRepo(entityManager).update(input.runId, {
             ...spreadIfDefined('status', runMetadata.status),
             ...spreadIfDefined('tags', runMetadata.tags),
-            ...spreadIfDefined('logsFileId', runMetadata.logsFileId),
+            ...spreadIfDefined('logsFileId', logsFileId),
             ...spreadIfDefined('failedStep', runMetadata.failedStep),
             ...spreadIfDefined('startTime', runMetadata.startTime),
             ...spreadIfDefined('finishTime', runMetadata.finishTime),
@@ -336,6 +341,21 @@ export async function persistRunMetadataAndPassgradOutbox(
     }
 
     return savedFlowRun
+}
+
+/**
+ * A run can name a logs file that no longer exists: retention pruned it, or a retry resumed a run whose
+ * logs were already cleaned up. Writing that id violates flow_run_logs_file_id and throws away the whole
+ * update — including the terminal status — so leave the column alone and keep the status change.
+ */
+async function resolveExistingLogsFileId(
+    entityManager: EntityManager,
+    logsFileId: string,
+): Promise<string | undefined> {
+    const file = await entityManager
+        .getRepository(FileEntity)
+        .findOneBy({ id: logsFileId })
+    return isNil(file) ? undefined : logsFileId
 }
 
 function buildPassgradProjectionPayload(
