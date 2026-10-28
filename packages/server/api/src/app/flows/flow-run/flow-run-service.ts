@@ -39,7 +39,6 @@ import {
 } from '@activepieces/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
-import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
 import {
     ArrayContains,
     In,
@@ -55,6 +54,7 @@ import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { Order } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
+import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
 import { projectService } from '../../project/project-service'
 import { passgradAdmissionService } from '../../webhooks/passgrad-admission-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
@@ -245,6 +245,13 @@ export const flowRunService = (log: FastifyBaseLogger) => ({
                 const platformId = await projectService(log).getPlatformId(
                     updatedFlowRun.projectId,
                 )
+                // A previous attempt can leave its BullMQ job behind (failed, or delayed after an
+                // internal error). BullMQ ignores queue.add when a job with the same id exists, so
+                // the retry would answer 200 and never run; clear the old job before queueing again.
+                await jobQueue(log).removeOneTimeJob({
+                    jobId: updatedFlowRun.id,
+                    platformId,
+                })
                 await flowRunSideEffects(log).onRetry(updatedFlowRun)
                 if (triggerFailed) {
                     return addToQueue(
