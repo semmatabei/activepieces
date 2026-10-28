@@ -16,6 +16,7 @@ import {
     distributedStore,
     redisConnections,
 } from '../../database/redis-connections'
+import { FileEntity } from '../../file/file.entity'
 import { domainHelper } from '../../helper/domain-helper'
 import { exceptionHandler } from '../../helper/exception-handler'
 import { system } from '../../helper/system/system'
@@ -25,7 +26,6 @@ import {
     PassgradLifecycleOutboxStatus,
 } from '../../passgrad/passgrad-lifecycle-outbox.entity'
 import { passgradLifecycleOutboxService } from '../../passgrad/passgrad-lifecycle-outbox.service'
-import { FileEntity } from '../../file/file.entity'
 import {
     QueueName,
     redisMetadataKey,
